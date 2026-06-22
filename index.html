@@ -262,8 +262,8 @@ td.num{text-align:right;font-family:var(--mono);font-size:13px}
         <input id="search" placeholder="Ürün adı veya kodu ara…" autocomplete="off">
       </div>
       <div class="kur-bar">
-        <div class="kur eur"><label>EUR</label><input id="kurEUR" type="number" step="0.0001"><span style="color:var(--muted-2);font-size:12px">₺</span></div>
-        <div class="kur usd"><label>USD</label><input id="kurUSD" type="number" step="0.0001"><span style="color:var(--muted-2);font-size:12px">₺</span></div>
+        <div class="kur eur"><label>EUR</label><input id="kurEUR" type="text" inputmode="decimal" autocomplete="off"><span style="color:var(--muted-2);font-size:12px">₺</span></div>
+        <div class="kur usd"><label>USD</label><input id="kurUSD" type="text" inputmode="decimal" autocomplete="off"><span style="color:var(--muted-2);font-size:12px">₺</span></div>
         <button id="kurGuncelle" class="kur-upd" title="TCMB Efektif Satış kurlarını çek">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
           <span>Güncelle</span>
@@ -963,16 +963,30 @@ function exportAll(){
 }
 
 /* ---- Kur ---- */
-function syncKur(){ document.getElementById('kurEUR').value=store.kurlar.EUR; document.getElementById('kurUSD').value=store.kurlar.USD; }
-['EUR','USD'].forEach(cur=>{ const el=document.getElementById('kur'+cur); el.addEventListener('input',()=>{ store.kurlar[cur]=Number(el.value)||0; save(); render(); }); });
+/* Sağlam sayı ayrıştırma: son ayraç ondalık, diğerleri binlik */
+function normNum(s){
+  s=String(s==null?'':s).trim().replace(/[^\d.,-]/g,'');
+  if(!s) return null;
+  const lc=s.lastIndexOf(','), ld=s.lastIndexOf('.');
+  if(lc>-1&&ld>-1) s=(lc>ld)?s.replace(/\./g,'').replace(',','.'):s.replace(/,/g,'');
+  else if(lc>-1) s=s.replace(',','.');
+  const v=parseFloat(s); return isFinite(v)?v:null;
+}
+function fmtKur(v){ if(v==null||!isFinite(v)) return ''; return (Math.round(v*1e4)/1e4).toString().replace('.',','); }
+function syncKur(){ document.getElementById('kurEUR').value=fmtKur(store.kurlar.EUR); document.getElementById('kurUSD').value=fmtKur(store.kurlar.USD); }
+['EUR','USD'].forEach(cur=>{ const el=document.getElementById('kur'+cur);
+  el.addEventListener('input',()=>{ const v=normNum(el.value); store.kurlar[cur]=(v==null?0:v); save(); render(); });
+  el.addEventListener('blur',()=>{ el.value=fmtKur(store.kurlar[cur]); });
+});
 
 /* TCMB Efektif Satış (BanknoteSelling). Önce kendi /api/tcmb (Vercel, CORS yok), sonra doğrudan→proxy */
 async function fetchTCMB(){
+  const sane=v=>isFinite(v)&&v>0&&v<5000; // makul FX bandı; ondalık-kaymış (≥10000) değerleri ele
   // 1) Kendi sunucu fonksiyonu — Vercel'de en güvenilir yol (aynı alan adı, CORS yok)
   try{
     const ctl=new AbortController(); const to=setTimeout(()=>ctl.abort(),9000);
     const res=await fetch('/api/tcmb',{cache:'no-store',signal:ctl.signal}); clearTimeout(to);
-    if(res.ok){ const j=await res.json(); if(j&&+j.usd>0&&+j.eur>0) return {usd:+j.usd,eur:+j.eur,tarih:j.tarih||''}; }
+    if(res.ok){ const j=await res.json(); if(j&&sane(+j.usd)&&sane(+j.eur)) return {usd:+j.usd,eur:+j.eur,tarih:j.tarih||''}; }
   }catch(e){}
   // 2) Doğrudan + genel CORS proxy'leri (yerel dosyada veya fonksiyon yoksa)
   const SRC='https://www.tcmb.gov.tr/kurlar/today.xml';
@@ -1001,7 +1015,7 @@ async function fetchTCMB(){
         return isFinite(v)&&v>0?v:null;
       };
       const usd=get('USD'), eur=get('EUR');
-      if(usd&&eur){ const td=doc.querySelector('Tarih_Date'); return {usd,eur,tarih:td?td.getAttribute('Tarih'):''}; }
+      if(sane(usd)&&sane(eur)){ const td=doc.querySelector('Tarih_Date'); return {usd,eur,tarih:td?td.getAttribute('Tarih'):''}; }
     }catch(e){ /* sıradaki kaynağı dene */ }
   }
   return null;
@@ -1028,6 +1042,9 @@ document.getElementById('resetParams').onclick=()=>{ if(!confirm('Tüm markalard
 document.getElementById('menuBtn').onclick=openSide;
 document.getElementById('scrim').onclick=closeSide;
 
+/* Eski ondalık-birleşme hatasından kalmış kuru düzelt (örn. 531848 -> 53,1848) */
+function fixKur(){ ['EUR','USD'].forEach(c=>{ let v=store.kurlar[c]; if(Number.isInteger(v)&&v>=10000){ store.kurlar[c]=v/10000; } }); save(); }
+fixKur();
 syncKur(); renderNav(); render();
 </script>
 </body>
