@@ -40,6 +40,18 @@ input{font-family:inherit}
 .nav-special:hover{background:rgba(255,255,255,.1);color:#fff}
 .nav-special.active{background:var(--accent);color:#fff}
 .nav-special svg{flex-shrink:0}
+/* Fiyat Listeleri grubu (markaların üst başlığı) */
+.nav-group{display:flex;align-items:center;gap:9px;width:calc(100% - 20px);text-align:left;margin:2px 10px 4px;padding:9px 12px;border-radius:9px;font-family:var(--disp);font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#cfcabe;background:rgba(255,255,255,.04);transition:.12s}
+.nav-group:hover{background:rgba(255,255,255,.09);color:#fff}
+.nav-group svg{flex-shrink:0;color:var(--accent)}
+.nav-group .ng-name{flex:1}
+.nav-group .ng-ct{font-family:var(--mono);font-size:10px;color:#8a8475;letter-spacing:0}
+.nav-group .chev{color:#8a8475;transition:transform .18s}
+.nav-group.open .chev{transform:rotate(90deg)}
+.nav-group-body.closed{display:none}
+.nav-group-body{border-left:1px solid rgba(255,255,255,.06);margin-left:18px}
+.nav-group-body .mk-head{padding-left:14px}
+.nav-group-body .mk-body{margin-left:0}
 .mk-h{display:flex;align-items:center;gap:8px;padding:12px 18px 5px;font-family:var(--disp);font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#7d7869}
 .mk-h .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
 .mk-head{display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:12px 18px 6px;font-family:var(--disp);font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#7d7869;transition:color .12s}
@@ -238,6 +250,69 @@ td.num{text-align:right;font-family:var(--mono);font-size:13px}
 .rn-c:hover{color:var(--ink)}
 .rn-s{background:var(--accent);color:#fff}
 .rn-s:hover{background:var(--accent-ink)}
+/* Yeni marka ekleme formu + buton */
+.sh-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.nm-add{background:var(--accent);color:#fff;font-size:13px;font-weight:600;padding:9px 15px;border-radius:9px;transition:.12s;white-space:nowrap}
+.nm-add:hover{background:var(--accent-ink)}
+.br-del{color:var(--danger,#b3261e)!important;border-color:var(--danger,#b3261e)!important}
+.br-del:hover{background:rgba(179,38,30,.08)}
+.nm-card{max-width:430px;gap:9px}
+.nm-l{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.nm-opt{font-weight:500;text-transform:none;letter-spacing:0;color:var(--muted-2)}
+.nm-seg{display:flex;gap:6px}
+.nm-seg button{flex:1;padding:9px 0;border:1.5px solid var(--line-2);border-radius:8px;font-size:14px;font-weight:600;color:var(--muted);background:var(--paper);transition:.12s}
+.nm-seg button.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-ink)}
+.nm-chk{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink);cursor:pointer;margin-top:2px}
+.nm-chk input{width:16px;height:16px;accent-color:var(--accent)}
+.nm-file{font-size:13px;color:var(--muted);width:100%}
+.nm-file::file-selector-button{font-size:12px;font-weight:600;padding:7px 12px;margin-right:10px;border:1px solid var(--line-2);border-radius:7px;background:var(--paper);color:var(--ink);cursor:pointer}
+.nm-tmpl{align-self:flex-start;font-size:13px;font-weight:600;color:var(--accent-ink);background:var(--accent-soft);border:1px solid var(--accent-soft);padding:8px 13px;border-radius:8px;transition:.12s}
+.nm-tmpl:hover{background:var(--accent);color:#fff}
+/* Hesaplama / Metraj */
+.hs-code{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--muted-2);background:var(--paper);border:1px solid var(--line-2);padding:2px 8px;border-radius:6px;vertical-align:middle;margin-left:6px}
+.hs-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.hs-tab{font-size:13px;font-weight:600;padding:8px 14px;border-radius:8px;border:1.5px solid var(--line-2);background:var(--paper);color:var(--muted);transition:.12s}
+.hs-tab:hover{border-color:var(--accent);color:var(--accent-ink)}
+.hs-tab.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.hs-ctrl{display:flex;flex-wrap:wrap;gap:24px;align-items:flex-end;margin:18px 0 14px}
+.hs-m2{display:flex;flex-direction:column;gap:5px}
+.hs-m2 label,.hs-col label{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.hs-m2 input{font-size:20px;font-weight:700;font-family:var(--mono);width:130px;padding:8px 12px;border:1.5px solid var(--line-2);border-radius:9px;color:var(--ink);background:var(--card);outline:none;transition:.12s}
+.hs-m2 input:focus{border-color:var(--accent);background:#fff}
+.hs-m2{position:relative}.hs-m2 span{position:absolute;right:12px;bottom:11px;font-size:12px;color:var(--muted-2);pointer-events:none}
+.hs-table{width:100%;border-collapse:collapse;font-size:13px}
+.hs-table th{text-align:left;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted-2);padding:8px 10px;border-bottom:1.5px solid var(--line);vertical-align:bottom}
+.hs-table th.num,.hs-table td.num{text-align:right;font-variant-numeric:tabular-nums}
+.hs-table td{padding:8px 10px;border-bottom:1px solid var(--line);color:var(--ink)}
+.hs-grp td{font-family:var(--disp);font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent-ink);background:var(--accent-soft);padding-top:9px;padding-bottom:9px}
+.hs-mz b{font-weight:600}
+.hs-mz .hs-oz{display:block;font-size:11px;color:var(--muted-2);margin-top:1px}
+.hs-alt{margin-right:7px;vertical-align:middle;width:14px;height:14px;accent-color:var(--accent)}
+.hs-altrow.off{opacity:.5}
+.hs-src{max-width:320px}
+.hs-pick{font-size:12px;color:var(--ink);background:var(--paper);border:1px solid var(--line-2);border-radius:7px;padding:5px 9px;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;transition:.12s}
+.hs-pick:hover{border-color:var(--accent);background:var(--accent-soft)}
+.hs-pick-empty{color:var(--accent-ink);font-weight:600}
+.hs-clr{margin-left:5px;color:var(--muted-2);font-size:13px;padding:2px 5px;border-radius:5px}
+.hs-clr:hover{color:#c0392b;background:#fbeae8}
+.hs-tut{font-weight:600}
+.hs-pkt{width:64px;text-align:right;font-family:var(--mono);font-size:12px;padding:4px 7px;border:1px solid var(--line-2);border-radius:6px;background:var(--card);color:var(--ink);outline:none}
+.hs-pkt:focus{border-color:var(--accent);background:#fff}
+.hs-total td{font-weight:700;border-top:2px solid var(--line);border-bottom:none;padding-top:12px;font-size:14px;color:var(--ink)}
+.hs-total td.num{color:var(--accent-ink);font-size:16px}
+.hs-total.sub td{font-weight:600;font-size:12px;color:var(--muted);padding-top:4px;border-top:none}
+.hs-total.sub td.num{font-size:13px;color:var(--muted)}
+.hs-notes{margin-top:20px;font-size:12px;color:var(--muted)}
+.hs-notes b{display:block;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted-2);margin-bottom:6px}
+.hs-notes ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px}
+/* Knauf ürün seçici */
+.hp-card{max-width:520px;gap:10px}
+.hp-list{max-height:48vh;overflow:auto;display:flex;flex-direction:column;gap:4px;margin:2px -4px;padding:0 4px}
+.hp-item{display:flex;flex-direction:column;gap:2px;text-align:left;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);transition:.1s}
+.hp-item:hover{border-color:var(--accent);background:var(--accent-soft)}
+.hp-ad{font-size:13px;color:var(--ink);font-weight:500}
+.hp-meta{font-size:11px;color:var(--muted-2);font-family:var(--mono)}
+.hp-empty{padding:18px;text-align:center;color:var(--muted-2);font-size:13px}
 </style>
 </head>
 <body>
@@ -377,7 +452,22 @@ function renderNav(){
   home.innerHTML=`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10h14V10"/></svg> Ana Sayfa`;
   home.onclick=()=>go('anasayfa',null,null);
   nav.appendChild(home);
-  store.markaSira.forEach(m=>renderBrand(nav,m));
+  const hesap=document.createElement('button');
+  hesap.className='nav-special'+(active.type==='hesaplama'?' active':'');
+  hesap.innerHTML=`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h8M8 14h2M8 18h2M14 14h2M14 18h2"/></svg> Hesaplama`;
+  hesap.onclick=()=>go('hesaplama',null,null);
+  nav.appendChild(hesap);
+  // Fiyat Listeleri grubu — tüm markalar bunun altında
+  store.acik=store.acik||{};
+  const flOpen=store.acik['__fl__']!==false;
+  const gh=document.createElement('button');
+  gh.className='nav-group'+(flOpen?' open':'');
+  gh.innerHTML=`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h8"/></svg><span class="ng-name">Fiyat Listeleri</span><span class="ng-ct">${store.markaSira.length}</span><svg class="chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>`;
+  gh.onclick=()=>{ store.acik['__fl__']=!flOpen; save(); renderNav(); };
+  nav.appendChild(gh);
+  const wrap=document.createElement('div'); wrap.className='nav-group-body'+(flOpen?'':' closed');
+  store.markaSira.forEach(m=>renderBrand(wrap,m));
+  nav.appendChild(wrap);
 }
 function renderBrand(nav,m){
   const b=brand(m); const cats=b.kategoriler||[];
@@ -408,7 +498,169 @@ function renderBrand(nav,m){
   nav.appendChild(body);
 }
 function go(type,m,cat){ active={type,marka:m,cat}; query=''; document.getElementById('search').value=''; renderNav(); render(); closeSide(); }
-function render(){ active.type==='anasayfa'?renderAnasayfa():active.type==='liste'?renderListe():renderKategori(); }
+function render(){
+  if(active.type==='anasayfa') return renderAnasayfa();
+  if(active.type==='hesaplama') return renderHesaplama();
+  if(active.type==='liste') return renderListe();
+  return renderKategori();
+}
+
+/* ====== HESAPLAMA — Knauf Metraj ====== */
+const METRAJ=[{
+  kod:'D112-1x12,5-95', ad:'D112 Tavan', alt:'Tek kat 12,5 mm Flex alçıpan · TC 60/27 taşıyıcılı asma tavan',
+  birim:'m²',
+  gruplar:[
+    {ad:'Metal Konstrüksiyonlar', kalemler:[
+      {ad:'TU Profil', ozellik:'28 × 27 × 0,6 mm', birim:'m', sarf:0.4, esle:['tavan u profil','tu profil','du 28','profil 28','28/27','28x27']},
+      {ad:'TC Profil', ozellik:'60 × 27 × 0,6 mm', birim:'m', sarf:3.2, esle:['tavan c profil','tc profil','dc 60','profil 60','60/27','60x27']},
+      {ad:'Askı Çubuğu', ozellik:'', birim:'adet', sarf:1.2, esle:['aski cubugu','aski teli','nonius']},
+      {ad:'Askı Maşası', ozellik:'', birim:'adet', sarf:1.2, esle:['aski masasi']},
+      {ad:'Klips', ozellik:'veya Çiftli Klips', birim:'adet', sarf:4.6, esle:['klips']},
+      {ad:'Çiftli Klips (Tek Parça)', ozellik:'alternatif', birim:'adet', sarf:2.3, alt:true, esle:['ciftli klips','cift klips']},
+      {ad:'Ekleme Parçası', ozellik:'', birim:'adet', sarf:0.6, esle:['ekleme parca','profil ekleme','uzatma parca']},
+    ]},
+    {ad:'Dübel ve Vidalar', kalemler:[
+      {ad:'Çelik Dübel', ozellik:'M6 × 50', birim:'adet', sarf:1.2, esle:['celik dubel','m6x50','m6 x 50']},
+      {ad:'YHB Vida', ozellik:'22 × 45', birim:'adet', sarf:0.4, esle:['yhb','kanat baslik','profil vida 22']},
+      {ad:'Plastik Dübel', ozellik:'M8', birim:'adet', sarf:0.4, esle:['plastik dubel','m8']},
+      {ad:'Alçıpan Vidası', ozellik:'SU 25 / 3,5 × 25', birim:'adet', sarf:17.0, esle:['alcipan sivri uclu vida 25','alcipan vida 25','su 25','3,5 x 25']},
+    ]},
+    {ad:'Kaplamalar', kalemler:[
+      {ad:'Flex Alçıpan', ozellik:'12,5 mm', birim:'m²', sarf:1.0, esle:['flex 12,5','flex alcipan','standart alcipan 12,5','alcipan 12,5','beyaz plaka 12,5']},
+    ]},
+    {ad:'Derz Dolgu ve Aksesuarlar', kalemler:[
+      {ad:'Derz Bandı', ozellik:'File / Kâğıt', birim:'m', sarf:1.2, esle:['derz bandi','file bant','kagit bant','derz file']},
+      {ad:'Derz Dolgusu', ozellik:'Fugagips / Uniflott / Readygips', birim:'kg', sarf:0.4, esle:['uniflott','fugagips','readygips','derz dolgu']},
+    ]},
+  ],
+  notlar:['Metrajlara fire dahil edilmemiştir.','Montaj aralıkları 1 m\'dir; dübel tespit aralığı projeye göre değişir.','10 × 10 m = 100 m² analizine göredir.','Kaynak: Knauf D11 Plattendecken / teknik@knauf.com']
+}];
+function _nrm(s){ return String(s||'').toLocaleLowerCase('tr').replace(/ç/g,'c').replace(/ğ/g,'g').replace(/ı/g,'i').replace(/İ/g,'i').replace(/ö/g,'o').replace(/ş/g,'s').replace(/ü/g,'u').replace(/\s+/g,' ').trim(); }
+function knaufUrunler(){ const b=brand('Knauf'); const out=[]; (b&&b.kategoriler||[]).forEach(c=>c.urunler.forEach(u=>out.push({u,cat:c.ad}))); return out; }
+function knaufByKod(kod){ if(!kod) return null; return knaufUrunler().find(x=>x.u.kod===kod)||null; }
+function metrajCol(){ return store.metrajCol||'izmit'; }
+function autoMatchKnauf(kalem){
+  const items=knaufUrunler(); if(!items.length) return null;
+  for(const kw of (kalem.esle||[])){ const nk=_nrm(kw); const hit=items.find(x=>_nrm(x.u.ad).includes(nk)); if(hit) return {kod:hit.u.kod,cat:hit.cat}; }
+  return null;
+}
+function metrajEntry(sysKod,kalem){
+  store.metrajMap=store.metrajMap||{};
+  const key=sysKod+'|'+kalem.ad;
+  if(!(key in store.metrajMap)) store.metrajMap[key]=autoMatchKnauf(kalem);
+  return store.metrajMap[key];
+}
+function metrajBirimFiyat(entry){
+  if(!entry||!entry.kod) return null;
+  const f=knaufByKod(entry.kod); if(!f) return null;
+  return net(f.u.f[metrajCol()], getIsk('Knauf',f.cat), f.u.doviz);
+}
+function parsePaket(name){ const m=String(name||'').match(/(\d+)\D*$/); if(!m) return 1; const n=parseInt(m[1],10); return (n>=50)?n:1; }
+function metrajPaket(sysKod,kalem,entry){
+  store.metrajPaket=store.metrajPaket||{}; const key=sysKod+'|'+kalem.ad;
+  if(key in store.metrajPaket) return store.metrajPaket[key]||1;
+  const f=entry&&knaufByKod(entry.kod); return f?parsePaket(f.u.ad):1;
+}
+function setMetrajPaket(sysKod,kalem,v){ store.metrajPaket=store.metrajPaket||{}; store.metrajPaket[sysKod+'|'+kalem.ad]=(v==null||v<=0)?1:v; save(); }
+function metrajM2(sysKod){ store.metrajM2=store.metrajM2||{}; const v=store.metrajM2[sysKod]; return (v==null||isNaN(v))?1:v; }
+function setMetrajM2(sysKod,v){ store.metrajM2=store.metrajM2||{}; store.metrajM2[sysKod]=v; save(); }
+function metrajAltOn(sysKod,kalem){ store.metrajAlt=store.metrajAlt||{}; const k=sysKod+'|'+kalem.ad; return (k in store.metrajAlt)?store.metrajAlt[k]:!kalem.alt; }
+function setMetrajAlt(sysKod,kalem,on){ store.metrajAlt=store.metrajAlt||{}; store.metrajAlt[sysKod+'|'+kalem.ad]=on; save(); }
+
+function renderHesaplama(){
+  const c=document.getElementById('content');
+  if(!METRAJ.length){ c.innerHTML='<div class="sheet-head"><h2>Hesaplama</h2><div class="desc">Henüz hesaplama aracı yok.</div></div>'; return; }
+  let sysKod=active.cat; if(!METRAJ.find(s=>s.kod===sysKod)) sysKod=METRAJ[0].kod;
+  const sys=METRAJ.find(s=>s.kod===sysKod);
+  const m2=metrajM2(sysKod), col=metrajCol();
+  const tabs=METRAJ.map(s=>`<button class="hs-tab${s.kod===sysKod?' on':''}" data-sys="${s.kod}">${s.ad}</button>`).join('');
+  let total=0; let bodyRows='';
+  sys.gruplar.forEach(g=>{
+    bodyRows+=`<tr class="hs-grp"><td colspan="7">${g.ad}</td></tr>`;
+    g.kalemler.forEach(k=>{
+      const entry=metrajEntry(sysKod,k);
+      const liste=metrajBirimFiyat(entry);
+      const pkt=metrajPaket(sysKod,k,entry);
+      const bf=liste!=null?liste/pkt:null;
+      const on=metrajAltOn(sysKod,k);
+      const mik=k.sarf*m2;
+      const tut=(bf!=null&&on)?bf*mik:null;
+      if(tut!=null) total+=tut;
+      const f=entry&&knaufByKod(entry.kod);
+      const pickLbl=f?`${f.u.ad}`:'<span class="hs-pick-empty">Knauf ürünü seç</span>';
+      const altChk=k.alt?`<input type="checkbox" class="hs-alt" data-k="${k.ad}" ${on?'checked':''} title="Toplama dahil et">`:'';
+      bodyRows+=`<tr${k.alt?' class="hs-altrow'+(on?'':' off')+'"':''}>
+        <td class="hs-mz">${altChk}<b>${k.ad}</b>${k.ozellik?`<span class="hs-oz">${k.ozellik}</span>`:''}</td>
+        <td>${k.birim}</td>
+        <td class="num">${k.sarf.toLocaleString('tr-TR',{maximumFractionDigits:3})}</td>
+        <td class="num"><b>${mik.toLocaleString('tr-TR',{maximumFractionDigits:2})}</b></td>
+        <td class="hs-src"><button class="hs-pick" data-k="${k.ad}">${pickLbl}</button>${f?`<button class="hs-clr" data-k="${k.ad}" title="Kaldır">✕</button>`:''}</td>
+        <td class="num"><input class="hs-pkt" data-k="${k.ad}" type="text" inputmode="numeric" value="${pkt.toLocaleString('tr-TR')}" title="Paket içi birim (liste fiyatı bu sayıya bölünür)"></td>
+        <td class="num">${fmt(bf)}</td>
+        <td class="num hs-tut">${tut!=null?fmt(tut):'—'}</td>
+      </tr>`;
+    });
+  });
+  c.innerHTML=`
+    <div class="sheet-head">
+      <div class="crumb"><b>Hesaplama</b> &nbsp;›&nbsp; Knauf Metraj Hesaplama</div>
+      <h2>${sys.ad} <span class="hs-code">${sys.kod}</span></h2>
+      <div class="desc">${sys.alt} — fiyatlar Knauf fiyat listesinden (her ürünün kategorisindeki iskonto/kâr ile) çekilir. <b>Paket</b> sütunu: kutu/torba halinde satılan ürünlerde paket içi adedi girin (ör. Klips 100, Uniflott 25 kg); birim fiyat = liste ÷ paket. Ürün eşleşmesini değiştirmek için ürün adına tıklayın.</div>
+      <div class="hs-tabs">${tabs}</div>
+    </div>
+    <div class="hs-ctrl">
+      <div class="hs-m2"><label>Toplam Metraj</label><input id="hs-m2" type="text" inputmode="decimal" value="${fmtKur(m2)}"><span>${sys.birim}</span></div>
+      <div class="hs-col"><label>Knauf fiyat kolonu</label>
+        <div class="nm-seg" id="hs-colseg"><button data-c="izmit" class="${col==='izmit'?'on':''}">İzmit</button><button data-c="ahiboz" class="${col==='ahiboz'?'on':''}">Ahiboz</button></div>
+      </div>
+    </div>
+    <div class="tablewrap">
+      <table class="hs-table"><thead><tr>
+        <th>Malzeme</th><th>Birim</th><th class="num">Sarfiyat<br><small>1 ${sys.birim}</small></th><th class="num">Miktar</th><th>Knauf Ürünü (Fiyat Kaynağı)</th><th class="num">Paket</th><th class="num">Birim Fiyat ₺</th><th class="num">Tutar ₺</th>
+      </tr></thead><tbody>${bodyRows}
+        <tr class="hs-total"><td colspan="7">TOPLAM TAHMİNİ MALİYET (${m2.toLocaleString('tr-TR',{maximumFractionDigits:2})} ${sys.birim})</td><td class="num">${fmt(total)}</td></tr>
+        <tr class="hs-total sub"><td colspan="7">m² birim maliyet</td><td class="num">${fmt(m2>0?total/m2:null)}</td></tr>
+      </tbody></table>
+    </div>
+    <div class="hs-notes"><b>Notlar</b><ul>${sys.notlar.map(n=>`<li>${n}</li>`).join('')}</ul></div>`;
+  // olaylar
+  c.querySelectorAll('.hs-tab').forEach(b=>b.onclick=()=>go('hesaplama',null,b.dataset.sys));
+  const m2i=document.getElementById('hs-m2');
+  m2i.addEventListener('input',()=>{ const v=normNum(m2i.value); setMetrajM2(sysKod,v==null?0:v); renderHesaplama(); m2i.focus(); m2i.setSelectionRange(m2i.value.length,m2i.value.length); });
+  c.querySelectorAll('#hs-colseg button').forEach(b=>b.onclick=()=>{ store.metrajCol=b.dataset.c; save(); renderHesaplama(); });
+  c.querySelectorAll('.hs-alt').forEach(ch=>ch.onchange=()=>{ const k=sys.gruplar.flatMap(g=>g.kalemler).find(x=>x.ad===ch.dataset.k); setMetrajAlt(sysKod,k,ch.checked); renderHesaplama(); });
+  c.querySelectorAll('.hs-pkt').forEach(inp=>inp.addEventListener('input',()=>{ const k=sys.gruplar.flatMap(g=>g.kalemler).find(x=>x.ad===inp.dataset.k); const v=normNum(inp.value); setMetrajPaket(sysKod,k,v); renderHesaplama(); const el=document.querySelector('.hs-pkt[data-k="'+CSS.escape(inp.dataset.k)+'"]'); if(el){el.focus(); el.setSelectionRange(el.value.length,el.value.length);} }));
+  c.querySelectorAll('.hs-pick').forEach(btn=>btn.onclick=()=>{ const kad=btn.dataset.k; openKnaufPicker(sel=>{ store.metrajMap=store.metrajMap||{}; store.metrajMap[sysKod+'|'+kad]=sel; save(); renderHesaplama(); }); });
+  c.querySelectorAll('.hs-clr').forEach(btn=>btn.onclick=()=>{ store.metrajMap=store.metrajMap||{}; store.metrajMap[sysKod+'|'+btn.dataset.k]={kod:null}; save(); renderHesaplama(); });
+}
+function openKnaufPicker(onPick){
+  const items=knaufUrunler();
+  const ov=document.createElement('div'); ov.className='rn-ov';
+  ov.innerHTML=`<div class="rn-card hp-card">
+    <div class="rn-h">Knauf ürünü seç (fiyat kaynağı)</div>
+    <input class="rn-in" id="hp-q" type="text" placeholder="Ürün adı veya kodu ara…" autocomplete="off">
+    <div class="hp-list" id="hp-list"></div>
+    <div class="rn-row"><button class="rn-c" id="hp-cancel">Kapat</button></div>
+  </div>`;
+  document.body.appendChild(ov);
+  const q=ov.querySelector('#hp-q'), list=ov.querySelector('#hp-list');
+  const draw=()=>{
+    const term=_nrm(q.value);
+    const arr=(term?items.filter(x=>_nrm(x.u.ad).includes(term)||_nrm(x.u.kod||'').includes(term)):items).slice(0,80);
+    list.innerHTML=arr.length?arr.map(x=>{
+      const p=net(x.u.f[metrajCol()],getIsk('Knauf',x.cat),x.u.doviz);
+      return `<button class="hp-item" data-kod="${x.u.kod||''}">
+        <span class="hp-ad">${x.u.ad}</span>
+        <span class="hp-meta">${titleCase(x.cat)} · ${x.u.kod||''} · ${fmt(p)} ₺${x.u.doviz?' ('+x.u.doviz+')':''}</span>
+      </button>`;
+    }).join(''):'<div class="hp-empty">Sonuç yok</div>';
+    list.querySelectorAll('.hp-item').forEach(b=>b.onclick=()=>{ const kod=b.dataset.kod; const it=items.find(x=>(x.u.kod||'')===kod); onPick({kod,cat:it?it.cat:''}); ov.remove(); });
+  };
+  draw(); q.focus();
+  q.addEventListener('input',draw);
+  ov.querySelector('#hp-cancel').onclick=()=>ov.remove();
+  ov.onclick=e=>{ if(e.target===ov) ov.remove(); };
+}
 
 /* ---- Ana Sayfa (global pano: her marka için özet + yükleme) ---- */
 function renderAnasayfa(){
@@ -428,16 +680,18 @@ function renderAnasayfa(){
       <div class="br-acts">
         <button class="br-btn br-csv" data-marka="${m}" title="Düzenlenip geri yüklenebilen örnek CSV indir">Örnek CSV</button>
         <button class="br-btn br-up" data-marka="${m}">Liste yükle</button>
+        ${b.userCreated?`<button class="br-btn br-del" data-marka="${m}" title="Bu markayı sil">Sil</button>`:''}
         <button class="br-btn br-open" data-marka="${m}">Aç →</button>
       </div>
     </div>`;
   }).join('');
   c.innerHTML=`
     <div class="sheet-head">
-      <h2>Ana Sayfa</h2>
+      <div class="sh-row"><h2>Ana Sayfa</h2><button class="nm-add" id="nm-add">+ Yeni marka / liste</button></div>
       <div class="desc">Her marka için güncel liste özeti. "Örnek CSV" ile listeyi indirip düzenleyebilir, "Liste yükle" ile (sürükle-bırak da olur) geri yükleyebilirsiniz. Adları ve geçerliliği kalemden düzenleyebilirsiniz.</div>
     </div>
     <div class="brandrows">${rowsHtml}</div>`;
+  document.getElementById('nm-add').onclick=openYeniMarka;
   c.querySelectorAll('.brandrow').forEach(row=>{
     const m=row.dataset.marka;
     row.ondragover=e=>{e.preventDefault();row.classList.add('drag');};
@@ -447,6 +701,7 @@ function renderAnasayfa(){
   c.querySelectorAll('.br-up').forEach(btn=>btn.onclick=()=>{ uploadMarka=btn.dataset.marka; document.getElementById('fileInput').click(); });
   c.querySelectorAll('.br-csv').forEach(btn=>btn.onclick=()=>ornekCSV(btn.dataset.marka));
   c.querySelectorAll('.br-open').forEach(btn=>btn.onclick=()=>go('liste',btn.dataset.marka,null));
+  c.querySelectorAll('.br-del').forEach(btn=>btn.onclick=()=>delMarka(btn.dataset.marka));
   c.querySelectorAll('[data-ed]').forEach(el=>{
     const m=el.dataset.marka, ed=el.dataset.ed;
     el.onclick=(e)=>{ e.stopPropagation();
@@ -608,6 +863,9 @@ async function handleFile(file,targetM){
     } else if(fmt0==='baumit'){
       const wb=XLSX.read(new Uint8Array(buf),{type:'array'});
       cats=parseBaumit(wb);
+    } else if(fmt0==='universal'){
+      const wb=XLSX.read(new Uint8Array(buf),{type:'array'});
+      cats=parseUniversalWB(wb,brand(m));
     } else if(/\.ods$/i.test(file.name)){ cats=parseKnauf(await odsToRows(buf)); }
     else { cats=parseKnaufWB(XLSX.read(new Uint8Array(buf),{type:'array'})); }
     if(!cats.length){ toast('Liste içinde ürün bulunamadı. Beklenen format bu marka için uygun değil.',true); return; }
@@ -909,10 +1167,36 @@ function splitCSV(text){
   if(cur!==''||row.length){ row.push(cur); rows.push(row); }
   return rows;
 }
-function parseUniversalCSV(text,b){
-  const rows=splitCSV(text).filter(r=>r.some(c=>String(c).trim()!==''));
+function delMarka(m){
+  const ov=document.createElement('div'); ov.className='rn-ov';
+  ov.innerHTML=`<div class="rn-card">
+    <div class="rn-h">Markayı sil</div>
+    <div style="font-size:14px;color:var(--ink)"><b>${mAd(m)}</b> markası ve tüm liste/iskonto verileri silinsin mi? Bu işlem geri alınamaz.</div>
+    <div class="rn-row"><button type="button" class="rn-c" id="dl-c">İptal</button><button type="button" class="rn-s" id="dl-ok" style="background:var(--danger,#b3261e)">Sil</button></div>
+  </div>`;
+  document.body.appendChild(ov);
+  const close=()=>ov.remove();
+  ov.querySelector('#dl-c').onclick=close;
+  ov.onclick=e=>{ if(e.target===ov) close(); };
+  ov.querySelector('#dl-ok').onclick=()=>{
+    delete store.markalar[m];
+    store.markaSira=store.markaSira.filter(x=>x!==m);
+    Object.keys(store.isk||{}).forEach(k=>{ if(k.indexOf(m+'|')===0) delete store.isk[k]; });
+    Object.keys(store.katAd||{}).forEach(k=>{ if(k.indexOf(m+'|')===0) delete store.katAd[k]; });
+    [store.acik,store.secim,store.uploaded,store.markaAd,store.markaGnc,store.markaNot].forEach(o=>{ if(o) delete o[m]; });
+    if(active.marka===m) active={type:'anasayfa',marka:null,cat:null};
+    save(); close(); renderNav(); render(); toast('Marka silindi');
+  };
+}
+function parseUniversalCSV(text,b){ return parseUniversalRows(splitCSV(text),b); }
+function parseUniversalWB(wb,b){
+  const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:false,defval:''});
+  return parseUniversalRows(rows,b);
+}
+function parseUniversalRows(rows,b){
+  rows=(rows||[]).filter(r=>r&&r.some(c=>String(c==null?'':c).trim()!==''));
   if(rows.length<2) return null;
-  const head=rows[0].map(h=>String(h).trim());
+  const head=rows[0].map(h=>String(h==null?'':h).trim());
   const low=head.map(h=>h.toLocaleLowerCase('tr'));
   const find=names=>low.findIndex(h=>names.includes(h));
   const ci={kat:find(['kategori']),kod:find(['kod','ürün kodu']),ad:find(['ürün','ürün adı','urun']),birim:find(['birim']),dov:find(['döviz','doviz','para birimi'])};
@@ -935,6 +1219,61 @@ function parseUniversalCSV(text,b){
   }
   return cats.length?cats:null;
 }
+/* Yeni marka oluşturma + örnek şablon */
+function ornekTemplate(){
+  const rows=[['Kategori','Kod','Ürün','Birim','Döviz','Fiyat'],
+    ['Örnek Kategori','URN-001','Örnek Ürün 1','Adet','TL','100,00'],
+    ['Örnek Kategori','URN-002','Örnek Ürün 2','m²','EUR','12,50']];
+  dl('ornek_liste',rows); toast('Örnek CSV şablonu indirildi');
+}
+async function yeniMarkaOlustur(ad,iskN,kar,file){
+  const paramlar=[], varsayilanIsk={};
+  for(let i=1;i<=iskN;i++){ paramlar.push('isk'+i); varsayilanIsk['isk'+i]=0; }
+  if(kar){ paramlar.push('kar'); varsayilanIsk.kar=0; }
+  store.markalar[ad]={tip:'tek',format:'universal',userCreated:true,
+    kolonlar:[{key:'fiyat',label:'Fiyat'}],paramlar,varsayilanIsk,
+    guncelleme:'—',kaynak:'Kullanıcı tarafından eklendi',dosyaAdi:'',kategoriler:[]};
+  if(!store.markaSira.includes(ad)) store.markaSira.push(ad);
+  store.uploaded=store.uploaded||{}; store.uploaded[ad]=true;
+  store.acik=store.acik||{}; store.acik[ad]=true;
+  save();
+  if(file){ uploadMarka=ad; await handleFile(file,ad); }
+  else { renderNav(); render(); toast('Marka oluşturuldu — şimdi liste yükleyebilirsiniz'); }
+}
+function openYeniMarka(){
+  const ov=document.createElement('div'); ov.className='rn-ov';
+  ov.innerHTML=`<div class="rn-card nm-card">
+    <div class="rn-h">Yeni marka / fiyat listesi ekle</div>
+    <label class="nm-l">Marka adı</label>
+    <input class="rn-in" id="nm-ad" type="text" maxlength="60" placeholder="Örn. ABC Yapı Market" autocomplete="off">
+    <label class="nm-l">İskonto sayısı</label>
+    <div class="nm-seg" id="nm-isk"><button type="button" data-v="0">0</button><button type="button" data-v="1">1</button><button type="button" data-v="2">2</button><button type="button" data-v="3" class="on">3</button></div>
+    <label class="nm-chk"><input type="checkbox" id="nm-kar" checked> Kâr alanı ekle</label>
+    <label class="nm-l">Excel / CSV yükle <span class="nm-opt">(opsiyonel — sonra da yükleyebilirsiniz)</span></label>
+    <input class="nm-file" id="nm-file" type="file" accept=".xlsx,.xls,.xlsm,.csv,.ods">
+    <button type="button" class="nm-tmpl" id="nm-tmpl">${DLI} Örnek CSV şablonu indir</button>
+    <div class="rn-note">Şablon kolonları: <b>Kategori · Kod · Ürün · Birim · Döviz · Fiyat</b>. Döviz: TL / EUR / USD. Şablonu doldurup yükleyin.</div>
+    <div class="rn-row"><button type="button" class="rn-c" id="nm-cancel">İptal</button><button type="button" class="rn-s" id="nm-ok">Oluştur</button></div>
+  </div>`;
+  document.body.appendChild(ov);
+  let iskN=3;
+  ov.querySelectorAll('#nm-isk button').forEach(btn=>btn.onclick=()=>{ iskN=+btn.dataset.v; ov.querySelectorAll('#nm-isk button').forEach(x=>x.classList.toggle('on',x===btn)); });
+  const close=()=>ov.remove();
+  ov.querySelector('#nm-cancel').onclick=close;
+  ov.onclick=e=>{ if(e.target===ov) close(); };
+  ov.querySelector('#nm-tmpl').onclick=ornekTemplate;
+  ov.querySelector('#nm-ad').focus();
+  ov.querySelector('#nm-ok').onclick=async()=>{
+    const ad=ov.querySelector('#nm-ad').value.trim();
+    if(!ad){ toast('Marka adı girin',true); return; }
+    if(store.markalar[ad]){ toast('Bu adda marka zaten var',true); return; }
+    const kar=ov.querySelector('#nm-kar').checked;
+    const file=ov.querySelector('#nm-file').files[0];
+    close();
+    await yeniMarkaOlustur(ad,iskN,kar,file);
+  };
+}
+const DLI='<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>';
 function exportSource(){
   const m=active.marka; const b=brand(m); const cols=b.kolonlar;
   const ptLbl=b.secici?(b.secici.tipler.find(o=>o.key===getOdeme(m))||{}).label:null;
