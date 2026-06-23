@@ -270,16 +270,34 @@ td.num{text-align:right;font-family:var(--mono);font-size:13px}
 .nm-tmpl:hover{background:var(--accent);color:#fff}
 /* Hesaplama / Metraj */
 .hs-code{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--muted-2);background:var(--paper);border:1px solid var(--line-2);padding:2px 8px;border-radius:6px;vertical-align:middle;margin-left:6px}
-.hs-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
-.hs-tab{font-size:13px;font-weight:600;padding:8px 14px;border-radius:8px;border:1.5px solid var(--line-2);background:var(--paper);color:var(--muted);transition:.12s}
+.hs-pdf{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;padding:9px 15px;border-radius:9px;background:var(--accent);color:#fff;white-space:nowrap;transition:.12s;flex-shrink:0}
+.hs-pdf:hover{background:var(--accent-ink)}
+.hs-pdf svg{flex-shrink:0}
+.sheet-head .sh-row{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+.hs-cattabs{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.hs-cattab{font-size:13px;font-weight:700;padding:9px 16px;border-radius:9px;border:1.5px solid var(--line-2);background:var(--paper);color:var(--muted);transition:.12s}
+.hs-cattab:hover{border-color:var(--accent);color:var(--accent-ink)}
+.hs-cattab.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.hs-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;padding-left:2px}
+.hs-tab{font-size:12.5px;font-weight:600;padding:6px 13px;border-radius:7px;border:1px solid var(--line);background:transparent;color:var(--muted);transition:.12s}
 .hs-tab:hover{border-color:var(--accent);color:var(--accent-ink)}
-.hs-tab.on{background:var(--accent);border-color:var(--accent);color:#fff}
-.hs-ctrl{display:flex;flex-wrap:wrap;gap:24px;align-items:flex-end;margin:18px 0 14px}
-.hs-m2{display:flex;flex-direction:column;gap:5px}
-.hs-m2 label,.hs-col label{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
-.hs-m2 input{font-size:20px;font-weight:700;font-family:var(--mono);width:130px;padding:8px 12px;border:1.5px solid var(--line-2);border-radius:9px;color:var(--ink);background:var(--card);outline:none;transition:.12s}
+.hs-tab.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-ink)}
+.hs-ctrl{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-end;margin:18px 0 14px;padding-bottom:20px}
+.hs-m2,.hs-col,.hs-isk{display:flex;flex-direction:column;gap:7px}
+.hs-m2 label,.hs-col label,.hs-isk label{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);white-space:nowrap;height:13px;line-height:13px;margin:0}
+.hs-m2{position:relative}
+.hs-m2 input{height:44px;box-sizing:border-box;font-size:18px;font-weight:700;font-family:var(--mono);width:130px;padding:0 30px 0 12px;border:1.5px solid var(--line-2);border-radius:9px;color:var(--ink);background:var(--card);outline:none;transition:.12s}
 .hs-m2 input:focus{border-color:var(--accent);background:#fff}
-.hs-m2{position:relative}.hs-m2 span{position:absolute;right:12px;bottom:11px;font-size:12px;color:var(--muted-2);pointer-events:none}
+.hs-m2 span{position:absolute;right:12px;bottom:13px;font-size:12px;color:var(--muted-2);pointer-events:none}
+#hs-colseg{height:44px}
+#hs-colseg button{height:44px;padding:0 18px;display:flex;align-items:center;justify-content:center}
+.hs-iskrow{display:flex;gap:8px}
+.hs-ig{position:relative;display:flex}
+.hs-ig input{height:44px;box-sizing:border-box;width:62px;font-size:14px;font-weight:600;font-family:var(--mono);text-align:center;padding:0 16px 0 8px;border:1.5px solid var(--line-2);border-radius:8px;color:var(--ink);background:var(--card);outline:none;transition:.12s}
+.hs-ig input:focus{border-color:var(--accent);background:#fff}
+.hs-ig.kar input{border-color:#cdab6e;background:#fbf6ec}
+.hs-ig b{position:absolute;right:9px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:500;color:var(--muted-2);pointer-events:none}
+.hs-ig small{position:absolute;top:calc(100% + 5px);left:0;right:0;text-align:center;font-size:10px;color:var(--muted-2);letter-spacing:.02em;white-space:nowrap}
 .hs-table{width:100%;border-collapse:collapse;font-size:13px}
 .hs-table th{text-align:left;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted-2);padding:8px 10px;border-bottom:1.5px solid var(--line);vertical-align:bottom}
 .hs-table th.num,.hs-table td.num{text-align:right;font-variant-numeric:tabular-nums}
@@ -290,8 +308,12 @@ td.num{text-align:right;font-family:var(--mono);font-size:13px}
 .hs-alt{margin-right:7px;vertical-align:middle;width:14px;height:14px;accent-color:var(--accent)}
 .hs-altrow.off{opacity:.5}
 .hs-src{max-width:320px}
-.hs-pick{font-size:12px;color:var(--ink);background:var(--paper);border:1px solid var(--line-2);border-radius:7px;padding:5px 9px;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;transition:.12s}
+.hs-pick{font-size:12px;color:var(--ink);background:var(--paper);border:1px solid var(--line-2);border-radius:7px;padding:5px 9px;max-width:300px;overflow:hidden;text-align:left;transition:.12s;display:inline-flex;flex-direction:column;gap:1px;line-height:1.25}
 .hs-pick:hover{border-color:var(--accent);background:var(--accent-soft)}
+.hs-purun{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px}
+.hs-pkat{font-size:10px;color:var(--muted-2);font-family:var(--mono);letter-spacing:.02em}
+.hp-seg{margin-bottom:2px}
+.hp-katnote{font-size:11px;color:var(--muted-2);margin:-4px 0 2px}
 .hs-pick-empty{color:var(--accent-ink);font-weight:600}
 .hs-clr{margin-left:5px;color:var(--muted-2);font-size:13px;padding:2px 5px;border-radius:5px}
 .hs-clr:hover{color:#c0392b;background:#fbeae8}
@@ -507,61 +529,87 @@ function render(){
 
 /* ====== HESAPLAMA — Knauf Metraj ====== */
 const METRAJ=[{
-  kod:'D112-1x12,5-95', ad:'D112 Tavan', alt:'Tek kat 12,5 mm Flex alçıpan · TC 60/27 taşıyıcılı asma tavan',
+  kod:'D112-1x12,5-95', ad:'D112 Tavan', kategori:'Knauf Duvar & Tavan', alt:'Tek kat 12,5 mm Flex alçıpan · TC 60/27 taşıyıcılı asma tavan',
   birim:'m²',
   gruplar:[
     {ad:'Metal Konstrüksiyonlar', kalemler:[
-      {ad:'TU Profil', ozellik:'28 × 27 × 0,6 mm', birim:'m', sarf:0.4, esle:['tavan u profil','tu profil','du 28','profil 28','28/27','28x27']},
-      {ad:'TC Profil', ozellik:'60 × 27 × 0,6 mm', birim:'m', sarf:3.2, esle:['tavan c profil','tc profil','dc 60','profil 60','60/27','60x27']},
-      {ad:'Askı Çubuğu', ozellik:'', birim:'adet', sarf:1.2, esle:['aski cubugu','aski teli','nonius']},
-      {ad:'Askı Maşası', ozellik:'', birim:'adet', sarf:1.2, esle:['aski masasi']},
-      {ad:'Klips', ozellik:'veya Çiftli Klips', birim:'adet', sarf:4.6, esle:['klips']},
-      {ad:'Çiftli Klips (Tek Parça)', ozellik:'alternatif', birim:'adet', sarf:2.3, alt:true, esle:['ciftli klips','cift klips']},
-      {ad:'Ekleme Parçası', ozellik:'', birim:'adet', sarf:0.6, esle:['ekleme parca','profil ekleme','uzatma parca']},
+      {ad:'TU Profil', ozellik:'28 × 27 × 0,6 mm', birim:'m', sarf:0.4, kod:'147106', paket:1, kat:['KNAUF PROFİL','PROFECT PROFİL'], esle:['tu - profil 28/27/0,60','tavan u profil','tu profil','du 28','28/27']},
+      {ad:'TC Profil', ozellik:'60 × 27 × 0,6 mm', birim:'m', sarf:3.2, kod:'319198', paket:1, kat:['KNAUF PROFİL','PROFECT PROFİL'], esle:['tc - profil 60/27/0,60','tavan c profil','tc profil','dc 60','60/27']},
+      {ad:'Askı Çubuğu', ozellik:'(askı teli)', birim:'adet', sarf:1.2, paket:100, kat:['PROFİL AKSESUARI'], esle:['aski teli','aski cubugu','nonius']},
+      {ad:'Askı Maşası', ozellik:'', birim:'adet', sarf:1.2, kod:'682008', paket:100, kat:['PROFİL AKSESUARI'], esle:['aski masasi']},
+      {ad:'Klips', ozellik:'veya Çiftli Klips', birim:'adet', sarf:4.6, kod:'141240', paket:1000, kat:['PROFİL AKSESUARI'], esle:['klips']},
+      {ad:'Çiftli Klips (Tek Parça)', ozellik:'alternatif', birim:'adet', sarf:2.3, alt:true, kod:'149247', paket:1000, kat:['PROFİL AKSESUARI'], esle:['ciftli klips','cift klips']},
+      {ad:'Ekleme Parçası', ozellik:'', birim:'adet', sarf:0.6, kod:'65153', paket:100, kat:['PROFİL AKSESUARI'], esle:['ekleme parca','profil ekleme','uzatma parca']},
     ]},
     {ad:'Dübel ve Vidalar', kalemler:[
-      {ad:'Çelik Dübel', ozellik:'M6 × 50', birim:'adet', sarf:1.2, esle:['celik dubel','m6x50','m6 x 50']},
-      {ad:'YHB Vida', ozellik:'22 × 45', birim:'adet', sarf:0.4, esle:['yhb','kanat baslik','profil vida 22']},
-      {ad:'Plastik Dübel', ozellik:'M8', birim:'adet', sarf:0.4, esle:['plastik dubel','m8']},
-      {ad:'Alçıpan Vidası', ozellik:'SU 25 / 3,5 × 25', birim:'adet', sarf:17.0, esle:['alcipan sivri uclu vida 25','alcipan vida 25','su 25','3,5 x 25']},
+      {ad:'Çelik Dübel', ozellik:'M6 × 50', birim:'adet', sarf:1.2, kod:'148399', paket:500, kat:['DÜBELLER'], esle:['celik dubel m6x50 500','celik dubel','m6x50','m6 x 50']},
+      {ad:'YHB Vida', ozellik:'22 × 45', birim:'adet', sarf:0.4, paket:1000, kat:['VİDALAR'], esle:['yhb vida','yhb','kanat baslik','profil vida 22']},
+      {ad:'Plastik Dübel', ozellik:'M8', birim:'adet', sarf:0.4, kod:'60456', paket:1000, kat:['DÜBELLER'], esle:['plastik dubel m8','plastik dubel','m8']},
+      {ad:'Alçıpan Vidası', ozellik:'SU 25 / 3,5 × 25', birim:'adet', sarf:17.0, kod:'141254', paket:16000, kat:['VİDALAR'], esle:['alcipan sivri uclu vida 25','alcipan vida 25','su 25','3,5 x 25']},
     ]},
     {ad:'Kaplamalar', kalemler:[
-      {ad:'Flex Alçıpan', ozellik:'12,5 mm', birim:'m²', sarf:1.0, esle:['flex 12,5','flex alcipan','standart alcipan 12,5','alcipan 12,5','beyaz plaka 12,5']},
+      {ad:'Flex Alçıpan', ozellik:'12,5 mm', birim:'m²', sarf:1.0, paket:1, kat:['ALÇIPAN'], esle:['fx alcipan 12,5','flex 12,5','flex alcipan','standart alcipan 12,5','alcipan 12,5']},
     ]},
     {ad:'Derz Dolgu ve Aksesuarlar', kalemler:[
-      {ad:'Derz Bandı', ozellik:'File / Kâğıt', birim:'m', sarf:1.2, esle:['derz bandi','file bant','kagit bant','derz file']},
-      {ad:'Derz Dolgusu', ozellik:'Fugagips / Uniflott / Readygips', birim:'kg', sarf:0.4, esle:['uniflott','fugagips','readygips','derz dolgu']},
+      {ad:'Derz Bandı', ozellik:'Kâğıt 76,2 m/rulo', birim:'m', sarf:1.2, kod:'314828', paket:76.2, kat:['BANTLAR'], esle:['kagit derz bandi 76,2','derz bandi','file bant','kagit bant']},
+      {ad:'Derz Dolgusu', ozellik:'Uniflott 25 kg torba', birim:'kg', sarf:0.4, kod:'253631', paket:25, kat:['TOZ ALÇI'], esle:['uniflott','fugagips','readygips','derz dolgu']},
     ]},
   ],
-  notlar:['Metrajlara fire dahil edilmemiştir.','Montaj aralıkları 1 m\'dir; dübel tespit aralığı projeye göre değişir.','10 × 10 m = 100 m² analizine göredir.','Kaynak: Knauf D11 Plattendecken / teknik@knauf.com']
+  notlar:['Metrajlara fire dahil edilmemiştir.','Paket adetleri Knauf standart ambalajına göre ön tanımlıdır (Klips 1000, Uniflott 25 kg, Çelik Dübel 500, Alçıpan Vidası 16000…); farklıysa Paket sütunundan düzeltin.','Profiller metre, plakalar m², torba/kutu ürünler paket başına fiyatlanır.','Kaynak: Knauf D11 Plattendecken · knauf.com/tr-TR ürün sayfaları']
 }];
 function _nrm(s){ return String(s||'').toLocaleLowerCase('tr').replace(/ç/g,'c').replace(/ğ/g,'g').replace(/ı/g,'i').replace(/İ/g,'i').replace(/ö/g,'o').replace(/ş/g,'s').replace(/ü/g,'u').replace(/\s+/g,' ').trim(); }
 function knaufUrunler(){ const b=brand('Knauf'); const out=[]; (b&&b.kategoriler||[]).forEach(c=>c.urunler.forEach(u=>out.push({u,cat:c.ad}))); return out; }
 function knaufByKod(kod){ if(!kod) return null; return knaufUrunler().find(x=>x.u.kod===kod)||null; }
 function metrajCol(){ return store.metrajCol||'izmit'; }
 function autoMatchKnauf(kalem){
-  const items=knaufUrunler(); if(!items.length) return null;
+  let items=knaufUrunler(); if(!items.length) return null;
+  if(kalem.kat&&kalem.kat.length){ const set=kalem.kat.map(_nrm); items=items.filter(x=>set.includes(_nrm(x.cat))); }
   for(const kw of (kalem.esle||[])){ const nk=_nrm(kw); const hit=items.find(x=>_nrm(x.u.ad).includes(nk)); if(hit) return {kod:hit.u.kod,cat:hit.cat}; }
   return null;
 }
 function metrajEntry(sysKod,kalem){
   store.metrajMap=store.metrajMap||{};
   const key=sysKod+'|'+kalem.ad;
-  if(!(key in store.metrajMap)) store.metrajMap[key]=autoMatchKnauf(kalem);
+  if(!(key in store.metrajMap)){
+    let def=null;
+    if(kalem.kod){ const f=knaufByKod(kalem.kod); if(f) def={kod:kalem.kod,cat:f.cat}; }
+    store.metrajMap[key]=def||autoMatchKnauf(kalem);
+  }
   return store.metrajMap[key];
 }
+function getMetrajIsk(){ store.metrajIsk=store.metrajIsk||{isk1:0,isk2:0,isk3:0,kar:0}; return store.metrajIsk; }
 function metrajBirimFiyat(entry){
   if(!entry||!entry.kod) return null;
   const f=knaufByKod(entry.kod); if(!f) return null;
-  return net(f.u.f[metrajCol()], getIsk('Knauf',f.cat), f.u.doviz);
+  return net(f.u.f[metrajCol()], getMetrajIsk(), f.u.doviz);
 }
 function parsePaket(name){ const m=String(name||'').match(/(\d+)\D*$/); if(!m) return 1; const n=parseInt(m[1],10); return (n>=50)?n:1; }
 function metrajPaket(sysKod,kalem,entry){
   store.metrajPaket=store.metrajPaket||{}; const key=sysKod+'|'+kalem.ad;
   if(key in store.metrajPaket) return store.metrajPaket[key]||1;
+  if(kalem.paket) return kalem.paket;
   const f=entry&&knaufByKod(entry.kod); return f?parsePaket(f.u.ad):1;
 }
 function setMetrajPaket(sysKod,kalem,v){ store.metrajPaket=store.metrajPaket||{}; store.metrajPaket[sysKod+'|'+kalem.ad]=(v==null||v<=0)?1:v; save(); }
+function recalcMetraj(){
+  let sysKod=active.cat; if(!METRAJ.find(s=>s.kod===sysKod)) sysKod=METRAJ[0].kod;
+  const sys=METRAJ.find(s=>s.kod===sysKod); if(!sys) return;
+  const m2=metrajM2(sysKod); let total=0;
+  const q=k=>'[data-k="'+CSS.escape(k)+'"]';
+  sys.gruplar.forEach(g=>g.kalemler.forEach(k=>{
+    const entry=metrajEntry(sysKod,k);
+    const liste=metrajBirimFiyat(entry); const pkt=metrajPaket(sysKod,k,entry);
+    const bf=liste!=null?liste/pkt:null;
+    const on=metrajAltOn(sysKod,k); const mik=k.sarf*m2; const tut=(bf!=null&&on)?bf*mik:null;
+    if(tut!=null) total+=tut;
+    const mikEl=document.querySelector('.hs-mik'+q(k.ad)); if(mikEl) mikEl.textContent=mik.toLocaleString('tr-TR',{maximumFractionDigits:2});
+    const bfEl=document.querySelector('.hs-bf'+q(k.ad)); if(bfEl) bfEl.textContent=fmt(bf);
+    const tutEl=document.querySelector('.hs-tut'+q(k.ad)); if(tutEl) tutEl.textContent=tut!=null?fmt(tut):'—';
+  }));
+  const tl=document.getElementById('hs-tlabel'); if(tl) tl.textContent=m2.toLocaleString('tr-TR',{maximumFractionDigits:2});
+  const tot=document.getElementById('hs-toplam'); if(tot) tot.textContent=fmt(total);
+  const bir=document.getElementById('hs-birim'); if(bir) bir.textContent=fmt(m2>0?total/m2:null);
+}
 function metrajM2(sysKod){ store.metrajM2=store.metrajM2||{}; const v=store.metrajM2[sysKod]; return (v==null||isNaN(v))?1:v; }
 function setMetrajM2(sysKod,v){ store.metrajM2=store.metrajM2||{}; store.metrajM2[sysKod]=v; save(); }
 function metrajAltOn(sysKod,kalem){ store.metrajAlt=store.metrajAlt||{}; const k=sysKod+'|'+kalem.ad; return (k in store.metrajAlt)?store.metrajAlt[k]:!kalem.alt; }
@@ -569,11 +617,15 @@ function setMetrajAlt(sysKod,kalem,on){ store.metrajAlt=store.metrajAlt||{}; sto
 
 function renderHesaplama(){
   const c=document.getElementById('content');
+  if(store.metrajVer!==3){ store.metrajMap={}; store.metrajPaket={}; store.metrajVer=3; save(); }
   if(!METRAJ.length){ c.innerHTML='<div class="sheet-head"><h2>Hesaplama</h2><div class="desc">Henüz hesaplama aracı yok.</div></div>'; return; }
   let sysKod=active.cat; if(!METRAJ.find(s=>s.kod===sysKod)) sysKod=METRAJ[0].kod;
   const sys=METRAJ.find(s=>s.kod===sysKod);
-  const m2=metrajM2(sysKod), col=metrajCol();
-  const tabs=METRAJ.map(s=>`<button class="hs-tab${s.kod===sysKod?' on':''}" data-sys="${s.kod}">${s.ad}</button>`).join('');
+  const m2=metrajM2(sysKod), col=metrajCol(), isk=getMetrajIsk();
+  const curCat=sys.kategori||'Genel';
+  const cats=[...new Set(METRAJ.map(s=>s.kategori||'Genel'))];
+  const catTabs=cats.map(ct=>{ const first=METRAJ.find(s=>(s.kategori||'Genel')===ct); return `<button class="hs-cattab${ct===curCat?' on':''}" data-cat="${ct}" data-first="${first.kod}">${ct}</button>`; }).join('');
+  const tabs=METRAJ.filter(s=>(s.kategori||'Genel')===curCat).map(s=>`<button class="hs-tab${s.kod===sysKod?' on':''}" data-sys="${s.kod}">${s.ad}</button>`).join('');
   let total=0; let bodyRows='';
   sys.gruplar.forEach(g=>{
     bodyRows+=`<tr class="hs-grp"><td colspan="7">${g.ad}</td></tr>`;
@@ -587,25 +639,25 @@ function renderHesaplama(){
       const tut=(bf!=null&&on)?bf*mik:null;
       if(tut!=null) total+=tut;
       const f=entry&&knaufByKod(entry.kod);
-      const pickLbl=f?`${f.u.ad}`:'<span class="hs-pick-empty">Knauf ürünü seç</span>';
+      const pickLbl=f?`<span class="hs-purun">${f.u.ad}</span><span class="hs-pkat">${titleCase(f.cat)}</span>`:'<span class="hs-pick-empty">Knauf ürünü seç</span>';
       const altChk=k.alt?`<input type="checkbox" class="hs-alt" data-k="${k.ad}" ${on?'checked':''} title="Toplama dahil et">`:'';
       bodyRows+=`<tr${k.alt?' class="hs-altrow'+(on?'':' off')+'"':''}>
         <td class="hs-mz">${altChk}<b>${k.ad}</b>${k.ozellik?`<span class="hs-oz">${k.ozellik}</span>`:''}</td>
         <td>${k.birim}</td>
         <td class="num">${k.sarf.toLocaleString('tr-TR',{maximumFractionDigits:3})}</td>
-        <td class="num"><b>${mik.toLocaleString('tr-TR',{maximumFractionDigits:2})}</b></td>
+        <td class="num"><b class="hs-mik" data-k="${k.ad}">${mik.toLocaleString('tr-TR',{maximumFractionDigits:2})}</b></td>
         <td class="hs-src"><button class="hs-pick" data-k="${k.ad}">${pickLbl}</button>${f?`<button class="hs-clr" data-k="${k.ad}" title="Kaldır">✕</button>`:''}</td>
         <td class="num"><input class="hs-pkt" data-k="${k.ad}" type="text" inputmode="numeric" value="${pkt.toLocaleString('tr-TR')}" title="Paket içi birim (liste fiyatı bu sayıya bölünür)"></td>
-        <td class="num">${fmt(bf)}</td>
-        <td class="num hs-tut">${tut!=null?fmt(tut):'—'}</td>
+        <td class="num hs-bf" data-k="${k.ad}">${fmt(bf)}</td>
+        <td class="num hs-tut" data-k="${k.ad}">${tut!=null?fmt(tut):'—'}</td>
       </tr>`;
     });
   });
   c.innerHTML=`
     <div class="sheet-head">
-      <div class="crumb"><b>Hesaplama</b> &nbsp;›&nbsp; Knauf Metraj Hesaplama</div>
-      <h2>${sys.ad} <span class="hs-code">${sys.kod}</span></h2>
-      <div class="desc">${sys.alt} — fiyatlar Knauf fiyat listesinden (her ürünün kategorisindeki iskonto/kâr ile) çekilir. <b>Paket</b> sütunu: kutu/torba halinde satılan ürünlerde paket içi adedi girin (ör. Klips 100, Uniflott 25 kg); birim fiyat = liste ÷ paket. Ürün eşleşmesini değiştirmek için ürün adına tıklayın.</div>
+      <div class="sh-row"><div><div class="crumb"><b>Hesaplama</b> &nbsp;›&nbsp; ${curCat}</div><h2>${sys.ad} <span class="hs-code">${sys.kod}</span></h2></div><button class="hs-pdf" id="hs-pdf"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg> PDF / Yazdır</button></div>
+      <div class="desc">${sys.alt} — fiyatlar Knauf fiyat listesinden çekilir; aşağıdaki <b>3 iskonto + Kâr</b> liste fiyatına uygulanır (tüm kalemlerde geçerli). <b>Paket</b>: kutu/torba ürünlerde paket içi adedi girin (ör. Klips 1000, Uniflott 25 kg); birim fiyat = liste ÷ paket. Ürün/kategori değiştirmek için ürün adına tıklayın.</div>
+      <div class="hs-cattabs">${catTabs}</div>
       <div class="hs-tabs">${tabs}</div>
     </div>
     <div class="hs-ctrl">
@@ -613,31 +665,117 @@ function renderHesaplama(){
       <div class="hs-col"><label>Knauf fiyat kolonu</label>
         <div class="nm-seg" id="hs-colseg"><button data-c="izmit" class="${col==='izmit'?'on':''}">İzmit</button><button data-c="ahiboz" class="${col==='ahiboz'?'on':''}">Ahiboz</button></div>
       </div>
+      <div class="hs-isk"><label>İskonto & Kâr (liste fiyatına uygulanır)</label>
+        <div class="hs-iskrow">
+          <span class="hs-ig"><input class="hs-iski" data-k="isk1" type="text" inputmode="decimal" value="${fmtKur(isk.isk1||0)}"><b>%</b><small>İsk 1</small></span>
+          <span class="hs-ig"><input class="hs-iski" data-k="isk2" type="text" inputmode="decimal" value="${fmtKur(isk.isk2||0)}"><b>%</b><small>İsk 2</small></span>
+          <span class="hs-ig"><input class="hs-iski" data-k="isk3" type="text" inputmode="decimal" value="${fmtKur(isk.isk3||0)}"><b>%</b><small>İsk 3</small></span>
+          <span class="hs-ig kar"><input class="hs-iski" data-k="kar" type="text" inputmode="decimal" value="${fmtKur(isk.kar||0)}"><b>%</b><small>Kâr</small></span>
+        </div>
+      </div>
     </div>
     <div class="tablewrap">
       <table class="hs-table"><thead><tr>
         <th>Malzeme</th><th>Birim</th><th class="num">Sarfiyat<br><small>1 ${sys.birim}</small></th><th class="num">Miktar</th><th>Knauf Ürünü (Fiyat Kaynağı)</th><th class="num">Paket</th><th class="num">Birim Fiyat ₺</th><th class="num">Tutar ₺</th>
       </tr></thead><tbody>${bodyRows}
-        <tr class="hs-total"><td colspan="7">TOPLAM TAHMİNİ MALİYET (${m2.toLocaleString('tr-TR',{maximumFractionDigits:2})} ${sys.birim})</td><td class="num">${fmt(total)}</td></tr>
-        <tr class="hs-total sub"><td colspan="7">m² birim maliyet</td><td class="num">${fmt(m2>0?total/m2:null)}</td></tr>
+        <tr class="hs-total"><td colspan="7">TOPLAM TAHMİNİ MALİYET (<span id="hs-tlabel">${m2.toLocaleString('tr-TR',{maximumFractionDigits:2})}</span> ${sys.birim})</td><td class="num" id="hs-toplam">${fmt(total)}</td></tr>
+        <tr class="hs-total sub"><td colspan="7">m² birim maliyet</td><td class="num" id="hs-birim">${fmt(m2>0?total/m2:null)}</td></tr>
       </tbody></table>
     </div>
     <div class="hs-notes"><b>Notlar</b><ul>${sys.notlar.map(n=>`<li>${n}</li>`).join('')}</ul></div>`;
   // olaylar
+  c.querySelectorAll('.hs-cattab').forEach(b=>b.onclick=()=>go('hesaplama',null,b.dataset.first));
   c.querySelectorAll('.hs-tab').forEach(b=>b.onclick=()=>go('hesaplama',null,b.dataset.sys));
   const m2i=document.getElementById('hs-m2');
-  m2i.addEventListener('input',()=>{ const v=normNum(m2i.value); setMetrajM2(sysKod,v==null?0:v); renderHesaplama(); m2i.focus(); m2i.setSelectionRange(m2i.value.length,m2i.value.length); });
+  m2i.addEventListener('input',()=>{ const v=normNum(m2i.value); setMetrajM2(sysKod,v==null?0:v); recalcMetraj(); });
+  m2i.addEventListener('blur',()=>renderHesaplama());
   c.querySelectorAll('#hs-colseg button').forEach(b=>b.onclick=()=>{ store.metrajCol=b.dataset.c; save(); renderHesaplama(); });
+  c.querySelectorAll('.hs-iski').forEach(inp=>{
+    inp.addEventListener('input',()=>{ const k=inp.dataset.k; const v=normNum(inp.value); store.metrajIsk=getMetrajIsk(); store.metrajIsk[k]=(v==null?0:v); save(); recalcMetraj(); });
+    inp.addEventListener('blur',()=>renderHesaplama());
+  });
   c.querySelectorAll('.hs-alt').forEach(ch=>ch.onchange=()=>{ const k=sys.gruplar.flatMap(g=>g.kalemler).find(x=>x.ad===ch.dataset.k); setMetrajAlt(sysKod,k,ch.checked); renderHesaplama(); });
-  c.querySelectorAll('.hs-pkt').forEach(inp=>inp.addEventListener('input',()=>{ const k=sys.gruplar.flatMap(g=>g.kalemler).find(x=>x.ad===inp.dataset.k); const v=normNum(inp.value); setMetrajPaket(sysKod,k,v); renderHesaplama(); const el=document.querySelector('.hs-pkt[data-k="'+CSS.escape(inp.dataset.k)+'"]'); if(el){el.focus(); el.setSelectionRange(el.value.length,el.value.length);} }));
-  c.querySelectorAll('.hs-pick').forEach(btn=>btn.onclick=()=>{ const kad=btn.dataset.k; openKnaufPicker(sel=>{ store.metrajMap=store.metrajMap||{}; store.metrajMap[sysKod+'|'+kad]=sel; save(); renderHesaplama(); }); });
+  c.querySelectorAll('.hs-pkt').forEach(inp=>{
+    inp.addEventListener('input',()=>{ const k=sys.gruplar.flatMap(g=>g.kalemler).find(x=>x.ad===inp.dataset.k); const v=normNum(inp.value); setMetrajPaket(sysKod,k,v); recalcMetraj(); });
+    inp.addEventListener('blur',()=>renderHesaplama());
+  });
+  c.querySelectorAll('.hs-pick').forEach(btn=>btn.onclick=()=>{ const kad=btn.dataset.k; const kalem=sys.gruplar.flatMap(g=>g.kalemler).find(x=>x.ad===kad); openKnaufPicker(sel=>{ store.metrajMap=store.metrajMap||{}; store.metrajMap[sysKod+'|'+kad]=sel; save(); renderHesaplama(); }, kalem&&kalem.kat); });
   c.querySelectorAll('.hs-clr').forEach(btn=>btn.onclick=()=>{ store.metrajMap=store.metrajMap||{}; store.metrajMap[sysKod+'|'+btn.dataset.k]={kod:null}; save(); renderHesaplama(); });
+  const pdfBtn=document.getElementById('hs-pdf'); if(pdfBtn) pdfBtn.onclick=()=>metrajPdf(sysKod);
 }
-function openKnaufPicker(onPick){
+function metrajPdf(sysKod){
+  if(!METRAJ.find(s=>s.kod===sysKod)) sysKod=METRAJ[0].kod;
+  const sys=METRAJ.find(s=>s.kod===sysKod);
+  const m2=metrajM2(sysKod), col=metrajCol(), isk=getMetrajIsk();
+  let total=0, rows='';
+  sys.gruplar.forEach(g=>{
+    rows+=`<tr class="grp"><td colspan="4">${g.ad}</td></tr>`;
+    g.kalemler.forEach(k=>{
+      const on=metrajAltOn(sysKod,k); if(!on) return;
+      const entry=metrajEntry(sysKod,k); const liste=metrajBirimFiyat(entry); const pkt=metrajPaket(sysKod,k,entry);
+      const bf=liste!=null?liste/pkt:null; const mik=k.sarf*m2; const tut=bf!=null?bf*mik:null;
+      if(tut!=null) total+=tut;
+      rows+=`<tr>
+        <td>${k.ad}${k.ozellik?` <span class="oz">${k.ozellik}</span>`:''}</td>
+        <td class="r">${mik.toLocaleString('tr-TR',{maximumFractionDigits:2})} ${k.birim}</td>
+        <td class="r">${fmt(bf)}</td>
+        <td class="r b">${tut!=null?fmt(tut):'—'}</td>
+      </tr>`;
+    });
+  });
+  const iskParts=[]; ['isk1','isk2','isk3'].forEach(kk=>{ if(isk[kk]) iskParts.push('%'+fmtKur(isk[kk])); });
+  const iskTxt=(iskParts.length?iskParts.join(' + '):'—')+(isk.kar?`  ·  Kâr %${fmtKur(isk.kar)}`:'');
+  const tarih=new Date().toLocaleDateString('tr-TR',{day:'2-digit',month:'long',year:'numeric'});
+  const html=`<!doctype html><html lang="tr"><head><meta charset="utf-8"><title>${sys.ad} — Metraj</title>
+  <style>
+    @page{size:A4;margin:14mm 12mm}
+    *{box-sizing:border-box}
+    body{font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#1c1a17;margin:0;font-size:11px}
+    .hd{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #b45309;padding-bottom:8px;margin-bottom:10px}
+    .hd h1{font-size:16px;margin:0 0 2px}.hd .sub{font-size:11px;color:#6b6657}
+    .hd .brand{font-size:12px;font-weight:700;color:#b45309;letter-spacing:.04em}.hd .date{font-size:10px;color:#8a8475;text-align:right}
+    .meta{display:flex;gap:18px;flex-wrap:wrap;font-size:10.5px;color:#3a352c;margin-bottom:10px}
+    .meta b{color:#1c1a17}
+    table{width:100%;border-collapse:collapse;font-size:10.5px}
+    th{text-align:left;background:#f4efe6;border-bottom:1.5px solid #d9cfbe;padding:5px 7px;font-size:9px;text-transform:uppercase;letter-spacing:.04em;color:#6b6657}
+    th.r,td.r{text-align:right}
+    td{padding:5px 7px;border-bottom:1px solid #eee5d6;vertical-align:top}
+    .oz{color:#8a8475;font-size:9px}
+    tr.grp td{background:#faf5ec;font-weight:700;font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:#b45309}
+    td.b{font-weight:700}
+    tr.tot td{border-top:2px solid #b45309;border-bottom:none;font-weight:700;font-size:12px;padding-top:9px}
+    tr.tot td.r{color:#b45309}
+    tr.tot.sub td{border-top:none;font-weight:600;font-size:10px;color:#6b6657;padding-top:2px}
+    .ft{margin-top:14px;font-size:9px;color:#8a8475;border-top:1px solid #e6ddcd;padding-top:7px}
+    .ft ul{margin:4px 0 0;padding-left:14px}
+  </style></head><body>
+    <div class="hd">
+      <div><div class="brand">FİYAT YÖNETİMİ</div><h1>${sys.ad} <span style="font-weight:400;color:#8a8475;font-size:12px">${sys.kod}</span></h1><div class="sub">${sys.alt}</div></div>
+      <div class="date">${tarih}<br>Knauf Metraj Hesaplama</div>
+    </div>
+    <div class="meta"><span>Toplam Metraj: <b>${m2.toLocaleString('tr-TR',{maximumFractionDigits:2})} ${sys.birim}</b></span></div>
+    <table>
+      <thead><tr><th>Malzeme</th><th class="r">Miktar</th><th class="r">Birim ₺</th><th class="r">Tutar ₺</th></tr></thead>
+      <tbody>${rows}
+        <tr class="tot"><td colspan="3">TOPLAM TAHMİNİ MALİYET</td><td class="r">${fmt(total)} ₺</td></tr>
+        <tr class="tot sub"><td colspan="3">m² birim maliyet</td><td class="r">${fmt(m2>0?total/m2:null)} ₺</td></tr>
+      </tbody>
+    </table>
+    <div class="ft">Tahmini malzeme maliyetidir; fire dahil değildir. Metrajlar 10 × 10 m (100 m²) analizine göredir.</div>    <script>window.onload=function(){setTimeout(function(){window.print();},250);};<\/script>
+  </body></html>`;
+  const w=window.open('','_blank');
+  if(!w){ toast('Açılır pencere engellendi — tarayıcı izni verin',true); return; }
+  w.document.open(); w.document.write(html); w.document.close();
+}
+function openKnaufPicker(onPick,kategoriler){
   const items=knaufUrunler();
+  const katSet=(kategoriler&&kategoriler.length)?kategoriler.map(_nrm):null;
+  let scope=katSet?'kat':'all';
   const ov=document.createElement('div'); ov.className='rn-ov';
+  const katLbl=(kategoriler||[]).map(titleCase).join(' · ');
   ov.innerHTML=`<div class="rn-card hp-card">
     <div class="rn-h">Knauf ürünü seç (fiyat kaynağı)</div>
+    ${katSet?`<div class="nm-seg hp-seg" id="hp-scope"><button data-s="kat" class="on">İlgili kategoriler</button><button data-s="all">Tüm ürünler</button></div><div class="hp-katnote">${katLbl}</div>`:''}
     <input class="rn-in" id="hp-q" type="text" placeholder="Ürün adı veya kodu ara…" autocomplete="off">
     <div class="hp-list" id="hp-list"></div>
     <div class="rn-row"><button class="rn-c" id="hp-cancel">Kapat</button></div>
@@ -646,9 +784,11 @@ function openKnaufPicker(onPick){
   const q=ov.querySelector('#hp-q'), list=ov.querySelector('#hp-list');
   const draw=()=>{
     const term=_nrm(q.value);
-    const arr=(term?items.filter(x=>_nrm(x.u.ad).includes(term)||_nrm(x.u.kod||'').includes(term)):items).slice(0,80);
+    let base=items;
+    if(scope==='kat'&&katSet) base=base.filter(x=>katSet.includes(_nrm(x.cat)));
+    const arr=(term?base.filter(x=>_nrm(x.u.ad).includes(term)||_nrm(x.u.kod||'').includes(term)):base).slice(0,120);
     list.innerHTML=arr.length?arr.map(x=>{
-      const p=net(x.u.f[metrajCol()],getIsk('Knauf',x.cat),x.u.doviz);
+      const p=net(x.u.f[metrajCol()],getMetrajIsk(),x.u.doviz);
       return `<button class="hp-item" data-kod="${x.u.kod||''}">
         <span class="hp-ad">${x.u.ad}</span>
         <span class="hp-meta">${titleCase(x.cat)} · ${x.u.kod||''} · ${fmt(p)} ₺${x.u.doviz?' ('+x.u.doviz+')':''}</span>
@@ -658,6 +798,7 @@ function openKnaufPicker(onPick){
   };
   draw(); q.focus();
   q.addEventListener('input',draw);
+  ov.querySelectorAll('#hp-scope button').forEach(b=>b.onclick=()=>{ scope=b.dataset.s; ov.querySelectorAll('#hp-scope button').forEach(x=>x.classList.toggle('on',x===b)); draw(); });
   ov.querySelector('#hp-cancel').onclick=()=>ov.remove();
   ov.onclick=e=>{ if(e.target===ov) ov.remove(); };
 }
