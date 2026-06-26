@@ -68,6 +68,10 @@
   .sort-btn{display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-left:5px;width:20px;height:18px;border:1px solid var(--line-strong);border-radius:6px;background:var(--card);cursor:pointer;padding:0;opacity:.85}
   .sort-btn:hover{background:#F1EADB;opacity:1}
   .sort-btn.active{border-color:var(--orange);background:#FBEFE2}
+  .btn-update.loading{opacity:.7;pointer-events:none}
+  .rates-at{font-size:11px;color:var(--muted);margin-left:10px;white-space:nowrap}
+  .btn-update.loading svg{animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
   .sort-btn .si{width:14px;height:12px;stroke:var(--muted);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
   .sort-btn .si.on{stroke:var(--orange)}
   .subsub-item{
@@ -170,6 +174,13 @@
   .src-select:disabled{opacity:.5}
   .kar-divider{width:1px;align-self:stretch;background:var(--line-strong);margin:4px 6px}
   .info-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;margin:22px 0 14px}
+  .logo-row{display:flex;align-items:center;gap:16px;padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid var(--line)}
+  .logo-prev{width:120px;height:64px;border:1px dashed var(--line-strong);border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--bg);flex-shrink:0;overflow:hidden}
+  .logo-prev img{max-width:100%;max-height:100%;object-fit:contain}
+  .logo-prev span{font-size:11px;color:var(--muted)}
+  .logo-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .logo-btn{cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+  .logo-actions .hint{font-size:11.5px;color:var(--muted);flex-basis:100%}
   .info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px 16px}
   .info-grid .ig{display:flex;flex-direction:column;gap:5px;min-width:0}
   .info-grid .ig-full{grid-column:1 / -1}
@@ -331,10 +342,11 @@
     </div>
     <div class="rate"><span class="rate-label">EUR</span><input id="eur" value="53,7848" oninput="onRateChange()"><span class="rate-cur">₺</span></div>
     <div class="rate"><span class="rate-label">USD</span><input id="usd" value="46,3652" oninput="onRateChange()"><span class="rate-cur">₺</span></div>
-    <button class="btn-update" onclick="topUpdate()">
+    <button class="btn-update" id="btn-update" onclick="fetchAndApplyRates()" title="Canlı kurları çek">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
       Güncelle
     </button>
+    <span id="rates-at" class="rates-at"></span>
   </div>
   <div class="content" id="content"></div>
 </main>
@@ -377,10 +389,16 @@
       <div class="fg" id="block-disc">
         <label>İskontolar</label>
         <div class="dyn-list" id="disc-list"></div>
-        <button class="add-link" onclick="addDisc()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          İskonto ekle
-        </button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button type="button" class="add-link" onclick="addDisc()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            İskonto ekle
+          </button>
+          <button type="button" class="add-link" style="color:var(--green-2)" onclick="addKar()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Kâr ekle
+          </button>
+        </div>
         <p class="hint">İskonto adlarını değiştirebilir, ekleyip çıkarabilirsiniz. Net fiyat = liste fiyatı sırayla iskontolar uygulanıp kâr eklenerek hesaplanır.</p>
       </div>
 
@@ -513,7 +531,92 @@ function getRates(){
 function onRateChange(){
   state.eur=document.getElementById('eur').value;
   state.usd=document.getElementById('usd').value;
-  save(); renderActive();
+  state.ratesAt=null;   // manuel düzenleme → canlı zaman damgası kalkar
+  save(); renderRatesAt(); renderActive();
+}
+function fmtRate(n){ return Number(n).toFixed(4).replace('.',','); }
+function parseTRNum(v){
+  if(typeof v==='number') return v;
+  if(v==null) return NaN;
+  let s=String(v).trim();
+  if(s.indexOf(',')>=0 && s.indexOf('.')>=0) s=s.replace(/\./g,'').replace(',','.'); // 1.234,56 → 1234.56
+  else if(s.indexOf(',')>=0) s=s.replace(',','.');                                    // 53,1087 → 53.1087
+  // yalnızca nokta veya düz sayı → ondalık olarak bırak (53.1087 / 53)
+  const n=parseFloat(s); return Number.isFinite(n)?n:NaN;
+}
+function fmtDateTime(ts){
+  if(!ts) return '';
+  try{ return new Date(ts).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}); }
+  catch(e){ return ''; }
+}
+function renderRatesAt(){
+  const el=document.getElementById('rates-at'); if(!el) return;
+  el.textContent = state.ratesAt ? ('Son güncelleme: '+fmtDateTime(state.ratesAt)) : 'Kurlar elle girildi';
+}
+async function fetchLiveRates(){
+  const sources=[
+    // 1) Kendi serverless fonksiyonumuz (Vercel /api/kur) — CORS yok, en hızlı/güvenilir
+    async()=>{
+      const r=await fetch('/api/kur',{cache:'no-store'}); if(!r.ok) throw 0;
+      const j=await r.json(); if(!j||!j.ok) throw 0;
+      const usd=+((j.usd&&(j.usd.banknoteSelling||j.usd.forexSelling)));
+      const eur=+((j.eur&&(j.eur.banknoteSelling||j.eur.forexSelling)));
+      if(!(usd>0&&eur>0)) throw 0;
+      return {eur,usd,src:'TCMB Efektif Satış'};
+    },
+    // 2) TCMB today.xml — proxy üzerinden (serverless yoksa, örn. dosyadan açıldığında)
+    async()=>{
+      const xml='https://www.tcmb.gov.tr/kurlar/today.xml';
+      const builders=[ u=>u,
+        u=>'https://api.codetabs.com/v1/proxy/?quest='+encodeURIComponent(u),
+        u=>'https://api.allorigins.win/raw?url='+encodeURIComponent(u),
+        u=>'https://corsproxy.io/?url='+encodeURIComponent(u),
+        u=>'https://thingproxy.freeboard.io/fetch/'+u ];
+      let text=null;
+      for(const make of builders){
+        try{ const r=await fetch(make(xml),{cache:'no-store'}); if(r.ok){ const t=await r.text(); if(t && t.indexOf('BanknoteSelling')>=0){ text=t; break; } } }catch(e){}
+      }
+      if(!text) throw 0;
+      const doc=new DOMParser().parseFromString(text,'text/xml');
+      const curr=[...doc.getElementsByTagName('Currency')];
+      const find=k=>curr.find(c=>c.getAttribute('Kod')===k);
+      const val=(c,tag)=>{ const e=c&&c.getElementsByTagName(tag)[0]; const v=e?parseTRNum(e.textContent):NaN; return v>0?v:NaN; };
+      const cu=find('USD'), ce=find('EUR');
+      let usd=val(cu,'BanknoteSelling'), eur=val(ce,'BanknoteSelling');
+      if(!(usd>0)) usd=val(cu,'ForexSelling');     // efektif yoksa döviz satışa düş
+      if(!(eur>0)) eur=val(ce,'ForexSelling');
+      if(!(usd>0&&eur>0)) throw 0;
+      return {eur,usd,src:'TCMB Efektif Satış'};
+    },
+    // Truncgil (TR piyasası, Satış) — yedek
+    async()=>{ const r=await fetch('https://finans.truncgil.com/v4/today.json',{cache:'no-store'}); if(!r.ok) throw 0; const j=await r.json();
+      const g=k=>{const o=j[k]||{}; const v=o.Selling!=null?o.Selling:(o['Satış']!=null?o['Satış']:o.selling); return parseTRNum(v);};
+      const usd=g('USD'), eur=g('EUR'); if(!(usd>0&&eur>0)) throw 0; return {eur,usd,src:'Truncgil (TR)'}; },
+    // Frankfurter (ECB referans) — yedek
+    async()=>{ const r=await fetch('https://api.frankfurter.app/latest?from=EUR&to=USD,TRY',{cache:'no-store'}); if(!r.ok) throw 0; const j=await r.json();
+      const eurTry=+j.rates.TRY, eurUsd=+j.rates.USD; if(!(eurTry>0&&eurUsd>0)) throw 0; return {eur:eurTry, usd:eurTry/eurUsd, src:'ECB'}; },
+    // open.er-api (USD bazlı) — yedek
+    async()=>{ const r=await fetch('https://open.er-api.com/v6/latest/USD',{cache:'no-store'}); if(!r.ok) throw 0; const j=await r.json();
+      const usdTry=+j.rates.TRY, usdEur=+j.rates.EUR; if(!(usdTry>0&&usdEur>0)) throw 0; return {eur:usdTry/usdEur, usd:usdTry, src:'er-api'}; },
+  ];
+  for(const s of sources){ try{ const v=await s(); if(v.eur>0&&v.eur<100000&&v.usd>0&&v.usd<100000) return v; }catch(e){} }
+  throw new Error('kaynak yok');
+}
+async function fetchAndApplyRates(){
+  const btn=document.getElementById('btn-update');
+  if(btn){ btn.disabled=true; btn.classList.add('loading'); }
+  try{
+    const {eur,usd,src}=await fetchLiveRates();
+    state.eur=fmtRate(eur); state.usd=fmtRate(usd); state.ratesAt=Date.now(); save();
+    const e=document.getElementById('eur'), u=document.getElementById('usd');
+    if(e) e.value=state.eur; if(u) u.value=state.usd;
+    renderActive(); renderRatesAt();
+    toast('Kurlar güncellendi · '+src+' · EUR '+state.eur+' / USD '+state.usd);
+  }catch(err){
+    toast('Kur alınamadı — internet bağlantısını kontrol edin');
+  }finally{
+    if(btn){ btn.disabled=false; btn.classList.remove('loading'); }
+  }
 }
 
 /* migrate older brands to factory model */
@@ -1414,6 +1517,18 @@ function renderCalcSheet(c){
       </div>
     </div>
     <div class="info-card">
+      <div class="logo-row">
+        <div class="logo-prev">${state.logo?`<img src="${state.logo}" alt="logo">`:'<span>Logo yok</span>'}</div>
+        <div class="logo-actions">
+          <label class="btn-outline logo-btn">
+            <input type="file" accept="image/*" onchange="handleLogoUpload(this)" style="display:none">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            ${state.logo?'Logo Değiştir':'Firma Logosu Ekle'}
+          </label>
+          ${state.logo?`<button class="btn-danger" onclick="removeLogo()">Kaldır</button>`:''}
+          <span class="hint">PDF tekliflerin üst köşesinde görünür. Tüm hesaplamalarda ortaktır.</span>
+        </div>
+      </div>
       <div class="info-grid">
         <div class="ig"><label>Cari Ad</label><input type="text" value="${esc(e.info.cari||'')}" oninput="setCalcInfo('${key}','cari',this.value)" placeholder="Müşteri / firma adı"></div>
         <div class="ig"><label>İşin Adı</label><input type="text" value="${esc(e.info.is||'')}" oninput="setCalcInfo('${key}','is',this.value)" placeholder="Proje / iş tanımı"></div>
@@ -1491,6 +1606,28 @@ function setCalcPkg(key,id,val){
 }
 function setCalcVal(key,which,val){ getCalcEntry(key)[which]=(val===''?0:(Number(val)||0)); save(); recalcCalc(key); }
 function setCalcInfo(key,field,val){ const e=getCalcEntry(key); if(!e.info)e.info={}; e.info[field]=val; save(); }
+function handleLogoUpload(input){
+  const f=input.files&&input.files[0]; if(!f) return;
+  if(!/^image\//.test(f.type)){ toast('Lütfen bir resim dosyası seçin'); input.value=''; return; }
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const data=ev.target.result;
+    const img=new Image();
+    img.onload=()=>{
+      const maxW=600, scale=Math.min(1, maxW/img.width);
+      const w=Math.max(1,Math.round(img.width*scale)), h=Math.max(1,Math.round(img.height*scale));
+      let url=data;
+      try{ const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+        cv.getContext('2d').drawImage(img,0,0,w,h); url=cv.toDataURL('image/png'); }catch(err){}
+      state.logo=url; save(); renderActive(); toast('Logo kaydedildi');
+    };
+    img.onerror=()=>{ state.logo=data; save(); renderActive(); toast('Logo kaydedildi'); };
+    img.src=data;
+  };
+  reader.readAsDataURL(f);
+  input.value='';
+}
+function removeLogo(){ state.logo=null; save(); renderActive(); toast('Logo kaldırıldı'); }
 
 function clearCalc(key){
   if(!confirm('Bu hesaplamadaki tüm seçimler, birim fiyatlar, sarfiyat, paket ve oranlar temizlensin mi? (Kayıtlı paket tanımları korunur.)')) return;
@@ -1530,6 +1667,8 @@ function exportCalcPDF(key){
     *{box-sizing:border-box}
     body{font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#222;margin:32px;font-size:12px}
     h1{font-size:20px;margin:0 0 2px}
+    .hdr{display:flex;justify-content:space-between;align-items:center;gap:20px;min-height:74px}
+    .hdr .logo{max-height:74px;max-width:340px;width:auto;height:auto;object-fit:contain;flex-shrink:0}
     .sub{color:#666;font-size:12px;margin:0 0 14px}
     .cust{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px 18px;border:1px solid #ddd;border-radius:8px;padding:12px 14px;margin:0 0 18px;font-size:12px}
     .cust div{display:flex;flex-direction:column}
@@ -1550,8 +1689,13 @@ function exportCalcPDF(key){
     .notes .nb{border:1px solid #ddd;border-radius:8px;min-height:90px;padding:12px 14px;font-size:12px;line-height:1.5;white-space:pre-wrap}
     @media print{body{margin:14px}}
   </style></head><body>
-    <h1>${esc(s.name)}</h1>
-    <p class="sub">${esc(s.sub)} &nbsp;·&nbsp; Metraj: <b>${calcQty(area)} m²</b> &nbsp;·&nbsp; Tarih: ${today}</p>
+    <div class="hdr">
+      <div>
+        <h1>${esc(s.name)}</h1>
+        <p class="sub">${esc(s.sub)} &nbsp;·&nbsp; Metraj: <b>${calcQty(area)} m²</b> &nbsp;·&nbsp; Tarih: ${today}</p>
+      </div>
+      ${state.logo?`<img class="logo" src="${state.logo}" alt="logo">`:''}
+    </div>
     ${infoHtml}
     <table>
       <thead><tr>
@@ -1735,27 +1879,34 @@ function setMode(m){
 function renderDiscList(){
   document.getElementById('disc-list').innerHTML = form.discounts.map((d,i)=>`
     <div class="dyn-row">
-      <input value="${d}" oninput="form.discounts[${i}]=this.value">
-      <button class="rm" onclick="form.discounts.splice(${i},1);renderDiscList()" title="Sil">×</button>
+      <input value="${esc(d)}" oninput="setDiscLabel(${i},this.value)">
+      <button type="button" class="rm" onclick="removeDisc(${i})" title="Sil">×</button>
     </div>`).join('');
 }
+function setDiscLabel(i,v){ form.discounts[i]=v; }
+function removeDisc(i){ form.discounts.splice(i,1); renderDiscList(); }
 function addDisc(){ form.discounts.push('İskonto '+(form.discounts.length+1)); renderDiscList(); }
+function addKar(){ form.discounts.push('Kâr'); renderDiscList(); }
 function renderPayList(){
   document.getElementById('pay-list').innerHTML = form.payments.map((p,i)=>`
     <div class="dyn-row">
-      <input value="${p}" oninput="form.payments[${i}]=this.value">
-      <button class="rm" onclick="form.payments.splice(${i},1);renderPayList()" title="Sil">×</button>
+      <input value="${esc(p)}" oninput="setPayLabel(${i},this.value)">
+      <button type="button" class="rm" onclick="removePay(${i})" title="Sil">×</button>
     </div>`).join('');
 }
+function setPayLabel(i,v){ form.payments[i]=v; }
+function removePay(i){ form.payments.splice(i,1); renderPayList(); }
 function addPay(){ form.payments.push('Seçenek '+(form.payments.length+1)); renderPayList(); }
 
 function renderFacList(){
   document.getElementById('fac-list').innerHTML = form.factories.map((f,i)=>`
     <div class="dyn-row">
-      <input value="${f}" oninput="form.factories[${i}]=this.value" placeholder="Fabrika adı">
-      ${form.factories.length>1?`<button class="rm" onclick="form.factories.splice(${i},1);renderFacList()" title="Sil">×</button>`:''}
+      <input value="${esc(f)}" oninput="setFacLabel(${i},this.value)" placeholder="Fabrika adı">
+      ${form.factories.length>1?`<button type="button" class="rm" onclick="removeFac(${i})" title="Sil">×</button>`:''}
     </div>`).join('');
 }
+function setFacLabel(i,v){ form.factories[i]=v; }
+function removeFac(i){ form.factories.splice(i,1); renderFacList(); }
 function addFac(){ form.factories.push('Fabrika '+(form.factories.length+1)); renderFacList(); }
 
 /* ---------------- Excel template ---------------- */
@@ -2003,6 +2154,7 @@ document.getElementById('content').addEventListener('change', function(e){
 /* ---------------- init ---------------- */
 if(state.eur) document.getElementById('eur').value=state.eur;
 if(state.usd) document.getElementById('usd').value=state.usd;
+renderRatesAt();
 render();
 </script>
 </body>
