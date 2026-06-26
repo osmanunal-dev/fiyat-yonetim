@@ -234,7 +234,10 @@
     box-shadow:0 24px 60px rgba(0,0,0,.25);animation:pop .2s ease;
   }
   @keyframes pop{from{transform:translateY(12px);opacity:0}to{transform:none;opacity:1}}
-  .modal-head{padding:24px 26px 0}
+  .modal-head{padding:24px 26px 0;position:relative}
+  .modal-close{position:absolute;top:18px;right:18px;width:34px;height:34px;border-radius:9px;border:1px solid var(--line-strong);background:var(--card);color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer;line-height:1}
+  .modal-close:hover{background:#F1EADB;color:var(--ink)}
+  .modal-close svg{width:18px;height:18px}
   .modal-head h2{font-size:21px;font-weight:800;letter-spacing:-.02em}
   .modal-head p{color:var(--muted);font-size:13.5px;margin-top:4px;font-weight:500}
   .modal-body{padding:22px 26px}
@@ -355,6 +358,9 @@
 <div class="overlay" id="overlay">
   <div class="modal">
     <div class="modal-head">
+      <button type="button" class="modal-close" onclick="closeModal()" title="Kapat" aria-label="Kapat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+      </button>
       <h2 id="modal-title">Yeni Fiyat Listesi</h2>
       <p id="modal-sub">Bilgileri doldurun, hazır Excel şablonunu indirin. Ürünleri girip geri yükleyin.</p>
     </div>
@@ -444,6 +450,9 @@
 <div class="overlay" id="tab-overlay">
   <div class="modal">
     <div class="modal-head">
+      <button type="button" class="modal-close" onclick="closeTabModal()" title="Kapat" aria-label="Kapat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+      </button>
       <h2 id="tab-modal-title">Yeni Sekme</h2>
       <p id="tab-modal-sub">Sekmeye bir ad verin ve kopyalanacak malzemeleri seçin. Sekme, markanın altında görünür.</p>
     </div>
@@ -2159,8 +2168,7 @@ function toast(msg){
   const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
   clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2400);
 }
-document.getElementById('overlay').addEventListener('click',e=>{ if(e.target.id==='overlay') closeModal(); });
-document.getElementById('tab-overlay').addEventListener('click',e=>{ if(e.target.id==='tab-overlay') closeTabModal(); });
+/* Modallar yalnızca X veya Vazgeç ile kapanır; boş alana tıklayınca kapanmaz */
 
 /* delegated change handler for calc source/product selects (robust against re-render) */
 document.getElementById('content').addEventListener('change', function(e){
