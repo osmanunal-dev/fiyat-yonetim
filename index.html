@@ -971,25 +971,26 @@ const CALC = {
         name:'Clip İn Tavan',
         sub:'Clip-in levha · taşıyıcılı asma tavan sistemi',
         defaultArea:100,
+        variants:[{key:'60x60',label:'60x60'},{key:'30x30',label:'30x30'}],
         groups:[
           {name:'Kaplama', items:[
             {name:'Clip İn Levha', spec:'', unit:'m²', per:1},
           ]},
           {name:'Metal Konstrüksiyon', items:[
-            {name:'Omega Profil', spec:'', unit:'m', per:2.5},
-            {name:'Kenar U Profil', spec:'', unit:'m', per:0.5},
+            {name:'Omega Profil', spec:'', unit:'m', per:{'60x60':2.5,'30x30':3.6}},
+            {name:'Kenar U Profil', spec:'', unit:'m', per:{'60x60':0.5,'30x30':0.7}},
           ]},
           {name:'Yardımcı Malzemeler', items:[
             {name:'Clip İn Ekleme Parçası', spec:'', unit:'adet', per:0.5},
-            {name:'Clip İn Yaylı Klips', spec:'', unit:'adet', per:1.5},
-            {name:'Clip İn Kenar Baskı Takozu', spec:'', unit:'adet', per:1},
+            {name:'Clip İn Yaylı Klips', spec:'', unit:'adet', per:{'60x60':1.5,'30x30':2}},
+            {name:'Clip İn Kenar Baskı Takozu', spec:'', unit:'adet', per:{'60x60':1,'30x30':2}},
             {name:'Clip İn Askı Maşası', spec:'', unit:'adet', per:0.7},
             {name:'Çelik Dübel', spec:'', unit:'adet', per:0.7},
             {name:'Askı Teli 50 cm', spec:'', unit:'adet', per:0.7},
             {name:'Plastik Dübel + Vida Seti', spec:'100 adet', unit:'set', per:0.01},
           ]},
         ],
-        notes:['Sarfiyatlar 1 m² içindir; fire dâhil değildir.','Değerler projeye göre satırda düzenlenebilir.']
+        notes:['Sarfiyatlar 1 m² içindir; fire dâhil değildir.','Ölçü (30x30 / 60x60) seçimine göre Omega, Kenar U, Yaylı Klips ve Kenar Baskı Takozu sarfiyatı değişir.','Değerler projeye göre satırda düzenlenebilir.']
       },
       {
         key:'karolam',
@@ -1014,6 +1015,106 @@ const CALC = {
           ]},
         ],
         notes:['Sarfiyatlar 1 m² içindir; fire dâhil değildir.','Değerler projeye göre satırda düzenlenebilir.']
+      }
+    ]
+  },
+  mantolama: {
+    label:'Mantolama',
+    systems:[
+      {
+        key:'cephe',
+        name:'Dış Cephe Mantolama',
+        sub:'Taşyünü / EPS levha · ısı yalıtım sistemi',
+        defaultArea:100,
+        variants:[{key:'tasyunu',label:'Taşyünü'},{key:'eps',label:'EPS'}],
+        groups:[
+          {name:'Kaplama', items:[
+            {name:'Mantolama Levhası', spec:'Taşyünü / EPS', unit:'m²', per:1},
+          ]},
+          {name:'Toz Grubu', items:[
+            {name:'Mantolama Yapıştırıcı', spec:'', unit:'kg', per:{'tasyunu':6,'eps':4.5}},
+            {name:'Mantolama Sıvası', spec:'', unit:'kg', per:{'tasyunu':6,'eps':4.5}},
+            {name:'Dekoratif Sıva', spec:'', unit:'kg', per:2.5},
+            {name:'Dekoratif Sıva Astarı', spec:'', unit:'kg', per:0.1},
+          ]},
+          {name:'Yardımcı Malzemeler', items:[
+            {name:'PVC Köşe Profili', spec:'', unit:'m', per:0.25},
+            {name:'Sıva Filesi', spec:'', unit:'m²', per:1.1},
+            {name:'Çelik Çivili Dübel', spec:'', unit:'adet', per:6},
+          ]},
+          {name:'Boya', items:[
+            {name:'Dış Cephe Boyası', spec:'', unit:'kg', per:0.25},
+            {name:'Dış Cephe Boya Astarı', spec:'', unit:'kg', per:0.1},
+          ]},
+        ],
+        notes:['Sarfiyatlar 1 m² içindir; fire dâhil değildir.','Taşyünü / EPS seçimine göre yapıştırıcı ve sıva sarfiyatı değişir.','Değerler projeye göre satırda düzenlenebilir.']
+      }
+    ]
+  },
+  alcipan: {
+    label:'Alçıpan',
+    systems:[
+      {
+        key:'duvar',
+        name:'Alçıpan Duvar',
+        sub:'Bölme & giydirme duvar · galvaniz / kutu profil',
+        defaultArea:100,
+        variants:[{key:'galvaniz',label:'Galvaniz Profil'},{key:'kutu',label:'Kutu Profil'}],
+        groups:[
+          {name:'Kaplama', items:[
+            {name:'Alçıpan (Ön Yüz)', spec:'Çift kat', unit:'m²', per:2},
+            {name:'Alçıpan (Arka Yüz)', spec:'Çift kat', unit:'m²', per:2},
+          ]},
+          {name:'Yalıtım', items:[
+            {name:'Mineral Yün', spec:'', unit:'m²', per:1},
+          ]},
+          {name:'Metal Konstrüksiyon', items:[
+            {name:'Duvar C Profil', spec:'', unit:'m', per:{'galvaniz':2.2,'kutu':0}},
+            {name:'Duvar U Profil', spec:'', unit:'m', per:{'galvaniz':1,'kutu':0}},
+            {name:'Kutu Profil', spec:'', unit:'m', per:{'galvaniz':0,'kutu':3.3}},
+            {name:'Delikli Köşe Profili', spec:'', unit:'m', per:0.25},
+          ]},
+          {name:'Yardımcı Malzemeler', items:[
+            {name:'SUV25', spec:'', unit:'adet', per:17},
+            {name:'SUV35', spec:'', unit:'adet', per:34},
+            {name:'Dübel Vida', spec:'', unit:'adet', per:3},
+            {name:'Derz Bandı', spec:'', unit:'m', per:1.65},
+            {name:'Ses Yalıtım Bandı', spec:'', unit:'m', per:1.5},
+            {name:'Derz Alçı', spec:'', unit:'kg', per:0.25},
+          ]},
+        ],
+        notes:['Sarfiyatlar 1 m² duvar içindir; fire dâhil değildir.','Profil tipi (Galvaniz / Kutu) seçimine göre metal konstrüksiyon kalemleri değişir.','Alçıpan çift yüz, çift kat kabul edilmiştir; projeye göre satırda düzenleyin.']
+      },
+      {
+        key:'tavan',
+        name:'Asma Tavan',
+        sub:'Alçıpan asma tavan · galvaniz / kutu profil',
+        defaultArea:100,
+        variants:[{key:'galvaniz',label:'Galvaniz Profil'},{key:'kutu',label:'Kutu Profil'}],
+        groups:[
+          {name:'Kaplama', items:[
+            {name:'Alçıpan (1. Kat)', spec:'', unit:'m²', per:1},
+            {name:'Alçıpan (2. Kat)', spec:'', unit:'m²', per:1},
+          ]},
+          {name:'Metal Konstrüksiyon', items:[
+            {name:'Tavan C Profil', spec:'', unit:'m', per:{'galvaniz':3.3,'kutu':0}},
+            {name:'Tavan U Profil', spec:'', unit:'m', per:{'galvaniz':1,'kutu':0}},
+            {name:'Kutu Profil', spec:'', unit:'m', per:{'galvaniz':0,'kutu':3.3}},
+          ]},
+          {name:'Yardımcı Malzemeler', items:[
+            {name:'Askı Maşa', spec:'', unit:'adet', per:1.3},
+            {name:'Ekleme Parçası', spec:'', unit:'adet', per:0.5},
+            {name:'Klips', spec:'', unit:'adet', per:4},
+            {name:'Askı Teli', spec:'', unit:'adet', per:1.3},
+            {name:'Çelik Dübel', spec:'', unit:'adet', per:1.3},
+            {name:'SUV25', spec:'', unit:'adet', per:17},
+            {name:'SUV35', spec:'', unit:'adet', per:34},
+            {name:'Dübel Vida', spec:'', unit:'adet', per:3},
+            {name:'Derz Bandı', spec:'', unit:'m', per:1.65},
+            {name:'Derz Alçı', spec:'', unit:'kg', per:0.25},
+          ]},
+        ],
+        notes:['Sarfiyatlar 1 m² tavan içindir; fire dâhil değildir.','Profil tipi (Galvaniz / Kutu) seçimine göre taşıyıcı profil değişir.','Alçıpan çift kat kabul edilmiştir; projeye göre satırda düzenleyin.']
       }
     ]
   }
@@ -1521,6 +1622,12 @@ function getCalcEntry(key){
   return e;
 }
 function effPer(e,id,def){ return (e.pers&&e.pers[id]!=null&&e.pers[id]!=='') ? Number(e.pers[id]) : def; }
+function sysVariant(s,e){ return (e&&e.variant) || (s&&s.variants&&s.variants.length?s.variants[0].key:null); }
+function sysPer(it,variant){
+  const p=it.per;
+  if(p && typeof p==='object'){ return (variant!=null && p[variant]!=null) ? p[variant] : Object.values(p)[0]; }
+  return p;
+}
 function effPkg(e,id){
   let v=e.pkgs&&e.pkgs[id];
   if(v==null||v===''){
@@ -1555,9 +1662,10 @@ function rowSrc(e,id){
   return srcProducts(r.brand, r.tab);
 }
 function computeCalc(s,e){
-  let sub=0;
+  let sub=0; const variant=sysVariant(s,e);
   s.groups.forEach((g,gi)=>g.items.forEach((it,ii)=>{
-    const id=gi+'_'+ii; sub += effPer(e,id,it.per)*(Number(e.area)||0)*(Number(e.prices[id])||0)/effPkg(e,id);
+    const bp=sysPer(it,variant); if(bp===0) return;   // o varyantta kullanılmayan kalem
+    const id=gi+'_'+ii; sub += effPer(e,id,bp)*(Number(e.area)||0)*(Number(e.prices[id])||0)/effPkg(e,id);
   }));
   let net=sub;
   [e.isk1,e.isk2,e.isk3].forEach(v=> net*=(1-(Number(v)||0)/100));
@@ -1579,12 +1687,15 @@ function renderCalcSheet(c){
     sortedBrands().map(b=>`<option value="${b.id}" ${sel===b.id?'selected':''}>${esc(b.name)}</option>`).join('');
 
   let body='';
+  const variant=sysVariant(s,e);
   s.groups.forEach((g,gi)=>{
     body += `<tr class="grp"><td colspan="11">${g.name}</td></tr>`;
     g.items.forEach((it,ii)=>{
       const id=gi+'_'+ii;
       const up=e.prices[id];
-      const per=effPer(e,id,it.per);
+      const basePer=sysPer(it,variant);
+      if(basePer===0) return;   // bu varyantta kullanılmayan kalemi gizle
+      const per=effPer(e,id,basePer);
       const pkg=effPkg(e,id);
       const amt=per*area*(Number(up)||0)/pkg;
       const r=(e.rows&&e.rows[id])||{};
@@ -1602,10 +1713,10 @@ function renderCalcSheet(c){
         <td><select class="cell-select rsel" data-cact="rtab" data-key="${key}" data-id="${id}" ${b?'':'disabled'}>${tabOpts}</select></td>
         <td><select class="cell-select" data-cact="rprod" data-key="${key}" data-id="${id}" ${b?'':'disabled'}>${prodOpts}</select></td>
         <td style="text-align:right"><input class="cell-input sm" type="number" min="0" step="0.01" value="${per}" oninput="setCalcPer('${key}','${id}',this.value)"></td>
-        <td class="num qty-total" data-per="${it.per}" data-mat="${id}">${calcQty(per*area)}</td>
+        <td class="num qty-total" data-per="${basePer}" data-mat="${id}">${calcQty(per*area)}</td>
         <td style="text-align:right"><input class="cell-input" type="number" min="0" step="0.01" placeholder="0" value="${up!=null&&up!==''?up:''}" oninput="setCalcPrice('${key}','${id}',this.value)"></td>
         <td style="text-align:right"><input class="cell-input sm" type="number" min="1" step="1" value="${pkg}" oninput="setCalcPkg('${key}','${id}',this.value)"></td>
-        <td class="net line-amt" data-per="${it.per}" data-mat="${id}">${fmtNum(amt)}</td>
+        <td class="net line-amt" data-per="${basePer}" data-mat="${id}">${fmtNum(amt)}</td>
       </tr>`;
     });
   });
@@ -1654,6 +1765,7 @@ function renderCalcSheet(c){
       </div>
     </div>
     <div class="disc-card">
+      ${s.variants?`<div class="disc-field"><label>ÖLÇÜ</label><div class="pay-btns" style="margin:0">${s.variants.map(v=>`<button type="button" class="pay-btn ${variant===v.key?'active':''}" onclick="setCalcVariant('${key}','${v.key}')">${esc(v.label)}</button>`).join('')}</div></div><div class="kar-divider"></div>`:''}
       <div class="disc-field">
         <label>TOPLAM METRAJ</label>
         <div class="pct-input" style="width:120px">
@@ -1709,6 +1821,7 @@ function recalcCalc(key){
   const lbl=document.getElementById('calc-kdv-label'); if(lbl) lbl.textContent=`KDV (%${calcQty(r.kdvRate)})`;
 }
 function setCalcArea(key,val){ getCalcEntry(key).area=(val===''?0:(Number(val)||0)); save(); recalcCalc(key); }
+function setCalcVariant(key,vkey){ const e=getCalcEntry(key); e.variant=vkey; save(); renderActive(); }
 function setCalcPrice(key,id,val){ getCalcEntry(key).prices[id]=(val===''?0:(Number(val)||0)); save(); recalcCalc(key); }
 function setCalcPer(key,id,val){ getCalcEntry(key).pers[id]=(val===''?'':(Number(val)||0)); save(); recalcCalc(key); }
 function setCalcPkg(key,id,val){
@@ -1752,12 +1865,13 @@ function clearCalc(key){
 function exportCalcPDF(key){
   const [cat,sys]=key.split(':'); const s=(CALC[cat]||{}).systems?.find(x=>x.key===sys); if(!s) return;
   const e=getCalcEntry(key); const area=Number(e.area)||0; const r=computeCalc(s,e);
+  const variant=sysVariant(s,e);
   const factor=(1-(Number(e.isk1)||0)/100)*(1-(Number(e.isk2)||0)/100)*(1-(Number(e.isk3)||0)/100)*(1+(Number(e.kar)||0)/100);
   let rowsHtml='';
   s.groups.forEach((g,gi)=>{
     rowsHtml+=`<tr class="g"><td colspan="6">${esc(g.name)}</td></tr>`;
     g.items.forEach((it,ii)=>{
-      const id=gi+'_'+ii; const per=effPer(e,id,it.per); const pkg=effPkg(e,id);
+      const id=gi+'_'+ii; const bp=sysPer(it,variant); if(bp===0) return; const per=effPer(e,id,bp); const pkg=effPkg(e,id);
       const price=(Number(e.prices[id])||0)*factor; const amt=per*area*price/pkg;   // disc+profit baked in
       const rw=(e.rows&&e.rows[id])||{};
       const adi = rw.prod ? esc(rw.prod.split('|').join(' · ')) : esc(it.name);
