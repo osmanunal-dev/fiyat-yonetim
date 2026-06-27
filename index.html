@@ -962,6 +962,60 @@ const CALC = {
         notes:['Knauf kataloğundan otomatik aktarıldı. Sarfiyatlar 1 m² içindir; gerekirse satırda düzenleyin.','Metrajlara fire dâhil değildir.']
       }
     ]
+  },
+  prosista: {
+    label:'Prosista',
+    systems:[
+      {
+        key:'clipin',
+        name:'Clip İn Tavan',
+        sub:'Clip-in levha · taşıyıcılı asma tavan sistemi',
+        defaultArea:100,
+        groups:[
+          {name:'Kaplama', items:[
+            {name:'Clip İn Levha', spec:'', unit:'m²', per:1},
+          ]},
+          {name:'Metal Konstrüksiyon', items:[
+            {name:'Omega Profil', spec:'', unit:'m', per:2.5},
+            {name:'Kenar U Profil', spec:'', unit:'m', per:0.5},
+          ]},
+          {name:'Yardımcı Malzemeler', items:[
+            {name:'Clip İn Ekleme Parçası', spec:'', unit:'adet', per:0.5},
+            {name:'Clip İn Yaylı Klips', spec:'', unit:'adet', per:1.5},
+            {name:'Clip İn Kenar Baskı Takozu', spec:'', unit:'adet', per:1},
+            {name:'Clip İn Askı Maşası', spec:'', unit:'adet', per:0.7},
+            {name:'Çelik Dübel', spec:'', unit:'adet', per:0.7},
+            {name:'Askı Teli 50 cm', spec:'', unit:'adet', per:0.7},
+            {name:'Plastik Dübel + Vida Seti', spec:'100 adet', unit:'set', per:0.01},
+          ]},
+        ],
+        notes:['Sarfiyatlar 1 m² içindir; fire dâhil değildir.','Değerler projeye göre satırda düzenlenebilir.']
+      },
+      {
+        key:'karolam',
+        name:'Karolam & Taşyünü Tavan',
+        sub:'T24 taşıyıcılı · 600x600 / 600x1200 asma tavan',
+        defaultArea:100,
+        groups:[
+          {name:'Kaplama', items:[
+            {name:'Karolam veya Taşyünü', spec:'', unit:'m²', per:1},
+          ]},
+          {name:'Metal Konstrüksiyon', items:[
+            {name:'T24 3600 Ana Taşıyıcı', spec:'', unit:'m', per:0.83},
+            {name:'T24 1200 Tali Taşıyıcı', spec:'', unit:'m', per:1.67},
+            {name:'T24 600 Tali Taşıyıcı', spec:'', unit:'m', per:0.83},
+            {name:'L Köşe Profil', spec:'', unit:'m', per:0.5},
+          ]},
+          {name:'Yardımcı Malzemeler', items:[
+            {name:'Çelik Dübel', spec:'', unit:'adet', per:0.7},
+            {name:'Askı Teli 50 cm', spec:'', unit:'adet', per:0.7},
+            {name:'Çiftli Yay', spec:'', unit:'adet', per:0.7},
+            {name:'Plastik Dübel + Vida Seti', spec:'100 adet', unit:'set', per:0.01},
+          ]},
+        ],
+        notes:['Sarfiyatlar 1 m² içindir; fire dâhil değildir.','Değerler projeye göre satırda düzenlenebilir.']
+      }
+    ]
   }
 };
 let calcAreas = {};
