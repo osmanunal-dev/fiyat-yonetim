@@ -161,6 +161,14 @@
   tbody tr.grp td{background:var(--green-soft);color:var(--green);font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:9px 22px;cursor:pointer;user-select:none}
   tbody tr.grp:hover td{background:var(--green);color:#fff}
   tbody tr.grp .grp-caret{display:inline-block;width:1.1em;font-size:12px}
+  .row-x{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;margin-right:8px;border-radius:5px;color:#C0584B;background:#F7E9E5;font-weight:800;cursor:pointer;font-size:13px;vertical-align:middle}
+  .row-x:hover{background:#C0584B;color:#fff}
+  .cell-input.nm{width:170px;text-align:left;font-weight:600}
+  tr.addrow td{padding:6px 22px;background:#FBF7EE}
+  .addrow-plus{display:inline-flex;align-items:center;gap:6px;color:var(--green);font-weight:700;font-size:12.5px;cursor:pointer}
+  .addrow-plus:hover{text-decoration:underline}
+  .addrow-restore{margin-left:16px;color:var(--orange);font-weight:600;font-size:12px;cursor:pointer}
+  .addrow-restore:hover{text-decoration:underline}
   tbody tr.grp:hover td{background:var(--green-soft)}
   .calc-notes{margin-top:16px;color:var(--muted);font-size:12.5px;line-height:1.7;font-weight:500}
   .calc-notes p{margin:0}
@@ -1627,6 +1635,8 @@ function getCalcEntry(key){
   if(e.kdv==null) e.kdv=20;
   if(!e.pers) e.pers={};
   if(!e.pkgs) e.pkgs={};
+  if(!e.removed) e.removed={};   // gizlenen sistem satırları {id:true}
+  if(!e.extra) e.extra={};       // eklenen özel satırlar {id:{gi,name,spec}}
   if(!e.info) e.info={};
   if(!e.rows){
     // migrate old single-source model (srcBrand/srcTab + map) to per-row sources
@@ -1679,8 +1689,12 @@ function computeCalc(s,e){
   let sub=0; const variant=sysVariant(s,e);
   s.groups.forEach((g,gi)=>g.items.forEach((it,ii)=>{
     const bp=sysPer(it,variant); if(bp===0) return;   // o varyantta kullanılmayan kalem
-    const id=gi+'_'+ii; sub += effPer(e,id,bp)*(Number(e.area)||0)*(Number(e.prices[id])||0)/effPkg(e,id);
+    const id=gi+'_'+ii; if(e.removed&&e.removed[id]) return;   // tekliften çıkarılmış
+    sub += effPer(e,id,bp)*(Number(e.area)||0)*(Number(e.prices[id])||0)/effPkg(e,id);
   }));
+  Object.keys(e.extra||{}).forEach(id=>{   // eklenen özel satırlar
+    sub += effPer(e,id,0)*(Number(e.area)||0)*(Number(e.prices[id])||0)/effPkg(e,id);
+  });
   let net=sub;
   [e.isk1,e.isk2,e.isk3].forEach(v=> net*=(1-(Number(v)||0)/100));
   const afterDisc=net;
@@ -1689,6 +1703,60 @@ function computeCalc(s,e){
   const kdv=net*kdvRate/100;
   return {sub,afterDisc,net,kdvRate,kdv,withVat:net+kdv};
 }
+
+function calcRowHTML(key,e,area,id,name,spec,basePer,isExtra){
+  const up=e.prices[id];
+  const per=effPer(e,id,basePer);
+  const pkg=effPkg(e,id);
+  const amt=per*area*(Number(up)||0)/pkg;
+  const r=(e.rows&&e.rows[id])||{};
+  const b=state.brands.find(x=>x.id===r.brand);
+  const facList = b ? ((b.factories&&b.factories.length)?b.factories:['Liste Fiyatı']) : [];
+  const facOpts = facList.length ? facList.map((f,fi)=>`<option value="${fi}" ${(Number(r.fac)||0)===fi?'selected':''}>${esc(f)}</option>`).join('') : '<option>—</option>';
+  const tabOpts = b ? (`<option value="">Tümü</option>`+sortedTabs(b).map(t=>`<option value="${t.id}" ${r.tab===t.id?'selected':''}>${esc(t.name)}</option>`).join('')) : '<option>—</option>';
+  const src=rowSrc(e,id);
+  const prodOpts = `<option value="">— ürün —</option>`+src.items.map(o=>`<option value="${esc(o.key)}" ${r.prod===o.key?'selected':''}>${esc(o.label)}</option>`).join('');
+  const brandOpts = `<option value="">— marka —</option>`+sortedBrands().map(bb=>`<option value="${bb.id}" ${r.brand===bb.id?'selected':''}>${esc(bb.name)}</option>`).join('');
+  const nameCell = isExtra
+    ? `<input class="cell-input nm" value="${esc(name||'')}" placeholder="Malzeme adı…" oninput="setCalcRowName('${key}','${id}',this.value)">`
+    : `<span style="font-weight:600">${esc(name)}</span>`;
+  return `<tr>
+    <td style="white-space:nowrap"><span class="row-x" title="Tekliften çıkar" onclick="removeCalcRow('${key}','${id}')">×</span>${nameCell}</td>
+    <td class="unit">${isExtra?'':esc(spec||'')}</td>
+    <td><select class="cell-select rsel" data-cact="rbrand" data-key="${key}" data-id="${id}">${brandOpts}</select></td>
+    <td><select class="cell-select rsel" data-cact="rfac" data-key="${key}" data-id="${id}" ${b?'':'disabled'}>${facOpts}</select></td>
+    <td><select class="cell-select rsel" data-cact="rtab" data-key="${key}" data-id="${id}" ${b?'':'disabled'}>${tabOpts}</select></td>
+    <td><select class="cell-select" data-cact="rprod" data-key="${key}" data-id="${id}" ${b?'':'disabled'}>${prodOpts}</select></td>
+    <td style="text-align:right"><input class="cell-input sm" type="number" min="0" step="0.01" value="${per}" oninput="setCalcPer('${key}','${id}',this.value)"></td>
+    <td class="num qty-total" data-per="${basePer}" data-mat="${id}">${calcQty(per*area)}</td>
+    <td style="text-align:right"><input class="cell-input" type="number" min="0" step="0.01" placeholder="0" value="${up!=null&&up!==''?up:''}" oninput="setCalcPrice('${key}','${id}',this.value)"></td>
+    <td style="text-align:right"><input class="cell-input sm" type="number" min="1" step="1" value="${pkg}" oninput="setCalcPkg('${key}','${id}',this.value)"></td>
+    <td class="net line-amt" data-per="${basePer}" data-mat="${id}">${fmtNum(amt)}</td>
+  </tr>`;
+}
+function removeCalcRow(key,id){
+  const e=getCalcEntry(key);
+  if(e.extra && e.extra[id]){
+    delete e.extra[id];
+    if(e.prices) delete e.prices[id]; if(e.pers) delete e.pers[id]; if(e.pkgs) delete e.pkgs[id]; if(e.rows) delete e.rows[id];
+  } else {
+    if(!e.removed) e.removed={}; e.removed[id]=true;   // sistem satırı: gizle (geri alınabilir)
+  }
+  save(); renderActive();
+}
+function restoreCalcGroup(key,gi){
+  const e=getCalcEntry(key); if(!e.removed) return;
+  Object.keys(e.removed).forEach(id=>{ if(id.indexOf('x')!==0 && id.split('_')[0]===String(gi)) delete e.removed[id]; });
+  save(); renderActive();
+}
+function addCalcRow(key,gi){
+  const e=getCalcEntry(key); if(!e.extra) e.extra={};
+  e.extraSeq=(e.extraSeq||0)+1;
+  const id='x'+gi+'_'+e.extraSeq;
+  e.extra[id]={gi:gi,name:'',spec:''};
+  save(); renderActive();
+}
+function setCalcRowName(key,id,val){ const e=getCalcEntry(key); if(e.extra&&e.extra[id]){ e.extra[id].name=val; save(); } }
 
 function renderCalcSheet(c){
   const cat=state.calcCat, s=(CALC[cat]||{}).systems?.find(x=>x.key===state.calcSys);
@@ -1706,35 +1774,17 @@ function renderCalcSheet(c){
     const gClosed=!!(e.gClosed && e.gClosed[gi]);
     body += `<tr class="grp${gClosed?' closed':''}" onclick="toggleCalcGroup('${key}',${gi})"><td colspan="11"><span class="grp-caret">${gClosed?'▸':'▾'}</span>${g.name}</td></tr>`;
     if(gClosed) return;
+    let removedCount=0;
     g.items.forEach((it,ii)=>{
       const id=gi+'_'+ii;
-      const up=e.prices[id];
       const basePer=sysPer(it,variant);
-      if(basePer===0) return;   // bu varyantta kullanılmayan kalemi gizle
-      const per=effPer(e,id,basePer);
-      const pkg=effPkg(e,id);
-      const amt=per*area*(Number(up)||0)/pkg;
-      const r=(e.rows&&e.rows[id])||{};
-      const b=state.brands.find(x=>x.id===r.brand);
-      const facList = b ? ((b.factories&&b.factories.length)?b.factories:['Liste Fiyatı']) : [];
-      const facOpts = facList.length ? facList.map((f,fi)=>`<option value="${fi}" ${(Number(r.fac)||0)===fi?'selected':''}>${esc(f)}</option>`).join('') : '<option>—</option>';
-      const tabOpts = b ? (`<option value="">Tümü</option>`+sortedTabs(b).map(t=>`<option value="${t.id}" ${r.tab===t.id?'selected':''}>${esc(t.name)}</option>`).join('')) : '<option>—</option>';
-      const src=rowSrc(e,id);
-      const prodOpts = `<option value="">— ürün —</option>`+src.items.map(o=>`<option value="${esc(o.key)}" ${r.prod===o.key?'selected':''}>${esc(o.label)}</option>`).join('');
-      body += `<tr>
-        <td style="font-weight:600;white-space:nowrap">${it.name}</td>
-        <td class="unit">${it.spec||''}</td>
-        <td><select class="cell-select rsel" data-cact="rbrand" data-key="${key}" data-id="${id}">${brandOpts(r.brand||'')}</select></td>
-        <td><select class="cell-select rsel" data-cact="rfac" data-key="${key}" data-id="${id}" ${b?'':'disabled'}>${facOpts}</select></td>
-        <td><select class="cell-select rsel" data-cact="rtab" data-key="${key}" data-id="${id}" ${b?'':'disabled'}>${tabOpts}</select></td>
-        <td><select class="cell-select" data-cact="rprod" data-key="${key}" data-id="${id}" ${b?'':'disabled'}>${prodOpts}</select></td>
-        <td style="text-align:right"><input class="cell-input sm" type="number" min="0" step="0.01" value="${per}" oninput="setCalcPer('${key}','${id}',this.value)"></td>
-        <td class="num qty-total" data-per="${basePer}" data-mat="${id}">${calcQty(per*area)}</td>
-        <td style="text-align:right"><input class="cell-input" type="number" min="0" step="0.01" placeholder="0" value="${up!=null&&up!==''?up:''}" oninput="setCalcPrice('${key}','${id}',this.value)"></td>
-        <td style="text-align:right"><input class="cell-input sm" type="number" min="1" step="1" value="${pkg}" oninput="setCalcPkg('${key}','${id}',this.value)"></td>
-        <td class="net line-amt" data-per="${basePer}" data-mat="${id}">${fmtNum(amt)}</td>
-      </tr>`;
+      if(basePer===0) return;          // bu varyantta kullanılmayan kalem
+      if(e.removed && e.removed[id]){ removedCount++; return; }   // tekliften çıkarılmış
+      body += calcRowHTML(key,e,area,id,it.name,it.spec,basePer,false);
     });
+    Object.keys(e.extra||{}).forEach(xid=>{ const x=e.extra[xid]; if(!x||x.gi!==gi) return; body += calcRowHTML(key,e,area,xid,x.name,x.spec,0,true); });
+    const restore = removedCount ? `<a class="addrow-restore" onclick="restoreCalcGroup('${key}',${gi})">kaldırılanları geri ekle (${removedCount})</a>` : '';
+    body += `<tr class="addrow"><td colspan="11"><span class="addrow-plus" onclick="addCalcRow('${key}',${gi})">+ satır ekle</span>${restore}</td></tr>`;
   });
 
   const r0=computeCalc(s,e);
@@ -1886,18 +1936,31 @@ function exportCalcPDF(key){
   const factor=(1-(Number(e.isk1)||0)/100)*(1-(Number(e.isk2)||0)/100)*(1-(Number(e.isk3)||0)/100)*(1+(Number(e.kar)||0)/100);
   let rowsHtml='';
   s.groups.forEach((g,gi)=>{
-    rowsHtml+=`<tr class="g"><td colspan="6">${esc(g.name)}</td></tr>`;
+    let gRows='';
     g.items.forEach((it,ii)=>{
-      const id=gi+'_'+ii; const bp=sysPer(it,variant); if(bp===0) return; const per=effPer(e,id,bp); const pkg=effPkg(e,id);
+      const id=gi+'_'+ii; const bp=sysPer(it,variant); if(bp===0) return; if(e.removed&&e.removed[id]) return;
+      const per=effPer(e,id,bp); const pkg=effPkg(e,id);
       const price=(Number(e.prices[id])||0)*factor; const amt=per*area*price/pkg;   // disc+profit baked in
       const rw=(e.rows&&e.rows[id])||{};
       const adi = rw.prod ? esc(rw.prod.split('|').join(' · ')) : esc(it.name);
-      rowsHtml+=`<tr>
+      gRows+=`<tr>
         <td>${adi}</td>
-        <td class="r">${calcQty(per)}</td><td class="r">${calcQty(per*area)} ${esc(it.unit)}</td>
+        <td class="r">${calcQty(per)}</td><td class="r">${calcQty(per*area)} ${esc(it.unit||'')}</td>
         <td class="r">${fmtNum(price)}</td><td class="r">${calcQty(pkg)}</td><td class="r b">${fmtNum(amt)} ₺</td>
       </tr>`;
     });
+    Object.keys(e.extra||{}).forEach(id=>{ const x=e.extra[id]; if(!x||x.gi!==gi) return;
+      const per=effPer(e,id,0); const pkg=effPkg(e,id);
+      const price=(Number(e.prices[id])||0)*factor; const amt=per*area*price/pkg;
+      const rw=(e.rows&&e.rows[id])||{};
+      const adi = rw.prod ? esc(rw.prod.split('|').join(' · ')) : esc(x.name||'—');
+      gRows+=`<tr>
+        <td>${adi}</td>
+        <td class="r">${calcQty(per)}</td><td class="r">${calcQty(per*area)}</td>
+        <td class="r">${fmtNum(price)}</td><td class="r">${calcQty(pkg)}</td><td class="r b">${fmtNum(amt)} ₺</td>
+      </tr>`;
+    });
+    if(gRows) rowsHtml+=`<tr class="g"><td colspan="6">${esc(g.name)}</td></tr>`+gRows;
   });
   const today=new Date().toLocaleDateString('tr-TR');
   const inf=e.info||{};
