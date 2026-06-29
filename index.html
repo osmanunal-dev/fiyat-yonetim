@@ -161,6 +161,11 @@
   tbody tr.grp td{background:var(--green-soft);color:var(--green);font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:9px 22px;cursor:pointer;user-select:none}
   tbody tr.grp:hover td{background:var(--green);color:#fff}
   tbody tr.grp .grp-caret{display:inline-block;width:1.1em;font-size:12px}
+  tbody tr.grp .grp-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  tbody tr.grp .grp-left{flex:1;cursor:pointer;user-select:none}
+  tbody tr.grp .grp-add{font-size:10.5px;font-weight:700;letter-spacing:.03em;color:var(--green);background:#fff;border:1px solid #CFE3C6;border-radius:6px;padding:3px 9px;cursor:pointer;text-transform:none}
+  tbody tr.grp .grp-add:hover{background:var(--green);color:#fff;border-color:var(--green)}
+  tbody tr.grp:hover .grp-add{border-color:#fff}
   .row-x{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;margin-right:8px;border-radius:5px;color:#C0584B;background:#F7E9E5;font-weight:800;cursor:pointer;font-size:13px;vertical-align:middle}
   .row-x:hover{background:#C0584B;color:#fff}
   .cell-input.nm{width:170px;text-align:left;font-weight:600}
@@ -169,6 +174,15 @@
   .addrow-plus:hover{text-decoration:underline}
   .addrow-restore{margin-left:16px;color:var(--orange);font-weight:600;font-size:12px;cursor:pointer}
   .addrow-restore:hover{text-decoration:underline}
+  tbody tr.grp.cgrp .grp-head{display:flex;align-items:center;gap:10px}
+  tbody tr.grp.cgrp .grp-left{cursor:pointer;flex:0 0 auto}
+  .cgrp-name{flex:1;border:1px solid var(--line-strong);border-radius:7px;padding:6px 10px;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--green);background:#fff;outline:none;max-width:340px}
+  .cgrp-name:focus{border-color:var(--green)}
+  .cgrp-del{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:5px;background:#F7E9E5;color:#C0584B;font-weight:800;cursor:pointer}
+  .cgrp-del:hover{background:#C0584B;color:#fff}
+  tr.addgrp td{padding:10px 22px;background:#F6F1E6;border-top:1px solid var(--line)}
+  .addgrp-btn{display:inline-flex;align-items:center;gap:6px;color:var(--orange);font-weight:800;font-size:13px;cursor:pointer}
+  .addgrp-btn:hover{text-decoration:underline}
   .cmp-searchbar{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line-strong);border-radius:12px;padding:12px 16px;margin-bottom:16px}
   .cmp-searchbar svg{width:18px;height:18px;color:var(--muted);flex-shrink:0}
   .cmp-searchbar input{flex:1;border:none;outline:none;background:transparent;font-size:15px;color:var(--ink)}
@@ -219,6 +233,20 @@
   .nak-tog.on{background:var(--green);color:#fff;border-color:var(--green)}
   .nak-tog.off{background:#F7E9E5;color:#C0584B;border-color:#E7CFC8}
   .cmp-note-foot{color:var(--muted);font-size:12px;margin-top:10px;line-height:1.5}
+  .cmp-ws-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .cmp-target-lbl{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);font-weight:600}
+  .cmp-target-lbl select{border:1px solid var(--line-strong);border-radius:8px;padding:7px 9px;font-size:12.5px;background:#fff;color:var(--ink)}
+  .cmp-addrow.grp{color:var(--orange);border-color:#E7D2BD}
+  .cmp-ws-table tr.cmp-grp td{background:var(--green-soft);padding:8px 10px;border-bottom:1px solid var(--line)}
+  .cmp-grp-head{display:flex;align-items:center;gap:10px}
+  .cmp-grp-name{flex:1;max-width:300px;border:1px solid var(--line-strong);border-radius:7px;padding:6px 10px;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--green);background:#fff;outline:none}
+  .cmp-grp-name:focus{border-color:var(--green)}
+  .cmp-grp-plain{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+  .cmp-grp-add{border:1px solid #CFE3C6;background:#fff;color:var(--green);border-radius:7px;padding:5px 11px;font-weight:700;font-size:11.5px;cursor:pointer}
+  .cmp-grp-add:hover{background:var(--green);color:#fff;border-color:var(--green)}
+  .cmp-grp-del{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:5px;background:#F7E9E5;color:#C0584B;font-weight:800;cursor:pointer}
+  .cmp-grp-del:hover{background:#C0584B;color:#fff}
+  .cmp-ws-table tr.cmp-grp-empty td{color:var(--muted);font-size:12.5px;font-style:italic;padding:10px 16px}
   tbody tr.grp:hover td{background:var(--green-soft)}
   .calc-notes{margin-top:16px;color:var(--muted);font-size:12.5px;line-height:1.7;font-weight:500}
   .calc-notes p{margin:0}
@@ -1631,24 +1659,37 @@ function cmpSearchHTML(q){
 }
 function onCmpQuery(v){ state.cmpQuery=v; save(); const el=document.getElementById('cmp-search-results'); if(el) el.innerHTML=cmpSearchHTML(v); }
 function addCmpFromResult(i){ const r=cmpLastResults[i]; if(!r) return; pushCmpRow({urun:r.urun, marka:r.marka, birim:r.birim, fiyat:+Number(r.net).toFixed(2)}); }
-function addCmpRow(){ pushCmpRow({}); }
+function addCmpRow(gid){ pushCmpRow({gid: (gid!==undefined?gid:(state.cmpTarget||''))}); }
 function pushCmpRow(pref){
   if(!state.cmpRows) state.cmpRows=[];
-  state.cmpRows.push(Object.assign({id:uid(), urun:'', marka:'', birim:'', fiyat:'', kaynak:'', nakDahil:true, nakliye:'', odeme:'', not:'', secili:false}, pref||{}));
+  const gid=(pref&&pref.gid!==undefined)?pref.gid:(state.cmpTarget||'');
+  state.cmpRows.push(Object.assign({id:uid(), gid:gid, urun:'', marka:'', birim:'', fiyat:'', kaynak:'', nakDahil:true, nakliye:'', odeme:'', not:'', secili:false}, pref||{}, {gid:gid}));
   save(); refreshCmpWs();
 }
 function refreshCmpWs(){ const el=document.getElementById('cmp-ws'); if(el) el.innerHTML=cmpWorksheetHTML(); }
+function refreshCmpTarget(){ const sel=document.getElementById('cmp-target'); if(sel) sel.innerHTML=cmpTargetOptions(); }
+function cmpTargetOptions(){
+  return `<option value="" ${!state.cmpTarget?'selected':''}>Grupsuz</option>`+
+    (state.cmpGroups||[]).map(g=>`<option value="${g.gid}" ${state.cmpTarget===g.gid?'selected':''}>${esc(g.name||'Grup')}</option>`).join('');
+}
+function setCmpTarget(v){ state.cmpTarget=v; save(); }
+function addCmpGroup(){
+  if(!state.cmpGroups) state.cmpGroups=[];
+  state.cmpGroupSeq=(state.cmpGroupSeq||0)+1;
+  const gid='cg'+state.cmpGroupSeq;
+  state.cmpGroups.push({gid, name:''});
+  state.cmpTarget=gid; save(); refreshCmpTarget(); refreshCmpWs();
+}
+function renameCmpGroup(gid,val){ const g=(state.cmpGroups||[]).find(x=>x.gid===gid); if(g){ g.name=val; save(); refreshCmpTarget(); } }
+function delCmpGroup(gid){
+  state.cmpGroups=(state.cmpGroups||[]).filter(x=>x.gid!==gid);
+  (state.cmpRows||[]).forEach(r=>{ if(r.gid===gid) r.gid=''; });   // satırlar grupsuz olur (silinmez)
+  if(state.cmpTarget===gid) state.cmpTarget='';
+  save(); refreshCmpTarget(); refreshCmpWs();
+}
 function cmpTotal(r){ return (Number(r.fiyat)||0) + (r.nakDahil?0:(Number(r.nakliye)||0)); }
-function cmpWorksheetHTML(){
-  const rows=state.cmpRows||[];
-  if(!rows.length) return `<div class="cmp-empty">Henüz seçenek eklenmedi. Yukarıdan arayıp ekleyin ya da elle satır ekleyin.</div>`;
-  const totals=rows.map(cmpTotal).filter(t=>t>0);
-  const min=totals.length?Math.min(...totals):null;
-  return `<div class="cmp-ws-scroll"><table class="cmp-ws-table"><thead><tr>
-    <th>SEÇ</th><th>ÜRÜN</th><th>MARKA</th><th>BİRİM</th><th class="num">BİRİM FİYAT ₺</th><th>NEREDEN GELECEK</th><th>NAKLİYE</th><th>ÖDEME</th><th>NOT</th><th class="num">TOPLAM ₺</th><th></th>
-  </tr></thead><tbody>
-  ${rows.map(r=>{ const tot=cmpTotal(r); const best=(min!=null && tot===min && tot>0);
-    return `<tr data-cmp-id="${r.id}" class="${r.secili?'sel ':''}${best?'best':''}">
+function cmpRowTR(r,best){
+  return `<tr data-cmp-id="${r.id}" class="${r.secili?'sel ':''}${best?'best':''}">
       <td style="text-align:center"><input type="radio" name="cmp-sel" ${r.secili?'checked':''} onclick="setCmpSelected('${r.id}')" title="Bu seçeneği seç"></td>
       <td><input class="cmp-in wide" value="${esc(r.urun||'')}" placeholder="Malzeme adı" oninput="setCmpField('${r.id}','urun',this.value)"></td>
       <td><input class="cmp-in" value="${esc(r.marka||'')}" placeholder="Marka" oninput="setCmpField('${r.id}','marka',this.value)"></td>
@@ -1658,11 +1699,36 @@ function cmpWorksheetHTML(){
       <td><div class="cmp-nak"><button type="button" class="nak-tog ${r.nakDahil?'on':'off'}" onclick="toggleCmpNak('${r.id}')">${r.nakDahil?'Dâhil':'Hariç'}</button>${r.nakDahil?'':`<input class="cmp-in num sm" type="number" step="0.01" value="${r.nakliye!==''&&r.nakliye!=null?r.nakliye:''}" placeholder="₺" oninput="setCmpNum('${r.id}','nakliye',this.value)">`}</div></td>
       <td><input class="cmp-in" value="${esc(r.odeme||'')}" placeholder="Peşin / vadeli…" oninput="setCmpField('${r.id}','odeme',this.value)"></td>
       <td><input class="cmp-in wide" value="${esc(r.not||'')}" placeholder="Not" oninput="setCmpField('${r.id}','not',this.value)"></td>
-      <td class="num b" data-cmp-total="${r.id}">${fmtNum(tot)}${best?' <span class="cmp-tag">en ucuz</span>':''}</td>
+      <td class="num b" data-cmp-total="${r.id}">${fmtNum(cmpTotal(r))}${best?' <span class="cmp-tag">en ucuz</span>':''}</td>
       <td style="text-align:center"><span class="row-x" title="Satırı sil" onclick="delCmpRow('${r.id}')">×</span></td>
-    </tr>`; }).join('')}
-  </tbody></table></div>
-  <div class="cmp-note-foot">“Nakliye” hücresindeki <b>Dâhil/Hariç</b> düğmesiyle nakliyenin fiyata dâhil olup olmadığını işaretleyin; hariçse tutarı girin. Toplam = birim fiyat + (hariçse nakliye). En düşük toplam <b>en ucuz</b> olarak işaretlenir.</div>`;
+    </tr>`;
+}
+function cmpSectionRows(secRows){
+  const totals=secRows.map(cmpTotal).filter(t=>t>0);
+  const min=totals.length?Math.min(...totals):null;
+  return secRows.map(r=>cmpRowTR(r, min!=null && cmpTotal(r)===min && cmpTotal(r)>0)).join('');
+}
+function cmpWorksheetHTML(){
+  const rows=state.cmpRows||[]; const groups=state.cmpGroups||[];
+  if(!rows.length && !groups.length) return `<div class="cmp-empty">Henüz seçenek eklenmedi. Yukarıdan arayıp ekleyin, elle satır ekleyin ya da grup ekleyin.</div>`;
+  const head=`<thead><tr><th>SEÇ</th><th>ÜRÜN</th><th>MARKA</th><th>BİRİM</th><th class="num">BİRİM FİYAT ₺</th><th>NEREDEN GELECEK</th><th>NAKLİYE</th><th>ÖDEME</th><th>NOT</th><th class="num">TOPLAM ₺</th><th></th></tr></thead>`;
+  let bodyRows='';
+  const ungrouped=rows.filter(r=>!r.gid || !groups.some(g=>g.gid===r.gid));
+  if(ungrouped.length){
+    if(groups.length) bodyRows += `<tr class="cmp-grp"><td colspan="11"><span class="cmp-grp-plain">Grupsuz</span></td></tr>`;
+    bodyRows += cmpSectionRows(ungrouped);
+  }
+  groups.forEach(g=>{
+    const gr=rows.filter(r=>r.gid===g.gid);
+    bodyRows += `<tr class="cmp-grp"><td colspan="11"><div class="cmp-grp-head">
+        <input class="cmp-grp-name" value="${esc(g.name||'')}" placeholder="Grup adı…" oninput="renameCmpGroup('${g.gid}',this.value)">
+        <button class="cmp-grp-add" onclick="addCmpRow('${g.gid}')">+ satır ekle</button>
+        <span class="cmp-grp-del" title="Grubu sil" onclick="delCmpGroup('${g.gid}')">×</span>
+      </div></td></tr>`;
+    bodyRows += gr.length ? cmpSectionRows(gr) : `<tr class="cmp-grp-empty"><td colspan="11">Bu gruba ürün ekleyin…</td></tr>`;
+  });
+  return `<div class="cmp-ws-scroll"><table class="cmp-ws-table">${head}<tbody>${bodyRows}</tbody></table></div>
+  <div class="cmp-note-foot">“Nakliye” hücresindeki <b>Dâhil/Hariç</b> düğmesiyle nakliyenin fiyata dâhil olup olmadığını işaretleyin; hariçse tutarı girin. Toplam = birim fiyat + (hariçse nakliye). Her grupta en düşük toplam <b>en ucuz</b> olarak işaretlenir.</div>`;
 }
 function setCmpField(id,f,v){ const r=(state.cmpRows||[]).find(x=>x.id===id); if(!r)return; r[f]=v; save(); }
 function setCmpNum(id,f,v){ const r=(state.cmpRows||[]).find(x=>x.id===id); if(!r)return; r[f]=(v===''?'':(Number(v)||0)); save(); recalcCmpTotals(); }
@@ -1670,16 +1736,17 @@ function toggleCmpNak(id){ const r=(state.cmpRows||[]).find(x=>x.id===id); if(!r
 function setCmpSelected(id){ (state.cmpRows||[]).forEach(r=>r.secili=(r.id===id)); save(); refreshCmpWs(); }
 function delCmpRow(id){ state.cmpRows=(state.cmpRows||[]).filter(x=>x.id!==id); save(); refreshCmpWs(); }
 function recalcCmpTotals(){
-  const rows=state.cmpRows||[];
-  const totals=rows.map(cmpTotal).filter(t=>t>0);
-  const min=totals.length?Math.min(...totals):null;
-  rows.forEach(r=>{
-    const tot=cmpTotal(r);
-    const cell=document.querySelector(`[data-cmp-total="${r.id}"]`);
-    const tr=document.querySelector(`tr[data-cmp-id="${r.id}"]`);
-    const best=(min!=null && tot===min && tot>0);
-    if(cell) cell.innerHTML=fmtNum(tot)+(best?' <span class="cmp-tag">en ucuz</span>':'');
-    if(tr) tr.classList.toggle('best', best);
+  const rows=state.cmpRows||[]; const groups=state.cmpGroups||[];
+  const sections={};
+  rows.forEach(r=>{ const k=(r.gid && groups.some(g=>g.gid===r.gid))?r.gid:'__ung'; (sections[k]=sections[k]||[]).push(r); });
+  Object.values(sections).forEach(sec=>{
+    const totals=sec.map(cmpTotal).filter(t=>t>0); const min=totals.length?Math.min(...totals):null;
+    sec.forEach(r=>{
+      const tot=cmpTotal(r); const best=(min!=null && tot===min && tot>0);
+      const cell=document.querySelector(`[data-cmp-total="${r.id}"]`); const tr=document.querySelector(`tr[data-cmp-id="${r.id}"]`);
+      if(cell) cell.innerHTML=fmtNum(tot)+(best?' <span class="cmp-tag">en ucuz</span>':'');
+      if(tr) tr.classList.toggle('best', best);
+    });
   });
 }
 function renderCompare(c){
@@ -1697,7 +1764,14 @@ function renderCompare(c){
       <input id="cmp-q" placeholder="Listelerde ürün ara…" value="${esc(state.cmpQuery||'')}" oninput="onCmpQuery(this.value)">
     </div>
     <div id="cmp-search-results">${cmpSearchHTML(state.cmpQuery||'')}</div>
-    <div class="cmp-ws-head"><span>Karşılaştırma Tablosu</span><button class="cmp-addrow" onclick="addCmpRow()">+ Elle satır ekle</button></div>
+    <div class="cmp-ws-head">
+      <span>Karşılaştırma Tablosu</span>
+      <div class="cmp-ws-actions">
+        <label class="cmp-target-lbl">Hedef grup <select id="cmp-target" onchange="setCmpTarget(this.value)">${cmpTargetOptions()}</select></label>
+        <button class="cmp-addrow" onclick="addCmpRow()">+ Elle satır ekle</button>
+        <button class="cmp-addrow grp" onclick="addCmpGroup()">+ Grup ekle</button>
+      </div>
+    </div>
     <div id="cmp-ws">${cmpWorksheetHTML()}</div>`;
   setTimeout(()=>{ const i=document.getElementById('cmp-q'); if(i){ i.focus(); i.setSelectionRange(i.value.length,i.value.length);} },0);
 }
@@ -1794,6 +1868,7 @@ function getCalcEntry(key){
   if(!e.pkgs) e.pkgs={};
   if(!e.removed) e.removed={};   // gizlenen sistem satırları {id:true}
   if(!e.extra) e.extra={};       // eklenen özel satırlar {id:{gi,name,spec}}
+  if(!e.cgroups) e.cgroups=[];   // eklenen özel gruplar [{gid,name}]
   if(!e.info) e.info={};
   if(!e.rows){
     // migrate old single-source model (srcBrand/srcTab + map) to per-row sources
@@ -1908,12 +1983,27 @@ function restoreCalcGroup(key,gi){
 }
 function addCalcRow(key,gi){
   const e=getCalcEntry(key); if(!e.extra) e.extra={};
+  if(e.gClosed) e.gClosed[gi]=false;            // satır eklerken grubu aç
   e.extraSeq=(e.extraSeq||0)+1;
   const id='x'+gi+'_'+e.extraSeq;
   e.extra[id]={gi:gi,name:'',spec:''};
   save(); renderActive();
 }
 function setCalcRowName(key,id,val){ const e=getCalcEntry(key); if(e.extra&&e.extra[id]){ e.extra[id].name=val; save(); } }
+function addCalcGroup(key){
+  const e=getCalcEntry(key); if(!e.cgroups) e.cgroups=[];
+  e.cgroupSeq=(e.cgroupSeq||0)+1;
+  e.cgroups.push({gid:'g'+e.cgroupSeq, name:''});
+  save(); renderActive();
+}
+function renameCalcGroup(key,gid,val){ const e=getCalcEntry(key); const cg=(e.cgroups||[]).find(x=>x.gid===gid); if(cg){ cg.name=val; save(); } }
+function delCalcGroup(key,gid){
+  const e=getCalcEntry(key);
+  e.cgroups=(e.cgroups||[]).filter(x=>x.gid!==gid);
+  Object.keys(e.extra||{}).forEach(id=>{ if(e.extra[id] && e.extra[id].gi===gid){ delete e.extra[id]; if(e.prices)delete e.prices[id]; if(e.pers)delete e.pers[id]; if(e.pkgs)delete e.pkgs[id]; if(e.rows)delete e.rows[id]; } });
+  if(e.gClosed) delete e.gClosed[gid];
+  save(); renderActive();
+}
 
 function renderCalcSheet(c){
   const cat=state.calcCat, s=(CALC[cat]||{}).systems?.find(x=>x.key===state.calcSys);
@@ -1943,6 +2033,19 @@ function renderCalcSheet(c){
     const restore = removedCount ? `<a class="addrow-restore" onclick="restoreCalcGroup('${key}',${gi})">kaldırılanları geri ekle (${removedCount})</a>` : '';
     body += `<tr class="addrow"><td colspan="11"><span class="addrow-plus" onclick="addCalcRow('${key}',${gi})">+ satır ekle</span>${restore}</td></tr>`;
   });
+  (e.cgroups||[]).forEach(cg=>{
+    const gid=cg.gid;
+    const gClosed=!!(e.gClosed && e.gClosed[gid]);
+    body += `<tr class="grp cgrp${gClosed?' closed':''}"><td colspan="11"><span class="grp-head">
+        <span class="grp-left" onclick="toggleCalcGroup('${key}','${gid}')"><span class="grp-caret">${gClosed?'▸':'▾'}</span></span>
+        <input class="cgrp-name" value="${esc(cg.name||'')}" placeholder="Grup adı…" onclick="event.stopPropagation()" oninput="renameCalcGroup('${key}','${gid}',this.value)">
+        <span class="cgrp-del" title="Grubu sil" onclick="delCalcGroup('${key}','${gid}')">×</span>
+      </span></td></tr>`;
+    if(gClosed) return;
+    Object.keys(e.extra||{}).forEach(xid=>{ const x=e.extra[xid]; if(!x||x.gi!==gid) return; body += calcRowHTML(key,e,area,xid,x.name,x.spec,0,true); });
+    body += `<tr class="addrow"><td colspan="11"><span class="addrow-plus" onclick="addCalcRow('${key}','${gid}')">+ satır ekle</span></td></tr>`;
+  });
+  body += `<tr class="addgrp"><td colspan="11"><span class="addgrp-btn" onclick="addCalcGroup('${key}')">+ Grup ekle</span></td></tr>`;
 
   const r0=computeCalc(s,e);
 
@@ -2119,7 +2222,17 @@ function exportCalcPDF(key){
     });
     if(gRows) rowsHtml+=`<tr class="g"><td colspan="6">${esc(g.name)}</td></tr>`+gRows;
   });
-  const today=new Date().toLocaleDateString('tr-TR');
+  (e.cgroups||[]).forEach(cg=>{
+    let gRows='';
+    Object.keys(e.extra||{}).forEach(id=>{ const x=e.extra[id]; if(!x||x.gi!==cg.gid) return;
+      const per=effPer(e,id,0); const pkg=effPkg(e,id);
+      const price=(Number(e.prices[id])||0)*factor; const amt=per*area*price/pkg;
+      const rw=(e.rows&&e.rows[id])||{};
+      const adi = rw.prod ? esc(rw.prod.split('|').join(' · ')) : esc(x.name||'—');
+      gRows+=`<tr><td>${adi}</td><td class="r">${calcQty(per)}</td><td class="r">${calcQty(per*area)}</td><td class="r">${fmtNum(price)}</td><td class="r">${calcQty(pkg)}</td><td class="r b">${fmtNum(amt)} ₺</td></tr>`;
+    });
+    if(gRows) rowsHtml+=`<tr class="g"><td colspan="6">${esc(cg.name||'Grup')}</td></tr>`+gRows;
+  });
   const inf=e.info||{};
   const infoRows=[
     ['Cari Ad',inf.cari],['İşin Adı',inf.is],['İlgili Kişi',inf.ilgili],
