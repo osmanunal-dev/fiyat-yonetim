@@ -353,6 +353,10 @@
   .pay-card{align-items:center}
   .pay-card .pay-btns{flex:1 1 auto;margin-bottom:0}
   .pay-card .disc-field{margin-left:auto}
+  .paydisc-card{flex-direction:column;align-items:stretch;gap:16px}
+  .paydisc-card .pay-btns{margin-bottom:0}
+  .paydisc-card .disc-fields{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-end;border-top:1px dashed var(--line);padding-top:16px}
+  .paydisc-card .disc-field{margin-left:0}
   .pay-btn{padding:10px 16px;border:1px solid var(--line-strong);border-radius:10px;background:var(--card);color:var(--ink);font-weight:600;font-size:13.5px;cursor:pointer}
   .pay-btn:hover{background:#F1EADB}
   .pay-btn.active{background:var(--green);color:#fff;border-color:var(--green)}
@@ -377,6 +381,8 @@
   .dyn-row .rm:hover{border-color:#D98A8A;color:#C0392B}
   .add-link{display:inline-flex;align-items:center;gap:6px;color:var(--green-2);font-weight:700;font-size:13px;margin-top:10px}
   .add-link svg{width:15px;height:15px}
+  .add-link.preset{margin-top:10px;border:1px solid var(--line-strong);border-radius:8px;padding:6px 11px;background:var(--card);color:var(--ink);font-size:12.5px;cursor:pointer}
+  .add-link.preset:hover{background:var(--green);color:#fff;border-color:var(--green)}
   .hint{font-size:12px;color:var(--muted);margin-top:8px;font-weight:500;line-height:1.5}
   .modal-foot{padding:18px 26px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end}
   .btn-ghost{padding:12px 18px;border-radius:11px;font-weight:600;color:var(--muted);border:1px solid var(--line-strong)}
@@ -507,6 +513,7 @@
         <div class="seg">
           <button id="seg-disc" class="on" onclick="setMode('discount')">İskonto</button>
           <button id="seg-pay" onclick="setMode('payment')">Ödeme Seçenekleri</button>
+          <button id="seg-paydisc" onclick="setMode('paydisc')">Ödeme + İskonto</button>
         </div>
       </div>
 
@@ -529,11 +536,17 @@
       <div class="fg" id="block-pay" style="display:none">
         <label>Ödeme Seçenekleri</label>
         <div class="dyn-list" id="pay-list"></div>
-        <button class="add-link" onclick="addPay()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Seçenek ekle
-        </button>
-        <p class="hint">Peşin, vadeli vb. ödeme seçeneklerini ekleyin. Her seçenek şablonda ayrı bir fiyat sütunu olur ve liste sayfasında buton olarak görünür. Kâr oranı liste sayfasındaki <b>KÂR</b> alanından girilir (seçenek olarak eklenmez).</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button type="button" class="add-link preset" onclick="addPayPreset('Peşin')">+ Peşin</button>
+          <button type="button" class="add-link preset" onclick="addPayPreset('Vadeli')">+ Vadeli</button>
+          <button type="button" class="add-link preset" onclick="addPayPreset('Nakit')">+ Nakit</button>
+          <button type="button" class="add-link preset" onclick="addPayPreset('Kredi Kartı')">+ Kredi Kartı</button>
+          <button type="button" class="add-link" onclick="addPay()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Seçenek ekle
+          </button>
+        </div>
+        <p class="hint">Hazır düğmelerle ya da “Seçenek ekle” ile peşin, vadeli, nakit, kredi kartı gibi ödeme seçenekleri ekleyin; her biri şablonda ayrı fiyat sütunu olur ve liste sayfasında buton olarak görünür. Adlarını değiştirebilirsiniz. Kâr oranı liste sayfasındaki <b>KÂR</b> alanından girilir.</p>
       </div>
 
       <div class="fg" id="block-upload" style="display:none;border-top:1px solid var(--line);padding-top:18px;margin-bottom:0">
@@ -627,6 +640,13 @@ function prodKey(p){ return (p.kod||'')+'|'+(p.urun||''); }
 function favKey(brandId,pk){ return brandId+'||'+pk; }
 function isFav(brandId,pk){ return !!(state.favorites && state.favorites[favKey(brandId,pk)]); }
 function toggleFav(brandId,pk){ if(!state.favorites) state.favorites={}; const k=favKey(brandId,pk); if(state.favorites[k]) delete state.favorites[k]; else state.favorites[k]=true; save(); }
+function mPay(m){ return m==='payment'||m==='paydisc'; }   // ödeme seçeneği sütunları kullanan modlar
+function mDisc(m){ return m==='discount'||m==='paydisc'; } // iskonto/net hesaplayan modlar
+function brandTag(b){
+  if(b.mode==='paydisc') return (b.payments.length)+' ödeme · '+(b.discounts.length)+' iskonto';
+  if(b.mode==='payment') return b.payments.length+' ödeme seçeneği';
+  return b.discounts.length+' iskonto';
+}
 const CUR_SYM={TL:'₺',USD:'$',EUR:'€'};
 function fold(s){ return (s==null?'':s).toString().trim().toLocaleLowerCase('tr').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' '); }
 function esc(s){ return (s==null?'':s).toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -1379,7 +1399,7 @@ function renderHome(c){
               <div>Yayım<b>${fmtDate(b.publish)}</b></div>
               <div>Ürün<b>${b.products.length}</b></div>
             </div>
-            <span class="tag">${b.mode==='discount'?b.discounts.length+' iskonto':b.payments.length+' ödeme seçeneği'}</span>
+            <span class="tag">${brandTag(b)}</span>
           </div>`).join('')}
       </div>`}
   `;
@@ -1408,7 +1428,7 @@ function renderLists(c){
               <div>Geçerlilik<b>${fmtDate(b.validity)}</b></div>
               <div>Ürün<b>${b.products.length}</b></div>
             </div>
-            <span class="tag">${b.mode==='discount'?b.discounts.length+' iskonto':b.payments.length+' ödeme seçeneği'}</span>
+            <span class="tag">${brandTag(b)}</span>
           </div>`).join('')}
       </div>
       <div style="margin-top:20px"><button class="btn-primary" onclick="openModal()">${I.plus}Marka Ekle</button></div>`}
@@ -1471,6 +1491,7 @@ function priceTableHTML(b, rows){
   const nPay=(b.payments&&b.payments.length)||1;
   let selPay=(state.payView&&state.payView[b.id])|0; if(selPay<0||selPay>=nPay) selPay=0;
   let controls = '';
+  const isKar = s => /^k[âa]r$/i.test((s||'').toString().trim());
   if(b.mode==='discount'){
     controls = `<div class="disc-card">
       ${b.discounts.map((d,i)=>`
@@ -1482,8 +1503,26 @@ function priceTableHTML(b, rows){
           </div>
         </div>`).join('')}
     </div>`;
+  } else if(b.mode==='paydisc'){
+    if(b.payments[selPay] && isKar(b.payments[selPay].label)){
+      const fi=b.payments.findIndex(p=>!isKar(p.label)); if(fi>=0) selPay=fi;
+    }
+    const btns = b.payments.map((p,i)=> isKar(p.label) ? '' :
+      `<button type="button" class="pay-btn ${i===selPay?'active':''}" onclick="selectPay('${b.id}',${i})">${esc(p.label||('Seçenek '+(i+1)))}</button>`).join('');
+    controls = `<div class="disc-card pay-card paydisc-card">
+      <div class="pay-btns">${btns}</div>
+      <div class="disc-fields">
+        ${b.discounts.map((d,i)=>`
+          <div class="disc-field">
+            <label>${d.label.toUpperCase()}</label>
+            <div class="pct-input">
+              <input type="number" value="${d.value}" oninput="setDisc('${b.id}',${i},this.value)">
+              <span class="suf">%</span>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`;
   } else {
-    const isKar = s => /^k[âa]r$/i.test((s||'').toString().trim());
     if(b.payments[selPay] && isKar(b.payments[selPay].label)){
       const fi=b.payments.findIndex(p=>!isKar(p.label)); if(fi>=0) selPay=fi;
     }
@@ -1507,7 +1546,7 @@ function priceTableHTML(b, rows){
   const rates = getRates();
 
   let head = `<th class="favth"></th><th>KOD ${sortBtn('kod')}</th><th>ÜRÜN ${sortBtn('urun')}</th><th>BİRİM</th>`;
-  if(b.mode==='discount'){
+  if(mDisc(b.mode)){
     facs.forEach((f,i)=>{
       head += `<th class="num">${single?'FİYAT LİSTE':f.toUpperCase()+' LİSTE'}</th>`;
       head += `<th class="num">${single?'FİYAT NET ₺':f.toUpperCase()+' NET ₺'}</th>`;
@@ -1515,7 +1554,7 @@ function priceTableHTML(b, rows){
   } else {
     facs.forEach((f,i)=> head += `<th class="num">${single?'FİYAT ₺':f.toUpperCase()+' ₺'}</th>`);
   }
-  const colCount = 4 + (b.mode==='discount' ? facs.length*2 : facs.length);
+  const colCount = 4 + (mDisc(b.mode) ? facs.length*2 : facs.length);
 
   const ls = state.listSort || {col:null,dir:1};
   rows=[...rows];
@@ -1535,6 +1574,13 @@ function priceTableHTML(b, rows){
       if(b.mode==='discount'){
         const raw = Number(prices[i]!=null?prices[i]:prices[0])||0;
         const base = raw*rate;
+        const tip = cur!=='TL' ? ` title="${fmtNum(raw)} ${cur} × ${fmtNum(rate)}"` : '';
+        r += `<td class="num"${tip}>${fmtNum(base)}</td><td class="net" data-base="${base}">${fmtNum(netPrice(b,base))}</td>`;
+      } else if(b.mode==='paydisc'){
+        let raw = prices[i*nPay+selPay];
+        if(raw==null||raw==='') raw = (prices[i]!=null?prices[i]:prices[0]);   // eski veriye düş
+        raw = Number(raw)||0;
+        const base = raw*rate;                         // seçili ödeme seçeneğinin liste fiyatı
         const tip = cur!=='TL' ? ` title="${fmtNum(raw)} ${cur} × ${fmtNum(rate)}"` : '';
         r += `<td class="num"${tip}>${fmtNum(base)}</td><td class="net" data-base="${base}">${fmtNum(netPrice(b,base))}</td>`;
       } else {
@@ -1633,7 +1679,7 @@ function setKar(id,val){
 }
 function resetDiscounts(){
   const b=state.brands.find(x=>x.id===state.activeBrand);
-  if(!b||b.mode!=='discount') return toast('Bu listede iskonto yok');
+  if(!b||!mDisc(b.mode)) return toast('Bu listede iskonto yok');
   b.discounts.forEach(d=>d.value=0); save(); render(); toast('İskontolar sıfırlandı');
 }
 
@@ -1927,7 +1973,7 @@ function effPkg(e,id){
 function productTL(brand,p,facIdx){
   const prices=p.prices||[Number(p.fiyatListe)||0];
   let i=Number(facIdx)||0;
-  if(brand && brand.mode==='payment'){
+  if(brand && mPay(brand.mode)){
     const nPay=(brand.payments&&brand.payments.length)||1;
     i = i*nPay;                              // ilk ödeme seçeneği (ör. Peşin) fiyatı
   }
@@ -2530,8 +2576,9 @@ function setMode(m){
   form.mode=m;
   document.getElementById('seg-disc').classList.toggle('on',m==='discount');
   document.getElementById('seg-pay').classList.toggle('on',m==='payment');
-  document.getElementById('block-disc').style.display = m==='discount'?'block':'none';
-  document.getElementById('block-pay').style.display = m==='payment'?'block':'none';
+  const sp=document.getElementById('seg-paydisc'); if(sp) sp.classList.toggle('on',m==='paydisc');
+  document.getElementById('block-disc').style.display = mDisc(m)?'block':'none';
+  document.getElementById('block-pay').style.display = mPay(m)?'block':'none';
 }
 function renderDiscList(){
   document.getElementById('disc-list').innerHTML = form.discounts.map((d,i)=>`
@@ -2554,6 +2601,7 @@ function renderPayList(){
 function setPayLabel(i,v){ form.payments[i]=v; }
 function removePay(i){ form.payments.splice(i,1); renderPayList(); }
 function addPay(){ form.payments.push('Seçenek '+(form.payments.length+1)); renderPayList(); }
+function addPayPreset(label){ form.payments.push(label); renderPayList(); }
 function addKarPay(){ form.payments.push('Kâr'); renderPayList(); }
 
 function renderFacList(){
@@ -2585,8 +2633,8 @@ function downloadTemplate(){
     ['Geçerlilik Tarihi', validity],
     ['Yayımlanma Tarihi', publish],
     ['Mod', mode],
-    ['İskontolar', mode==='discount'?discounts.join(' | '):''],
-    ['Ödeme Seçenekleri', mode==='payment'?payments.join(' | '):''],
+    ['İskontolar', mDisc(mode)?discounts.join(' | '):''],
+    ['Ödeme Seçenekleri', mPay(mode)?payments.join(' | '):''],
     ['Fabrikalar', factories.join(' | ')],
     [],
     ['⚠ Bu sayfayı değiştirmeyin. Ürünleri "Ürünler" sekmesine girin.']
@@ -2597,7 +2645,7 @@ function downloadTemplate(){
   // Products sheet — DÖVİZ column + price columns
   // discount: bir sütun/fabrika · payment: her ödeme seçeneği için sütun (×fabrika)
   let priceCols;
-  if(mode==='payment'){
+  if(mPay(mode)){
     const pays = payments.length ? payments : ['Peşin'];
     priceCols = [];
     factories.forEach(f=> pays.forEach(p=> priceCols.push(factories.length===1 ? p : (f+' · '+p))));
@@ -2612,19 +2660,19 @@ function downloadTemplate(){
   if(editB && editB.products.length){
     const oldFacs = editB.factories && editB.factories.length ? editB.factories : ['Liste Fiyatı'];
     const oldPays = (editB.payments||[]).map(p=>p.label);
-    const oldNPay = mode==='payment' ? Math.max(oldPays.length,1) : 1;
+    const oldNPay = mPay(mode) ? Math.max(oldPays.length,1) : 1;
     const pays = payments.length ? payments : ['Peşin'];
     sample = editB.products.map(p=>{
       const prices = p.prices || [Number(p.fiyatListe)||0];
       const row=[p.kod||'', p.urun||'', p.birim||'', p.cur||'TL'];
-      if(mode==='payment'){
+      if(mPay(mode)){
         factories.forEach(fname=>{
           let ofi=oldFacs.indexOf(fname); if(ofi<0 && (factories.length===1||oldFacs.length===1)) ofi=0;
           pays.forEach(pl=>{
             let opi=oldPays.indexOf(pl); if(opi<0) opi=-1;
             let val='';
             if(ofi>=0 && opi>=0){ const idx=ofi*oldNPay+opi; val = prices[idx]!=null?prices[idx]:''; }
-            else if(ofi>=0 && editB.mode!=='payment'){ val = prices[ofi]!=null?prices[ofi]:''; } // eski iskonto verisi
+            else if(ofi>=0 && !mPay(editB.mode)){ val = prices[ofi]!=null?prices[ofi]:''; } // eski iskonto verisi
             row.push(val);
           });
         });
@@ -2677,14 +2725,14 @@ function handleUpload(file){
       if(!info.name){ return toast('Geçersiz şablon: liste adı bulunamadı'); }
       if(parsed.products.length===0){ return toast('Ürün satırı bulunamadı'); }
 
-      // factories: ödeme modunda fiyat sütunları fabrika×seçenek olduğundan Info'daki fabrikaları kullan
-      let factories = (info.mode==='payment')
+      // factories: ödeme/karma modunda fiyat sütunları fabrika×seçenek olduğundan Info'daki fabrikaları kullan
+      let factories = (mPay(info.mode))
         ? ((info.factories&&info.factories.length)?info.factories:['Liste Fiyatı'])
         : (parsed.factories.length ? parsed.factories : (info.factories||['Liste Fiyatı']));
 
       let discounts=(info.discounts||[]).map(l=>({label:l,value:0}));
       let payments=(info.payments||[]).map(l=>({label:l,adj:0}));
-      if(info.mode==='discount' && discounts.length===0)
+      if(mDisc(info.mode) && discounts.length===0)
         discounts=[{label:'İSK. 1',value:0},{label:'Kâr',value:0}];
 
       const existing = editId ? state.brands.find(x=>x.id===editId) : null;
@@ -2729,7 +2777,7 @@ function sheetToInfo(wb){
     if(k==='Fiyat Listesi Adı') out.name=v;
     if(k==='Geçerlilik Tarihi') out.validity=v;
     if(k==='Yayımlanma Tarihi') out.publish=v;
-    if(k==='Mod') out.mode=(v==='payment'?'payment':'discount');
+    if(k==='Mod') out.mode=(v==='payment'?'payment':(v==='paydisc'?'paydisc':'discount'));
     if(k==='İskontolar'&&v) out.discounts=v.split('|').map(s=>s.trim()).filter(Boolean);
     if(k==='Ödeme Seçenekleri'&&v) out.payments=v.split('|').map(s=>s.trim()).filter(Boolean);
     if(k==='Fabrikalar'&&v) out.factories=v.split('|').map(s=>s.trim()).filter(Boolean);
