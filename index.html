@@ -247,6 +247,29 @@
   .cmp-grp-del{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:5px;background:#F7E9E5;color:#C0584B;font-weight:800;cursor:pointer}
   .cmp-grp-del:hover{background:#C0584B;color:#fff}
   .cmp-ws-table tr.cmp-grp-empty td{color:var(--muted);font-size:12.5px;font-style:italic;padding:10px 16px}
+  th.favth{width:30px}
+  td.favcell{text-align:center}
+  .star{cursor:pointer;color:#CBB26A;font-size:15px;user-select:none;line-height:1}
+  .star.on{color:#E0A000}
+  .star:hover{color:#E0A000}
+  .prodpick{display:flex;align-items:center;justify-content:space-between;gap:6px;border:1px solid var(--line-strong);border-radius:8px;padding:7px 9px;font-size:12.5px;background:#fff;color:var(--ink);cursor:pointer;min-width:160px;max-width:240px;white-space:nowrap;overflow:hidden}
+  .prodpick .pp-caret{width:14px;height:14px;color:var(--muted);flex-shrink:0}
+  .prodpick:not(.has){color:var(--muted)}
+  .prodpick.disabled{background:#F2EEE5;color:var(--muted);cursor:not-allowed}
+  .prodpick:hover:not(.disabled){border-color:var(--green)}
+  .prod-picker{position:fixed;z-index:200;background:#fff;border:1px solid var(--line-strong);border-radius:12px;box-shadow:0 14px 40px rgba(40,30,20,.20);overflow:hidden}
+  .pp-search{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line)}
+  .pp-search input{flex:1;border:1px solid var(--line-strong);border-radius:8px;padding:8px 10px;font-size:13px;outline:none}
+  .pp-search input:focus{border-color:var(--green)}
+  .pp-close{cursor:pointer;color:var(--muted);font-weight:800;font-size:18px;line-height:1;padding:0 4px}
+  .pp-list{max-height:320px;overflow-y:auto;padding:6px}
+  .pp-item{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px}
+  .pp-item:hover{background:var(--green-soft)}
+  .pp-item.cur{background:#EFF6EC}
+  .pp-label{flex:1;font-size:13px;cursor:pointer}
+  .pp-star{cursor:pointer;color:#CBB26A;font-size:14px;width:16px;text-align:center;flex-shrink:0}
+  .pp-star.on{color:#E0A000}
+  .pp-empty{padding:18px;text-align:center;color:var(--muted);font-size:13px}
   tbody tr.grp:hover td{background:var(--green-soft)}
   .calc-notes{margin-top:16px;color:var(--muted);font-size:12.5px;line-height:1.7;font-weight:500}
   .calc-notes p{margin:0}
@@ -574,6 +597,7 @@
   </div>
 </div>
 
+<div class="prod-picker" id="prod-picker" style="display:none"></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -600,6 +624,9 @@ function toInputDate(s){
 function save(){ store.set('fy_state', state); }
 function uid(){ return 'b'+Date.now().toString(36)+Math.random().toString(36).slice(2,5); }
 function prodKey(p){ return (p.kod||'')+'|'+(p.urun||''); }
+function favKey(brandId,pk){ return brandId+'||'+pk; }
+function isFav(brandId,pk){ return !!(state.favorites && state.favorites[favKey(brandId,pk)]); }
+function toggleFav(brandId,pk){ if(!state.favorites) state.favorites={}; const k=favKey(brandId,pk); if(state.favorites[k]) delete state.favorites[k]; else state.favorites[k]=true; save(); }
 const CUR_SYM={TL:'₺',USD:'$',EUR:'€'};
 function fold(s){ return (s==null?'':s).toString().trim().toLocaleLowerCase('tr').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' '); }
 function esc(s){ return (s==null?'':s).toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -750,6 +777,7 @@ if(state.navCalcOpen===undefined) state.navCalcOpen=(state.view==='calc');
 if(state.navListOpen===undefined) state.navListOpen=(state.view==='lists'||!!state.activeBrand);
 if(!state.listSort) state.listSort={col:null,dir:1};
 if(!state.payView) state.payView={};
+if(!state.favorites) state.favorites={};
 
 /* ---------------- calculation registry (Hesaplama) ---------------- */
 const CALC = {
@@ -1478,7 +1506,7 @@ function priceTableHTML(b, rows){
   const facLabel = i => single ? '' : facs[i].toUpperCase()+' · ';
   const rates = getRates();
 
-  let head = `<th>KOD ${sortBtn('kod')}</th><th>ÜRÜN ${sortBtn('urun')}</th><th>BİRİM</th>`;
+  let head = `<th class="favth"></th><th>KOD ${sortBtn('kod')}</th><th>ÜRÜN ${sortBtn('urun')}</th><th>BİRİM</th>`;
   if(b.mode==='discount'){
     facs.forEach((f,i)=>{
       head += `<th class="num">${single?'FİYAT LİSTE':f.toUpperCase()+' LİSTE'}</th>`;
@@ -1487,16 +1515,20 @@ function priceTableHTML(b, rows){
   } else {
     facs.forEach((f,i)=> head += `<th class="num">${single?'FİYAT ₺':f.toUpperCase()+' ₺'}</th>`);
   }
-  const colCount = 3 + (b.mode==='discount' ? facs.length*2 : facs.length);
+  const colCount = 4 + (b.mode==='discount' ? facs.length*2 : facs.length);
 
   const ls = state.listSort || {col:null,dir:1};
-  if(ls.col){ rows=[...rows].sort((x,y)=> ls.dir*byTr(x[ls.col],y[ls.col])); }
+  rows=[...rows];
+  if(ls.col){ rows.sort((x,y)=> ls.dir*byTr(x[ls.col],y[ls.col])); }
+  rows.sort((x,y)=> (isFav(b.id,prodKey(y))?1:0) - (isFav(b.id,prodKey(x))?1:0));   // favoriler en üstte (stabil)
   const body = rows.map(p=>{
     const prices = p.prices || [Number(p.fiyatListe)||0];
     const cur = prodCur(p);
     const rate = rates[cur] || 1;
     const sym = CUR_SYM[cur] || '₺';
-    let r = `<td>${p.kod||''}</td>
+    const pk = prodKey(p); const fav = isFav(b.id, pk);
+    let r = `<td class="favcell"><span class="star${fav?' on':''}" title="Favori" data-fav-brand="${b.id}" data-fav-key="${esc(pk)}">${fav?'★':'☆'}</span></td>
+      <td>${p.kod||''}</td>
       <td><span class="prod-name">${p.urun||''}<span class="try-tag"${cur!=='TL'?' style="color:var(--green-2);border-color:#CFE0D6"':''}>${sym}</span></span></td>
       <td class="unit">${p.birim||''}</td>`;
     facs.forEach((f,i)=>{
@@ -1947,7 +1979,8 @@ function calcRowHTML(key,e,area,id,name,spec,basePer,isExtra){
   const facOpts = facList.length ? facList.map((f,fi)=>`<option value="${fi}" ${(Number(r.fac)||0)===fi?'selected':''}>${esc(f)}</option>`).join('') : '<option>—</option>';
   const tabOpts = b ? (`<option value="">Tümü</option>`+sortedTabs(b).map(t=>`<option value="${t.id}" ${r.tab===t.id?'selected':''}>${esc(t.name)}</option>`).join('')) : '<option>—</option>';
   const src=rowSrc(e,id);
-  const prodOpts = `<option value="">— ürün —</option>`+src.items.map(o=>`<option value="${esc(o.key)}" ${r.prod===o.key?'selected':''}>${esc(o.label)}</option>`).join('');
+  const curProd = src.items.find(o=>o.key===r.prod);
+  const prodLabel = curProd ? esc(curProd.label) : '— ürün —';
   const brandOpts = `<option value="">— marka —</option>`+sortedBrands().map(bb=>`<option value="${bb.id}" ${r.brand===bb.id?'selected':''}>${esc(bb.name)}</option>`).join('');
   const nameCell = isExtra
     ? `<input class="cell-input nm" value="${esc(name||'')}" placeholder="Malzeme adı…" oninput="setCalcRowName('${key}','${id}',this.value)">`
@@ -1958,7 +1991,7 @@ function calcRowHTML(key,e,area,id,name,spec,basePer,isExtra){
     <td><select class="cell-select rsel" data-cact="rbrand" data-key="${key}" data-id="${id}">${brandOpts}</select></td>
     <td><select class="cell-select rsel" data-cact="rfac" data-key="${key}" data-id="${id}" ${b?'':'disabled'}>${facOpts}</select></td>
     <td><select class="cell-select rsel" data-cact="rtab" data-key="${key}" data-id="${id}" ${b?'':'disabled'}>${tabOpts}</select></td>
-    <td><select class="cell-select" data-cact="rprod" data-key="${key}" data-id="${id}" ${b?'':'disabled'}>${prodOpts}</select></td>
+    <td><div class="prodpick${r.prod?' has':''}${b?'':' disabled'}" ${b?`onclick="openProdPicker('${key}','${id}',this)"`:''} title="${b?'Ürün ara / seç':'Önce marka seçin'}">${prodLabel}<svg class="pp-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div></td>
     <td style="text-align:right"><input class="cell-input sm" type="number" min="0" step="0.01" value="${per}" oninput="setCalcPer('${key}','${id}',this.value)"></td>
     <td class="num qty-total" data-per="${basePer}" data-mat="${id}">${calcQty(per*area)}</td>
     <td style="text-align:right"><input class="cell-input" type="number" min="0" step="0.01" placeholder="0" value="${up!=null&&up!==''?up:''}" oninput="setCalcPrice('${key}','${id}',this.value)"></td>
@@ -1990,6 +2023,44 @@ function addCalcRow(key,gi){
   save(); renderActive();
 }
 function setCalcRowName(key,id,val){ const e=getCalcEntry(key); if(e.extra&&e.extra[id]){ e.extra[id].name=val; save(); } }
+
+/* ---- searchable product picker (favorites first) ---- */
+let __pp=null, __ppList=[];
+function ppItems(){ if(!__pp) return {brand:null,items:[]}; const e=getCalcEntry(__pp.key); return rowSrc(e,__pp.id); }
+function ppListHTML(q){
+  const src=ppItems(); const b=src.brand;
+  if(!b) return `<div class="pp-empty">Önce marka seçin.</div>`;
+  const fq=fold(q||'').trim();
+  let items=src.items.slice();
+  if(fq) items=items.filter(o=>fold(o.label).indexOf(fq)>=0);
+  items.sort((x,y)=> (isFav(b.id,y.key)?1:0)-(isFav(b.id,x.key)?1:0));   // favoriler en üstte
+  if(!items.length) return `<div class="pp-empty">Eşleşen ürün yok.</div>`;
+  __ppList=items.slice(0,400);
+  const e=getCalcEntry(__pp.key); const r=(e.rows&&e.rows[__pp.id])||{};
+  return __ppList.map((o,i)=>{ const fav=isFav(b.id,o.key);
+    return `<div class="pp-item${r.prod===o.key?' cur':''}">
+      <span class="pp-star${fav?' on':''}" title="Favori" onclick="ppToggleFav(${i},event)">${fav?'★':'☆'}</span>
+      <span class="pp-label" onclick="ppPick(${i})">${esc(o.label)}</span>
+    </div>`; }).join('');
+}
+function openProdPicker(key,id,anchorEl){
+  __pp={key,id};
+  const pop=document.getElementById('prod-picker');
+  const rc=anchorEl.getBoundingClientRect();
+  pop.style.display='block';
+  pop.innerHTML=`<div class="pp-search"><input id="pp-q" placeholder="Ürün ara…" autocomplete="off" oninput="ppFilter(this.value)"><span class="pp-close" onclick="closeProdPicker()">×</span></div><div class="pp-list" id="pp-list">${ppListHTML('')}</div>`;
+  const w=Math.min(Math.max(rc.width,300), window.innerWidth-16);
+  pop.style.width=w+'px';
+  pop.style.left=Math.max(8, Math.min(rc.left, window.innerWidth-w-8))+'px';
+  const below=window.innerHeight-rc.bottom;
+  if(below<260 && rc.top>below){ pop.style.top='auto'; pop.style.bottom=(window.innerHeight-rc.top+4)+'px'; }
+  else { pop.style.bottom='auto'; pop.style.top=(rc.bottom+4)+'px'; }
+  setTimeout(()=>{ const q=document.getElementById('pp-q'); if(q) q.focus(); },0);
+}
+function ppFilter(v){ const l=document.getElementById('pp-list'); if(l) l.innerHTML=ppListHTML(v); }
+function ppPick(i){ const o=__ppList[i]; if(!o||!__pp) return; setCalcRowProd(__pp.key,__pp.id,o.key); closeProdPicker(); }
+function ppToggleFav(i,ev){ if(ev){ev.stopPropagation();} const o=__ppList[i]; if(!o) return; const src=ppItems(); if(src.brand){ toggleFav(src.brand.id,o.key); const q=document.getElementById('pp-q'); ppFilter(q?q.value:''); } }
+function closeProdPicker(){ const pop=document.getElementById('prod-picker'); if(pop){ pop.style.display='none'; pop.innerHTML=''; } __pp=null; }
 function addCalcGroup(key){
   const e=getCalcEntry(key); if(!e.cgroups) e.cgroups=[];
   e.cgroupSeq=(e.cgroupSeq||0)+1;
@@ -2233,6 +2304,7 @@ function exportCalcPDF(key){
     });
     if(gRows) rowsHtml+=`<tr class="g"><td colspan="6">${esc(cg.name||'Grup')}</td></tr>`+gRows;
   });
+  const today=new Date().toLocaleDateString('tr-TR');
   const inf=e.info||{};
   const infoRows=[
     ['Cari Ad',inf.cari],['İşin Adı',inf.is],['İlgili Kişi',inf.ilgili],
@@ -2746,6 +2818,18 @@ function toast(msg){
 /* Modallar yalnızca X veya Vazgeç ile kapanır; boş alana tıklayınca kapanmaz */
 
 /* delegated change handler for calc source/product selects (robust against re-render) */
+document.getElementById('content').addEventListener('click', function(e){
+  const st=e.target.closest && e.target.closest('.star[data-fav-key]');
+  if(st){ toggleFav(st.dataset.favBrand, st.dataset.favKey); renderActive(); }
+});
+document.addEventListener('click', function(e){
+  if(!__pp) return;
+  const pop=document.getElementById('prod-picker');
+  if(pop && pop.contains(e.target)) return;
+  if(e.target.closest && e.target.closest('.prodpick')) return;
+  closeProdPicker();
+}, true);
+document.addEventListener('keydown', function(e){ if(e.key==='Escape' && __pp) closeProdPicker(); });
 document.getElementById('content').addEventListener('change', function(e){
   const el=e.target;
   if(!el || !el.dataset) return;
