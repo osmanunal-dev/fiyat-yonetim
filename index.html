@@ -1535,37 +1535,6 @@ function renderNav(){
     <button class="nav-item ${state.view==='home'?'active':''}" onclick="go('home')">
       ${I.home}<span class="ni-label">Ana Sayfa</span>
     </button>
-    <button class="nav-item ${state.view==='calc'&&!state.calcSys?'active':''}" onclick="toggleCalc()">
-      ${I.calc}<span class="ni-label">Hesaplama</span>
-      ${I.caret.replace('ni-caret','ni-caret '+(calcOpen?'open':''))}
-    </button>
-    <div class="submenu ${calcOpen?'open':''}">
-      ${Object.keys(CALC).map(cat=>{
-        const cOpen=!!(state.navCatOpen&&state.navCatOpen[cat]);
-        return `
-        <button class="sub-item ${state.calcCat===cat&&!state.calcSys?'active':''}" onclick="openCalcCat('${cat}')">
-          <span class="dot"></span><span style="flex:1">${CALC[cat].label}</span>
-          ${I.caret.replace('ni-caret','ni-caret '+(cOpen?'open':''))}
-        </button>
-        ${cOpen?CALC[cat].systems.map(s=>`
-          <button class="subsub-item ${state.calcSys===s.key?'active':''}" onclick="openCalcSys('${cat}','${s.key}')">
-            <span class="tdot"></span>${s.name}
-          </button>`).join(''):''}`;
-      }).join('')}
-    </div>
-    <button class="nav-item ${state.view==='packages'?'active':''}" onclick="go('packages')">
-      ${I.box}<span class="ni-label">Paket Tanımları</span>
-    </button>
-    <button class="nav-item ${state.view==='compare'?'active':''}" onclick="go('compare')">
-      ${I.compare}<span class="ni-label">Fiyat Karşılaştırma</span>
-    </button>
-    <button class="nav-item ${state.view==='crm'?'active':''}" onclick="go('crm')">
-      ${I.crm}<span class="ni-label">Teklifler / CRM</span>
-      ${(state.quotes&&state.quotes.length)?`<span class="ni-badge">${state.quotes.length}</span>`:''}
-    </button>
-    <button class="nav-item ${state.view==='settings'?'active':''}" onclick="go('settings')">
-      ${I.gear}<span class="ni-label">Ayarlar</span>
-    </button>
     <button class="nav-item ${state.view==='lists'&&!state.activeBrand?'active':''}" onclick="toggleLists()">
       ${I.list}<span class="ni-label">Fiyat Listeleri</span>
       <span class="ni-badge">${state.brands.length}</span>
@@ -1586,7 +1555,38 @@ function renderNav(){
           </button>`).join(''):''}`;
       }).join('')}
       <button class="sub-item sub-add" onclick="openModal()">${I.plus}Marka Ekle</button>
-    </div>`;
+    </div>
+    <button class="nav-item ${state.view==='calc'&&!state.calcSys?'active':''}" onclick="toggleCalc()">
+      ${I.calc}<span class="ni-label">Hesaplama</span>
+      ${I.caret.replace('ni-caret','ni-caret '+(calcOpen?'open':''))}
+    </button>
+    <div class="submenu ${calcOpen?'open':''}">
+      ${Object.keys(CALC).map(cat=>{
+        const cOpen=!!(state.navCatOpen&&state.navCatOpen[cat]);
+        return `
+        <button class="sub-item ${state.calcCat===cat&&!state.calcSys?'active':''}" onclick="openCalcCat('${cat}')">
+          <span class="dot"></span><span style="flex:1">${CALC[cat].label}</span>
+          ${I.caret.replace('ni-caret','ni-caret '+(cOpen?'open':''))}
+        </button>
+        ${cOpen?CALC[cat].systems.map(s=>`
+          <button class="subsub-item ${state.calcSys===s.key?'active':''}" onclick="openCalcSys('${cat}','${s.key}')">
+            <span class="tdot"></span>${s.name}
+          </button>`).join(''):''}`;
+      }).join('')}
+    </div>
+    <button class="nav-item ${state.view==='crm'?'active':''}" onclick="go('crm')">
+      ${I.crm}<span class="ni-label">Teklifler / CRM</span>
+      ${(state.quotes&&state.quotes.length)?`<span class="ni-badge">${state.quotes.length}</span>`:''}
+    </button>
+    <button class="nav-item ${state.view==='compare'?'active':''}" onclick="go('compare')">
+      ${I.compare}<span class="ni-label">Fiyat Karşılaştırma</span>
+    </button>
+    <button class="nav-item ${state.view==='settings'?'active':''}" onclick="go('settings')">
+      ${I.gear}<span class="ni-label">Ayarlar</span>
+    </button>
+    <button class="nav-item ${state.view==='packages'?'active':''}" onclick="go('packages')">
+      ${I.box}<span class="ni-label">Paket Tanımları</span>
+    </button>`;
 }
 function go(v){ state.view=v; state.activeBrand=null; state.activeTab=null; state.calcCat=null; state.calcSys=null; save(); render(); }
 function toggleCalc(){
