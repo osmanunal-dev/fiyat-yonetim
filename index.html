@@ -785,7 +785,8 @@ function toInputDate(s){
   return '';
 }
 
-function save(){ store.set('fy_state', state); schedulePush(); }
+function dataCount(s){ return ((s&&s.brands&&s.brands.length)||0) + ((s&&s.quotes&&s.quotes.length)||0); }
+function save(){ state._savedAt=Date.now(); store.set('fy_state', state); schedulePush(); }
 
 /* ---------------- Firebase bulut senkronu ---------------- */
 let fbDoc=null, fbReady=false, applyingRemote=false, pushTimer=null;
@@ -812,11 +813,18 @@ function attachListener(){
   if(!fbDoc) return;
   fbDoc.onSnapshot(snap=>{
     if(snap.metadata.hasPendingWrites) return;                 // kendi yazımız — yok say
-    if(!snap.exists){ setSyncStatus('ok','Senkron · bulut boş'); pushNow(); return; }
+    if(!snap.exists){ setSyncStatus('ok','Senkron · bulut boş'); pushNow(); return; }   // bulut boşsa yereli yükle
     const d=snap.data();
-    if(!d || !d.data) return;
+    if(!d || !d.data){ if(dataCount(state)) pushNow(); return; }
     if(d.client===clientId){ setSyncStatus('ok','Senkronize'); return; }   // bizden eski yankı
-    applyRemote(d.data);
+    const remote=d.data;
+    const localN=dataCount(state), remoteN=dataCount(remote);
+    // GÜVENLİK: boş/az bulut verisi dolu yerel veriyi ezmesin — onun yerine yereli yükle
+    if(localN>0 && remoteN===0){ setSyncStatus('ok','Senkron · yerel korunuyor'); pushNow(); return; }
+    // GÜVENLİK: daha eski bulut verisi daha yeni yereli ezmesin
+    const lt=(state._savedAt||0), rt=(remote._savedAt||0);
+    if(localN>0 && rt>0 && lt>0 && rt<lt){ pushNow(); return; }
+    applyRemote(remote);
     setSyncStatus('ok','Senkronize · güncellendi');
   }, err=>{ setSyncStatus('err','Senkron kesildi'); console.warn('snapshot',err); });
 }
