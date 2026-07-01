@@ -374,6 +374,10 @@
   .set-warn{margin-top:12px;font-size:12.5px;color:#B23A3A;background:#F8ECE9;border:1px solid #EAD3CD;border-radius:9px;padding:9px 12px}
   .set-meta{color:var(--muted);font-size:12.5px;margin:10px 2px 30px}
   .set-meta b{color:var(--ink)}
+  .calc-head-flex{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:4px}
+  .qb-addbar{margin-top:10px}
+  .qb-addbar .addrow-plus{display:inline-flex;align-items:center;gap:6px;background:#F6F1E6;border:1px solid var(--line);border-radius:9px;padding:9px 14px;color:var(--orange);font-weight:800;font-size:13px;cursor:pointer}
+  .qb-addbar .addrow-plus:hover{background:var(--orange);color:#fff;border-color:var(--orange)}
   tbody tr.grp:hover td{background:var(--green-soft)}
   .calc-notes{margin-top:16px;color:var(--muted);font-size:12.5px;line-height:1.7;font-weight:500}
   .calc-notes p{margin:0}
@@ -813,7 +817,11 @@ function attachListener(){
   if(!fbDoc) return;
   fbDoc.onSnapshot(snap=>{
     if(snap.metadata.hasPendingWrites) return;                 // kendi yazımız — yok say
-    if(!snap.exists){ setSyncStatus('ok','Senkron · bulut boş'); pushNow(); return; }   // bulut boşsa yereli yükle
+    if(!snap.exists){                                          // bulut belgesi yok
+      if(dataCount(state)>0){ setSyncStatus('ok','Senkron · yükleniyor'); pushNow(); }  // sadece VERİMİZ varsa oluştur
+      else { setSyncStatus('ok','Senkron · veri bekleniyor'); }                         // boşsak belge oluşturma
+      return;
+    }
     const d=snap.data();
     if(!d || !d.data){ if(dataCount(state)) pushNow(); return; }
     if(d.client===clientId){ setSyncStatus('ok','Senkronize'); return; }   // bizden eski yankı
@@ -1058,6 +1066,7 @@ function ensureDefaults(){
   if(state.crmStatus===undefined) state.crmStatus='';
   if(state.crmQuery===undefined) state.crmQuery='';
   if(state.crmCust===undefined) state.crmCust='';
+  if(!state.qb) state.qb={ info:{}, rows:[], isk1:0, isk2:0, isk3:0, kar:0, kdv:20, seq:0 };
 }
 ensureDefaults();
 
@@ -1531,7 +1540,8 @@ const I = {
   box:'<svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>',
   compare:'<svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18"/><path d="M5 8 2 13h6z"/><path d="M5 8v8"/><path d="M19 8l-3 5h6z"/><path d="M19 8v8"/><path d="M7 5h10"/></svg>',
   crm:'<svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
-  gear:'<svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>'
+  gear:'<svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+  doc:'<svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>'
 };
 
 /* ---------------- sidebar ---------------- */
@@ -1582,6 +1592,9 @@ function renderNav(){
           </button>`).join(''):''}`;
       }).join('')}
     </div>
+    <button class="nav-item ${state.view==='quote'?'active':''}" onclick="go('quote')">
+      ${I.doc}<span class="ni-label">Teklif Ver</span>
+    </button>
     <button class="nav-item ${state.view==='crm'?'active':''}" onclick="go('crm')">
       ${I.crm}<span class="ni-label">Teklifler / CRM</span>
       ${(state.quotes&&state.quotes.length)?`<span class="ni-badge">${state.quotes.length}</span>`:''}
@@ -1649,6 +1662,7 @@ function renderActive(){
   if(state.view==='packages') return renderPackages(c);
   if(state.view==='compare') return renderCompare(c);
   if(state.view==='crm') return renderCRM(c);
+  if(state.view==='quote') return renderQuoteBuilder(c);
   if(state.view==='settings') return renderSettings(c);
   if(state.view==='lists') return renderLists(c);
 }
@@ -2364,7 +2378,16 @@ function setCalcRowName(key,id,val){ const e=getCalcEntry(key); if(e.extra&&e.ex
 
 /* ---- searchable product picker (favorites first) ---- */
 let __pp=null, __ppList=[];
-function ppItems(){ if(!__pp) return {brand:null,items:[]}; const e=getCalcEntry(__pp.key); return rowSrc(e,__pp.id); }
+function ppItems(){
+  if(!__pp) return {brand:null,items:[]};
+  if(__pp.mode==='qb'){ const r=(getQB().rows||[]).find(x=>x.id===__pp.id)||{}; return srcProducts(r.brand, r.tab); }
+  const e=getCalcEntry(__pp.key); return rowSrc(e,__pp.id);
+}
+function ppCurrentProd(){
+  if(!__pp) return '';
+  if(__pp.mode==='qb'){ const r=(getQB().rows||[]).find(x=>x.id===__pp.id)||{}; return r.prod||''; }
+  const e=getCalcEntry(__pp.key); const r=(e.rows&&e.rows[__pp.id])||{}; return r.prod||'';
+}
 function ppListHTML(q){
   const src=ppItems(); const b=src.brand;
   if(!b) return `<div class="pp-empty">Önce marka seçin.</div>`;
@@ -2374,15 +2397,14 @@ function ppListHTML(q){
   items.sort((x,y)=> (isFav(b.id,y.key)?1:0)-(isFav(b.id,x.key)?1:0));   // favoriler en üstte
   if(!items.length) return `<div class="pp-empty">Eşleşen ürün yok.</div>`;
   __ppList=items.slice(0,400);
-  const e=getCalcEntry(__pp.key); const r=(e.rows&&e.rows[__pp.id])||{};
+  const cur=ppCurrentProd();
   return __ppList.map((o,i)=>{ const fav=isFav(b.id,o.key);
-    return `<div class="pp-item${r.prod===o.key?' cur':''}">
+    return `<div class="pp-item${cur===o.key?' cur':''}">
       <span class="pp-star${fav?' on':''}" title="Favori" onclick="ppToggleFav(${i},event)">${fav?'★':'☆'}</span>
       <span class="pp-label" onclick="ppPick(${i})">${esc(o.label)}</span>
     </div>`; }).join('');
 }
-function openProdPicker(key,id,anchorEl){
-  __pp={key,id};
+function ppOpenAt(anchorEl){
   const pop=document.getElementById('prod-picker');
   const rc=anchorEl.getBoundingClientRect();
   pop.style.display='block';
@@ -2395,8 +2417,13 @@ function openProdPicker(key,id,anchorEl){
   else { pop.style.bottom='auto'; pop.style.top=(rc.bottom+4)+'px'; }
   setTimeout(()=>{ const q=document.getElementById('pp-q'); if(q) q.focus(); },0);
 }
+function openProdPicker(key,id,anchorEl){ __pp={mode:'calc',key,id}; ppOpenAt(anchorEl); }
+function openQBPicker(id,anchorEl){ __pp={mode:'qb',id}; ppOpenAt(anchorEl); }
 function ppFilter(v){ const l=document.getElementById('pp-list'); if(l) l.innerHTML=ppListHTML(v); }
-function ppPick(i){ const o=__ppList[i]; if(!o||!__pp) return; setCalcRowProd(__pp.key,__pp.id,o.key); closeProdPicker(); }
+function ppPick(i){ const o=__ppList[i]; if(!o||!__pp) return;
+  if(__pp.mode==='qb') qbSetProd(__pp.id,o.key); else setCalcRowProd(__pp.key,__pp.id,o.key);
+  closeProdPicker();
+}
 function ppToggleFav(i,ev){ if(ev){ev.stopPropagation();} const o=__ppList[i]; if(!o) return; const src=ppItems(); if(src.brand){ toggleFav(src.brand.id,o.key); const q=document.getElementById('pp-q'); ppFilter(q?q.value:''); } }
 function closeProdPicker(){ const pop=document.getElementById('prod-picker'); if(pop){ pop.style.display='none'; pop.innerHTML=''; } __pp=null; }
 function addCalcGroup(key){
@@ -2653,15 +2680,19 @@ function buildQuoteSnapshot(key){
 }
 function quotePDF(q){
   const today = q.dateStr || new Date().toLocaleDateString('tr-TR');
+  const qb = q.kind==='qb';
+  const colspan = qb?5:6;
   let rowsHtml='';
   (q.groups||[]).forEach(g=>{
-    const gRows=g.rows.map(it=>`<tr>
-      <td>${esc(it.adi)}</td>
-      <td class="r">${calcQty(it.per)}</td><td class="r">${calcQty(it.total)} ${esc(it.unit||'')}</td>
-      <td class="r">${fmtNum(it.price)}</td><td class="r">${calcQty(it.pkg)}</td><td class="r b">${fmtNum(it.amt)} ₺</td>
-    </tr>`).join('');
-    rowsHtml+=`<tr class="g"><td colspan="6">${esc(g.name)}</td></tr>`+gRows;
+    const gRows=g.rows.map(it=> qb
+      ? `<tr><td>${esc(it.adi)}</td><td class="r">${calcQty(it.total)}</td><td class="r">${esc(it.unit||'')}</td><td class="r">${fmtNum(it.price)}</td><td class="r b">${fmtNum(it.amt)} ₺</td></tr>`
+      : `<tr><td>${esc(it.adi)}</td><td class="r">${calcQty(it.per)}</td><td class="r">${calcQty(it.total)} ${esc(it.unit||'')}</td><td class="r">${fmtNum(it.price)}</td><td class="r">${calcQty(it.pkg)}</td><td class="r b">${fmtNum(it.amt)} ₺</td></tr>`
+    ).join('');
+    rowsHtml+=`<tr class="g"><td colspan="${colspan}">${esc(g.name)}</td></tr>`+gRows;
   });
+  const theadCols = qb
+    ? `<th>ÜRÜN</th><th class="r">MİKTAR</th><th class="r">BİRİM</th><th class="r">BİRİM FİYAT ₺</th><th class="r">TUTAR ₺</th>`
+    : `<th>ÜRÜN</th><th class="r">1 m² SARF.</th><th class="r">TOPLAM</th><th class="r">BİRİM FİYAT ₺</th><th class="r">PAKET</th><th class="r">TUTAR ₺</th>`;
   const inf=q.info||{}; const t=q.totals||{};
   const infoRows=[
     ['Cari Ad',inf.cari],['İşin Adı',inf.is],['İlgili Kişi',inf.ilgili],
@@ -2698,16 +2729,13 @@ function quotePDF(q){
     <div class="hdr">
       <div>
         <h1>${esc(q.sysName)}</h1>
-        <p class="sub">${esc(q.sysSub||'')} &nbsp;·&nbsp; Metraj: <b>${calcQty(q.area||0)} m²</b> &nbsp;·&nbsp; Tarih: ${today}${q.no?` &nbsp;·&nbsp; Teklif No: <b>#${q.no}</b>`:''}</p>
+        <p class="sub">${esc(q.sysSub||'')}${qb?'':` &nbsp;·&nbsp; Metraj: <b>${calcQty(q.area||0)} m²</b>`} &nbsp;·&nbsp; Tarih: ${today}${q.no?` &nbsp;·&nbsp; Teklif No: <b>#${q.no}</b>`:''}</p>
       </div>
       ${q.logo?`<img class="logo" src="${q.logo}" alt="logo">`:''}
     </div>
     ${infoHtml}
     <table>
-      <thead><tr>
-        <th>ÜRÜN</th><th class="r">1 m² SARF.</th><th class="r">TOPLAM</th>
-        <th class="r">BİRİM FİYAT ₺</th><th class="r">PAKET</th><th class="r">TUTAR ₺</th>
-      </tr></thead>
+      <thead><tr>${theadCols}</tr></thead>
       <tbody>${rowsHtml}</tbody>
     </table>
     <div class="sum">
@@ -2736,6 +2764,157 @@ function saveQuoteFromCalc(key){
   }, q));
   save(); renderNav();
   toast(`Teklif CRM'e kaydedildi · #${state.quoteSeq}`);
+}
+
+/* ---------------- Teklif Ver (serbest teklif) ---------------- */
+function getQB(){ if(!state.qb) state.qb={info:{},rows:[],isk1:0,isk2:0,isk3:0,kar:0,kdv:20,seq:0}; return state.qb; }
+function qbRow(id){ return (getQB().rows||[]).find(r=>r.id===id); }
+function qbAddRow(){ const q=getQB(); q.seq=(q.seq||0)+1; q.rows.push({id:'r'+q.seq,name:'',spec:'',brand:'',fac:0,tab:'',prod:'',qty:1,unit:'',price:''}); save(); renderActive(); }
+function qbDelRow(id){ const q=getQB(); q.rows=q.rows.filter(r=>r.id!==id); save(); renderActive(); }
+function qbSetInfo(f,v){ const q=getQB(); if(!q.info)q.info={}; q.info[f]=v; save(); }
+function qbSetField(id,f,v){ const r=qbRow(id); if(r){ r[f]=v; save(); } }
+function qbSetNum(id,f,v){ const r=qbRow(id); if(r){ r[f]=(v===''?'':(Number(v)||0)); save(); qbRefreshRowAmt(id); qbRefreshTotals(); } }
+function qbSetTop(f,v){ const q=getQB(); q[f]=(v===''?0:(Number(v)||0)); save(); qbRefreshTotals(); }
+function qbSetBrand(id,v){ const r=qbRow(id); if(!r)return; r.brand=v; r.tab=''; r.prod=''; r.fac=0; save(); renderActive(); }
+function qbSetTab(id,v){ const r=qbRow(id); if(!r)return; r.tab=v; r.prod=''; save(); renderActive(); }
+function qbSetFac(id,v){ const r=qbRow(id); if(!r)return; r.fac=Number(v)||0; qbApplyProd(r); save(); renderActive(); }
+function qbSetProd(id,pk){ const r=qbRow(id); if(!r)return; r.prod=pk; qbApplyProd(r); save(); renderActive(); }
+function qbApplyProd(r){
+  const src=srcProducts(r.brand,r.tab); const b=src.brand;
+  if(!b||!r.prod) return;
+  const it=src.items.find(o=>o.key===r.prod); if(!it) return;
+  const p=it.p;
+  r.name = p.urun||r.name;
+  r.unit = p.birim||r.unit;
+  r.price = +Number(productTL(b,p,r.fac||0)).toFixed(2);
+}
+function qbRowAmt(r){ return (Number(r.qty)||0)*(Number(r.price)||0); }
+function qbCompute(){
+  const q=getQB();
+  const sub=(q.rows||[]).reduce((s,r)=>s+qbRowAmt(r),0);
+  const afterDisc=sub*(1-(Number(q.isk1)||0)/100)*(1-(Number(q.isk2)||0)/100)*(1-(Number(q.isk3)||0)/100);
+  const net=afterDisc*(1+(Number(q.kar)||0)/100);
+  const kdvRate=Number(q.kdv)||0; const kdv=net*kdvRate/100;
+  return {sub, afterDisc, net, kdvRate, kdv, withVat:net+kdv};
+}
+function qbRefreshRowAmt(id){ const r=qbRow(id); if(!r)return; const cell=document.querySelector(`[data-qb-amt="${id}"]`); if(cell) cell.textContent=fmtNum(qbRowAmt(r)); }
+function qbRefreshTotals(){ const el=document.getElementById('qb-sum'); if(el) el.innerHTML=qbSumHTML(); }
+function qbSumHTML(){
+  const t=qbCompute();
+  return `
+    <div class="line"><span>Liste Tutarı</span><b>${fmtNum(t.sub)} ₺</b></div>
+    <div class="line"><span>İskonto Sonrası</span><b>${fmtNum(t.afterDisc)} ₺</b></div>
+    <div class="line"><span>Ara Toplam</span><b>${fmtNum(t.net)} ₺</b></div>
+    <div class="line"><span>KDV (%${calcQty(t.kdvRate)})</span><b>${fmtNum(t.kdv)} ₺</b></div>
+    <div class="line total"><span>KDV Dâhil Toplam</span><span>${fmtNum(t.withVat)} ₺</span></div>`;
+}
+function qbRowHTML(row){
+  const b=state.brands.find(x=>x.id===row.brand);
+  const brandOpts=`<option value="">— marka —</option>`+sortedBrands().map(bb=>`<option value="${bb.id}" ${row.brand===bb.id?'selected':''}>${esc(bb.name)}</option>`).join('');
+  const facOpts=b?(b.factories||['Liste']).map((f,i)=>`<option value="${i}" ${(row.fac||0)===i?'selected':''}>${esc(f)}</option>`).join(''):'<option>—</option>';
+  const tabOpts=b?(`<option value="">— tümü —</option>`+(b.tabs||[]).map(t=>`<option value="${t.id}" ${row.tab===t.id?'selected':''}>${esc(t.name)}</option>`).join('')):'<option value="">—</option>';
+  let prodLabel='— ürün —';
+  if(b && row.prod){ const src=srcProducts(row.brand,row.tab); const it=src.items.find(o=>o.key===row.prod); if(it) prodLabel=esc(it.label); }
+  return `<tr>
+    <td style="white-space:nowrap;text-align:center"><span class="row-x" title="Satırı sil" onclick="qbDelRow('${row.id}')">×</span></td>
+    <td><input class="cell-input nm" value="${esc(row.name||'')}" placeholder="Malzeme adı…" oninput="qbSetField('${row.id}','name',this.value)"></td>
+    <td><input class="cell-input nm" value="${esc(row.spec||'')}" placeholder="—" oninput="qbSetField('${row.id}','spec',this.value)"></td>
+    <td><select class="cell-select rsel" onchange="qbSetBrand('${row.id}',this.value)">${brandOpts}</select></td>
+    <td><select class="cell-select rsel" ${b?'':'disabled'} onchange="qbSetFac('${row.id}',this.value)">${facOpts}</select></td>
+    <td><select class="cell-select rsel" ${b?'':'disabled'} onchange="qbSetTab('${row.id}',this.value)">${tabOpts}</select></td>
+    <td><div class="prodpick${row.prod?' has':''}${b?'':' disabled'}" ${b?`onclick="openQBPicker('${row.id}',this)"`:''} title="${b?'Ürün ara / seç':'Önce marka seçin'}">${prodLabel}<svg class="pp-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div></td>
+    <td style="text-align:right"><input class="cell-input sm" type="number" min="0" step="0.01" value="${row.qty!=null&&row.qty!==''?row.qty:''}" oninput="qbSetNum('${row.id}','qty',this.value)"></td>
+    <td><input class="cell-input sm" value="${esc(row.unit||'')}" placeholder="br" oninput="qbSetField('${row.id}','unit',this.value)"></td>
+    <td style="text-align:right"><input class="cell-input" type="number" min="0" step="0.01" placeholder="0" value="${row.price!=null&&row.price!==''?row.price:''}" oninput="qbSetNum('${row.id}','price',this.value)"></td>
+    <td class="net" data-qb-amt="${row.id}">${fmtNum(qbRowAmt(row))}</td>
+  </tr>`;
+}
+function renderQuoteBuilder(c){
+  const q=getQB(); const inf=q.info||{};
+  const rows=(q.rows||[]).map(qbRowHTML).join('');
+  c.innerHTML=`
+    <div class="calc-head-flex">
+      <div><div class="breadcrumb">Teklif Ver</div><h1 class="brand-title">Teklif Ver</h1></div>
+      <div class="brand-actions">
+        <button class="btn-save-quote" onclick="saveQBQuote()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Teklifi Kaydet
+        </button>
+        <button class="btn-outline" onclick="exportQBPDF()">PDF Aktar</button>
+        <button class="btn-outline" onclick="qbClear()">Temizle</button>
+      </div>
+    </div>
+    <p class="page-sub" style="margin-top:-6px">Serbest teklif hazırlayın: müşteri bilgilerini girin, fiyat listelerinden ürün seçin ya da olmayan malzemeleri elle yazın.</p>
+
+    <div class="info-card">
+      <div class="info-grid">
+        <div class="ig"><label>Cari Ad</label><input type="text" value="${esc(inf.cari||'')}" oninput="qbSetInfo('cari',this.value)" placeholder="Müşteri / firma adı"></div>
+        <div class="ig"><label>İşin Adı</label><input type="text" value="${esc(inf.is||'')}" oninput="qbSetInfo('is',this.value)" placeholder="Proje / iş tanımı"></div>
+        <div class="ig"><label>İlgili Kişi</label><input type="text" value="${esc(inf.ilgili||'')}" oninput="qbSetInfo('ilgili',this.value)" placeholder="Yetkili"></div>
+        <div class="ig"><label>Telefon</label><input type="text" value="${esc(inf.tel||'')}" oninput="qbSetInfo('tel',this.value)" placeholder="0___ ___ __ __"></div>
+        <div class="ig"><label>Mail</label><input type="text" value="${esc(inf.mail||'')}" oninput="qbSetInfo('mail',this.value)" placeholder="ornek@firma.com"></div>
+        <div class="ig"><label>Adres</label><input type="text" value="${esc(inf.adres||'')}" oninput="qbSetInfo('adres',this.value)" placeholder="Adres"></div>
+        <div class="ig ig-full"><label>Notlar</label><textarea rows="2" oninput="qbSetInfo('not',this.value)" placeholder="Teklife eklenecek notlar (PDF'e yansır)">${esc(inf.not||'')}</textarea></div>
+      </div>
+    </div>
+
+    <div class="disc-card">
+      <div class="disc-field"><label>İSK. 1</label><div class="pct-input"><input type="number" value="${q.isk1||0}" oninput="qbSetTop('isk1',this.value)"><span class="suf">%</span></div></div>
+      <div class="disc-field"><label>İSK. 2</label><div class="pct-input"><input type="number" value="${q.isk2||0}" oninput="qbSetTop('isk2',this.value)"><span class="suf">%</span></div></div>
+      <div class="disc-field"><label>İSK. 3</label><div class="pct-input"><input type="number" value="${q.isk3||0}" oninput="qbSetTop('isk3',this.value)"><span class="suf">%</span></div></div>
+      <div class="kar-divider"></div>
+      <div class="disc-field"><label style="color:var(--green-2)">KÂR</label><div class="pct-input" style="border-color:#CFE0D6"><input type="number" value="${q.kar||0}" oninput="qbSetTop('kar',this.value)"><span class="suf">%</span></div></div>
+      <div class="disc-field"><label>KDV</label><div class="pct-input"><input type="number" value="${q.kdv!=null?q.kdv:20}" oninput="qbSetTop('kdv',this.value)"><span class="suf">%</span></div></div>
+    </div>
+
+    <div class="table-wrap sheet-wrap">
+      <table class="sheet">
+        <colgroup>
+          <col style="width:3%"><col style="width:15%"><col style="width:10%"><col style="width:11%"><col style="width:9%"><col style="width:9%"><col style="width:15%">
+          <col style="width:7%"><col style="width:6%"><col style="width:8%"><col style="width:7%">
+        </colgroup>
+        <thead><tr>
+          <th></th><th>ÜRÜN</th><th>AÇIKLAMA</th><th>MARKA</th><th>FABRİKA</th><th>KATEGORİ</th><th>ÜRÜN</th>
+          <th class="num">MİKTAR</th><th>BİRİM</th><th class="num">BİRİM FİYAT ₺</th><th class="num">TUTAR ₺</th>
+        </tr></thead>
+        <tbody>${rows || `<tr><td colspan="11" style="text-align:center;color:var(--muted);padding:30px">Henüz satır yok. Aşağıdan “Satır ekle” ile başlayın.</td></tr>`}</tbody>
+      </table>
+    </div>
+    <div class="qb-addbar"><button class="addrow-plus" onclick="qbAddRow()">+ Satır ekle</button></div>
+
+    <div class="calc-out" id="qb-sum" style="max-width:420px;margin-top:18px">${qbSumHTML()}</div>`;
+}
+function buildQBSnapshot(){
+  const q=getQB(); const t=qbCompute();
+  const factor=(1-(Number(q.isk1)||0)/100)*(1-(Number(q.isk2)||0)/100)*(1-(Number(q.isk3)||0)/100)*(1+(Number(q.kar)||0)/100);
+  const rows=(q.rows||[]).filter(r=>(r.name&&r.name.trim())||(Number(r.qty)&&Number(r.price))).map(r=>{
+    const unitPrice=(Number(r.price)||0)*factor;   // isk+kâr birim fiyata gömülü (müşteri görünümü)
+    return { adi:(r.name||'—')+(r.spec?(' · '+r.spec):''), total:Number(r.qty)||0, unit:r.unit||'', price:unitPrice, amt:(Number(r.qty)||0)*unitPrice, per:0, pkg:1 };
+  });
+  const inf=q.info||{};
+  return {
+    kind:'qb', sysName:'Teklif', sysSub:'Serbest teklif', area:0,
+    info:{cari:inf.cari||'',is:inf.is||'',ilgili:inf.ilgili||'',adres:inf.adres||'',tel:inf.tel||'',mail:inf.mail||'',not:inf.not||''},
+    groups:[{name:'Kalemler', rows}],
+    totals:{sub:t.sub,afterDisc:t.afterDisc,net:t.net,kdvRate:t.kdvRate,kdv:t.kdv,withVat:t.withVat},
+    logo:state.logo||''
+  };
+}
+function exportQBPDF(){ const q=buildQBSnapshot(); if(!q.groups[0].rows.length){ toast('Önce satır ekleyin'); return; } quotePDF(q); }
+function saveQBQuote(){
+  const q=buildQBSnapshot();
+  if(!q.groups[0].rows.length){ toast('Kaydedilecek satır yok'); return; }
+  if(!state.quotes) state.quotes=[];
+  state.quoteSeq=(state.quoteSeq||0)+1;
+  const now=new Date();
+  state.quotes.unshift(Object.assign({ id:uid(), no:state.quoteSeq, dateISO:now.toISOString(), dateStr:now.toLocaleDateString('tr-TR'), status:'Gönderildi' }, q));
+  save(); renderNav();
+  toast(`Teklif CRM'e kaydedildi · #${state.quoteSeq}`);
+}
+function qbClear(){
+  if(!confirm('Teklif temizlensin mi? Girdiğiniz satırlar ve bilgiler silinir.')) return;
+  state.qb={info:{},rows:[],isk1:0,isk2:0,isk3:0,kar:0,kdv:20,seq:0};
+  save(); renderActive();
 }
 
 /* ---------------- CRM ---------------- */
