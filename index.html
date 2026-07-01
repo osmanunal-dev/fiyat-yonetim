@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fiyat Yönetimi</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -144,6 +147,20 @@
 
   /* table */
   .table-wrap{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow-x:auto}
+  /* ---- compact takeoff sheet (fits screen) ---- */
+  .sheet{table-layout:fixed;width:100%;min-width:860px}
+  .sheet th,.sheet td{padding:9px 10px;font-size:12.5px}
+  .sheet thead th{padding:11px 10px}
+  .sheet col.c-num{width:74px}
+  .sheet .cell-select.rsel{min-width:0;max-width:none;width:100%;padding:7px 7px;font-size:12px}
+  .sheet .prodpick{min-width:0;max-width:none;width:100%;padding:6px 7px;font-size:12px}
+  .sheet .cell-input{width:100%;padding:6px 7px;font-size:12.5px}
+  .sheet .cell-input.sm{width:100%}
+  .sheet .cell-input.nm{width:100%}
+  .sheet tbody tr.grp td{padding:8px 12px}
+  .sheet tr.addrow td,.sheet tr.addgrp td{padding:6px 12px}
+  .sheet .row-x{margin-right:5px}
+  .sheet .prod-name{gap:5px}
   table{width:100%;border-collapse:collapse}
   thead th{
     text-align:left;font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--muted);
@@ -270,6 +287,78 @@
   .pp-star{cursor:pointer;color:#CBB26A;font-size:14px;width:16px;text-align:center;flex-shrink:0}
   .pp-star.on{color:#E0A000}
   .pp-empty{padding:18px;text-align:center;color:var(--muted);font-size:13px}
+  /* ---- CRM ---- */
+  .btn-save-quote{display:flex;align-items:center;gap:8px;background:var(--green);color:#fff;padding:11px 16px;border-radius:11px;font-weight:700;font-size:13.5px;box-shadow:0 2px 8px rgba(58,110,74,.25)}
+  .btn-save-quote:hover{filter:brightness(1.05)}
+  .btn-save-quote svg{width:15px;height:15px}
+  .crm-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:22px 0 6px}
+  .cstat{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:16px 18px;display:flex;flex-direction:column;gap:6px}
+  .cstat span{font-size:11.5px;color:var(--muted);font-weight:600;letter-spacing:.03em}
+  .cstat b{font-size:22px;font-weight:800;color:var(--ink)}
+  @media(max-width:760px){.crm-stats{grid-template-columns:1fr 1fr}}
+  .crm-tabs{display:flex;gap:8px;margin:20px 0 14px;border-bottom:1px solid var(--line)}
+  .crm-tab{padding:10px 16px;font-weight:700;font-size:13.5px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
+  .crm-tab.on{color:var(--green);border-bottom-color:var(--green)}
+  .crm-tab:hover{color:var(--ink)}
+  .crm-filters{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+  .crm-search{flex:1;min-width:200px;max-width:380px;display:flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--line-strong);border-radius:11px;padding:9px 13px}
+  .crm-search svg{width:16px;height:16px;color:var(--muted);flex-shrink:0}
+  .crm-search input{border:none;outline:none;background:none;width:100%;font-size:13.5px}
+  .crm-fstatus{border:1px solid var(--line-strong);border-radius:11px;padding:9px 12px;background:var(--card);font-size:13px;font-weight:600;color:var(--ink)}
+  .crm-clearcust{border:1px solid var(--green);color:var(--green);background:var(--green-soft);border-radius:11px;padding:9px 12px;font-weight:700;font-size:12.5px}
+  .crm-clearcust:hover{background:var(--green);color:#fff}
+  .crm-table{width:100%;border-collapse:collapse}
+  .crm-table th{text-align:left;font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--muted);padding:13px 16px;border-bottom:1px solid var(--line);white-space:nowrap}
+  .crm-table th.num{text-align:right}
+  .crm-table td{padding:11px 16px;border-bottom:1px solid var(--line);font-size:13.5px}
+  .crm-table td.b{font-weight:700}
+  .crm-table td.num{text-align:right;font-weight:700}
+  .crm-table tbody tr:last-child td{border-bottom:none}
+  .crm-table tbody tr:hover{background:#FBF7EF}
+  .qstatus{border:1px solid var(--sc,#888);color:var(--sc,#888);background:#fff;border-radius:8px;padding:5px 8px;font-size:12px;font-weight:700;outline:none}
+  .mini{border:1px solid var(--line-strong);background:var(--card);border-radius:8px;padding:5px 10px;font-size:12px;font-weight:600;margin-left:5px;color:var(--ink)}
+  .mini:hover{background:var(--green-soft);border-color:var(--green);color:var(--green)}
+  .mini.danger{color:#C0584B;border-color:#E7D2CD;font-weight:800;width:28px;padding:5px 0;text-align:center}
+  .mini.danger:hover{background:#C0584B;color:#fff;border-color:#C0584B}
+  .cust-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+  .cust-card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:16px 18px;cursor:pointer;transition:border-color .12s,transform .08s}
+  .cust-card:hover{border-color:var(--green);transform:translateY(-1px)}
+  .cust-card-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+  .cust-card-h b{font-size:15.5px;font-weight:800}
+  .cust-badge{font-size:11px;font-weight:700;color:var(--green);background:var(--green-soft);border-radius:20px;padding:3px 10px;white-space:nowrap}
+  .cust-meta{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--muted);margin-bottom:12px}
+  .cust-meta .muted{font-style:italic}
+  .cust-tot{display:flex;justify-content:space-between;gap:10px;border-top:1px solid var(--line);padding-top:11px}
+  .cust-tot div{display:flex;flex-direction:column;gap:3px}
+  .cust-tot span{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .cust-tot b{font-size:13.5px;font-weight:800}
+  /* quote detail modal */
+  .qmodal{max-width:760px;width:94vw}
+  .qmodal .modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:20px 24px 12px}
+  .qmodal .modal-head h2{font-size:19px;font-weight:800}
+  .qmodal .modal-head p{font-size:13px;color:var(--muted);margin-top:3px}
+  .qbadge,.qd-info+.qd-info{}
+  .qbadge{display:inline-block;color:#fff;background:var(--sc,#888);border-radius:20px;padding:2px 10px;font-size:11.5px;font-weight:700}
+  .qmodal .modal-x{font-size:24px;color:var(--muted);line-height:1;background:none}
+  .qmodal .modal-body{padding:6px 24px 18px;max-height:64vh;overflow-y:auto}
+  .qd-info{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px 18px;background:var(--green-soft);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:14px}
+  .qd-info div{display:flex;flex-direction:column;gap:2px}
+  .qd-info span{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .qd-info b{font-size:13px;font-weight:700}
+  .qd-table{width:100%;border-collapse:collapse}
+  .qd-table th{text-align:left;font-size:10.5px;color:var(--muted);font-weight:700;letter-spacing:.04em;padding:9px 12px;border-bottom:1px solid var(--line)}
+  .qd-table th.r,.qd-table td.r{text-align:right}
+  .qd-table td{padding:8px 12px;border-bottom:1px solid var(--line);font-size:13px}
+  .qd-table td.b{font-weight:700}
+  .qd-table tr.g td{background:#F3F1EA;font-weight:700;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--green)}
+  .qd-sum{margin-left:auto;width:320px;margin-top:14px}
+  .qd-sum .l{display:flex;justify-content:space-between;padding:5px 0;font-size:13.5px}
+  .qd-sum .tt{border-top:2px solid var(--line-strong);margin-top:6px;padding-top:9px;font-weight:800;font-size:15px;color:var(--green)}
+  .qd-note{margin-top:14px}
+  .qd-note span{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .qd-note p{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-top:5px;font-size:13px;line-height:1.5}
+  .btn-primary{padding:12px 18px;border-radius:11px;font-weight:700;background:var(--green);color:#fff}
+  .btn-primary:hover{filter:brightness(1.05)}
   tbody tr.grp:hover td{background:var(--green-soft)}
   .calc-notes{margin-top:16px;color:var(--muted);font-size:12.5px;line-height:1.7;font-weight:500}
   .calc-notes p{margin:0}
@@ -435,13 +524,28 @@
   .calc-out .line b{font-weight:700}
   .calc-out .total{border-top:1px solid #D9E4DD;margin-top:6px;padding-top:12px;font-size:16px;font-weight:800;color:var(--green)}
 
+  .sidebar{transition:width .18s ease, margin .18s ease}
+  body.sb-collapsed .sidebar{width:0;margin-left:-1px;border-right:none;overflow:hidden}
+  body.sb-collapsed .sidebar>*{opacity:0}
   @media(max-width:880px){
-    .sidebar{position:fixed;left:-256px;z-index:50;transition:left .2s;box-shadow:var(--shadow)}
+    .sidebar{position:fixed;left:-256px;z-index:50;transition:left .2s;box-shadow:var(--shadow);width:256px!important;margin-left:0!important}
     .sidebar.show{left:0}
-    .menu-toggle{display:flex!important}
+    body.sb-collapsed .sidebar{width:256px;overflow:visible}
+    body.sb-collapsed .sidebar>*{opacity:1}
   }
-  .menu-toggle{display:none;width:40px;height:40px;border-radius:10px;border:1px solid var(--line-strong);background:var(--card);align-items:center;justify-content:center}
+  .menu-toggle{display:flex;width:40px;height:40px;border-radius:10px;border:1px solid var(--line-strong);background:var(--card);align-items:center;justify-content:center;flex-shrink:0}
+  .menu-toggle:hover{background:var(--green-soft);border-color:var(--green)}
   .menu-toggle svg{width:18px;height:18px}
+  .sync-status{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--muted);background:var(--card);border:1px solid var(--line-strong);border-radius:11px;padding:8px 12px;cursor:pointer;white-space:nowrap}
+  .sync-status .ss-dot{width:9px;height:9px;border-radius:50%;background:#B9B2A2;flex-shrink:0}
+  .sync-status.off .ss-dot{background:#B9B2A2}
+  .sync-status.wait .ss-dot{background:#C8922B;animation:sspulse 1s infinite}
+  .sync-status.ok .ss-dot{background:#2E9E4F}
+  .sync-status.ok{color:var(--green)}
+  .sync-status.err .ss-dot{background:#C0584B}
+  .sync-status.err{color:#C0584B}
+  @keyframes sspulse{0%,100%{opacity:1}50%{opacity:.35}}
+  @media(max-width:880px){ .sync-status .ss-txt{display:none} .sync-status{padding:8px} }
 </style>
 </head>
 <body>
@@ -453,6 +557,14 @@
   </div>
   <nav class="nav" id="nav"></nav>
   <div class="sidebar-foot">
+    <button class="foot-btn" onclick="backupData()" title="Tüm verileri JSON olarak indir">Yedek Al</button>
+    <button class="foot-btn" onclick="document.getElementById('restore-file').click()" title="Yedek dosyasından geri yükle">Yedeği Yükle</button>
+    <input type="file" id="restore-file" accept="application/json,.json" style="display:none" onchange="restoreData(this)">
+  </div>
+  <div class="sidebar-foot" style="border-top:none;padding-top:0">
+    <button class="foot-btn" onclick="changeSyncCode()" title="Bulut senkron kodu (tüm cihazlarda aynı)">Senkron Kodu</button>
+  </div>
+  <div class="sidebar-foot" style="border-top:none;padding-top:0">
     <button class="foot-btn" onclick="exportActive()">Tümünü Dışa Aktar</button>
     <button class="foot-btn" onclick="resetDiscounts()">İskontoları Sıfırla</button>
   </div>
@@ -460,7 +572,7 @@
 
 <main class="main">
   <div class="topbar">
-    <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('show')">
+    <button class="menu-toggle" onclick="toggleSidebar()" title="Menüyü aç/kapat">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
     <div class="search">
@@ -474,6 +586,9 @@
       Güncelle
     </button>
     <span id="rates-at" class="rates-at"></span>
+    <span id="sync-status" class="sync-status off" onclick="changeSyncCode()" title="Senkron kodu">
+      <span class="ss-dot"></span><span class="ss-txt">Yerel</span>
+    </span>
   </div>
   <div class="content" id="content"></div>
 </main>
@@ -610,10 +725,42 @@
   </div>
 </div>
 
+<div class="overlay" id="quote-overlay"><div class="modal qmodal" id="quote-modal"></div></div>
 <div class="prod-picker" id="prod-picker" style="display:none"></div>
 <div class="toast" id="toast"></div>
 
 <script>
+/* ===================== FİREBASE BULUT SENKRONU =====================
+   Verilerin tüm bilgisayarlarda aynı görünmesi için Firebase Firestore.
+   KURULUM (bir kez):
+   1) console.firebase.google.com → yeni proje → "Web" uygulaması ekle.
+      Verdiği config'i aşağıdaki FIREBASE_CONFIG'e yapıştırın.
+   2) Build → Firestore Database → "Veritabanı oluştur" (production modu).
+      Rules sekmesine şunu yazın ve yayınlayın:
+         rules_version='2';
+         service cloud.firestore {
+           match /databases/{db}/documents {
+             match /fiyatYonetimi/{code} {
+               allow read, write: if request.auth != null;
+             }
+           }
+         }
+   3) Build → Authentication → Sign-in method → "Anonymous" → etkinleştir.
+   4) SYNC_CODE'u kendinize özel, tahmin edilmesi zor bir şeyle değiştirin
+      (ör. "osman-bayi-9f3k2"). AYNI kodu her bilgisayarda kullanın.
+      İsterseniz uygulama içindeki "Senkron" düğmesinden de kodu girebilirsiniz.
+   Config boş bırakılırsa uygulama yalnızca bu cihazda (localStorage) çalışır. */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyD1p5MLTO0BvHScqg7V4bZuy28MTYeoRGo",
+  authDomain: "fiyat-yonetim.firebaseapp.com",
+  projectId: "fiyat-yonetim",
+  storageBucket: "fiyat-yonetim.firebasestorage.app",
+  messagingSenderId: "438357789955",
+  appId: "1:438357789955:web:ab6647bb28eaf74c88ad36"
+};
+const SYNC_CODE = "osman-bayi-9f3k2";  // her cihazda aynı olmalı
+/* =================================================================== */
+
 /* ---------------- storage (safe wrapper) ---------------- */
 const store = {
   get(k,d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } },
@@ -634,7 +781,101 @@ function toInputDate(s){
   return '';
 }
 
-function save(){ store.set('fy_state', state); }
+function save(){ store.set('fy_state', state); schedulePush(); }
+
+/* ---------------- Firebase bulut senkronu ---------------- */
+let fbDoc=null, fbReady=false, applyingRemote=false, pushTimer=null;
+let syncCode = (localStorage.getItem('fy_sync_code')||SYNC_CODE);
+const clientId = (function(){ let c=localStorage.getItem('fy_client'); if(!c){ c='c'+Math.random().toString(36).slice(2,10); localStorage.setItem('fy_client',c); } return c; })();
+function fbConfigured(){ return !!(FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.projectId); }
+function setSyncStatus(kind,txt){
+  const el=document.getElementById('sync-status'); if(!el) return;
+  el.className='sync-status '+kind; el.title=txt;
+  const t=el.querySelector('.ss-txt'); if(t) t.textContent=txt;
+}
+function initFirebase(){
+  if(!fbConfigured() || typeof firebase==='undefined'){ setSyncStatus('off','Yerel (senkron kapalı)'); return; }
+  try{
+    firebase.initializeApp(FIREBASE_CONFIG);
+    const db=firebase.firestore();
+    fbDoc=db.collection('fiyatYonetimi').doc(syncCode);
+    setSyncStatus('wait','Bağlanıyor…');
+    firebase.auth().signInAnonymously().catch(err=>{ setSyncStatus('err','Giriş hatası'); console.warn('auth',err); });
+    firebase.auth().onAuthStateChanged(u=>{ if(!u) return; fbReady=true; attachListener(); });
+  }catch(e){ setSyncStatus('err','Senkron hatası'); console.warn('firebase init',e); }
+}
+function attachListener(){
+  if(!fbDoc) return;
+  fbDoc.onSnapshot(snap=>{
+    if(snap.metadata.hasPendingWrites) return;                 // kendi yazımız — yok say
+    if(!snap.exists){ setSyncStatus('ok','Senkron · bulut boş'); pushNow(); return; }
+    const d=snap.data();
+    if(!d || !d.data) return;
+    if(d.client===clientId){ setSyncStatus('ok','Senkronize'); return; }   // bizden eski yankı
+    applyRemote(d.data);
+    setSyncStatus('ok','Senkronize · güncellendi');
+  }, err=>{ setSyncStatus('err','Senkron kesildi'); console.warn('snapshot',err); });
+}
+function applyRemote(data){
+  try{
+    applyingRemote=true;
+    state=data;
+    ensureDefaults();
+    store.set('fy_state', state);
+    if(typeof render==='function'){
+      if(state.eur&&document.getElementById('eur')) document.getElementById('eur').value=state.eur;
+      if(state.usd&&document.getElementById('usd')) document.getElementById('usd').value=state.usd;
+      render();
+    }
+  } finally { applyingRemote=false; }
+}
+function schedulePush(){
+  if(!fbReady || applyingRemote || !fbDoc) return;
+  clearTimeout(pushTimer);
+  pushTimer=setTimeout(pushNow, 700);
+}
+function pushNow(){
+  if(!fbDoc || !fbReady) return;
+  setSyncStatus('wait','Kaydediliyor…');
+  fbDoc.set({ data: state, client: clientId, updatedAt: firebase.firestore.FieldValue.serverTimestamp() })
+    .then(()=> setSyncStatus('ok','Senkronize'))
+    .catch(err=>{ setSyncStatus('err','Kaydedilemedi'); console.warn('push',err); });
+}
+function changeSyncCode(){
+  const v=prompt('Senkron kodu (tüm bilgisayarlarda AYNI olmalı):', syncCode);
+  if(v==null) return;
+  const code=v.trim(); if(!code) return;
+  localStorage.setItem('fy_sync_code', code);
+  toast('Senkron kodu güncellendi, sayfa yenileniyor…');
+  setTimeout(()=>location.reload(), 600);
+}
+function backupData(){
+  try{
+    const raw=localStorage.getItem('fy_state')||JSON.stringify(state);
+    const blob=new Blob([raw],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download='fiyat-yonetimi-yedek-'+new Date().toISOString().slice(0,10)+'.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    toast('Yedek indirildi');
+  }catch(e){ toast('Yedek alınamadı'); }
+}
+function restoreData(input){
+  const file=input.files&&input.files[0]; if(!file){ return; }
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const obj=JSON.parse(reader.result);
+      if(!obj||typeof obj!=='object'||!Array.isArray(obj.brands)){ toast('Geçersiz yedek dosyası'); input.value=''; return; }
+      const info=`${(obj.brands||[]).length} liste · ${(obj.quotes||[]).length} teklif`;
+      if(!confirm(`Yedek yüklenecek (${info}). Bu bilgisayardaki mevcut veriler bununla DEĞİŞTİRİLECEK. Devam edilsin mi?`)){ input.value=''; return; }
+      localStorage.setItem('fy_state', JSON.stringify(obj));
+      toast('Yedek yüklendi'); location.reload();
+    }catch(e){ toast('Yedek okunamadı'); input.value=''; }
+  };
+  reader.readAsText(file);
+}
 function uid(){ return 'b'+Date.now().toString(36)+Math.random().toString(36).slice(2,5); }
 function prodKey(p){ return (p.kod||'')+'|'+(p.urun||''); }
 function favKey(brandId,pk){ return brandId+'||'+pk; }
@@ -788,16 +1029,25 @@ function migrate(){
   if(changed) save();
 }
 migrate();
-if(!state.packages) state.packages={};   // product-keyed package memory (saved once, reused)
-if(!state.navBrandOpen) state.navBrandOpen={};
-if(state.activeBrand) state.navBrandOpen[state.activeBrand]=true;
-if(!state.navCatOpen) state.navCatOpen={};
-if(state.calcCat) state.navCatOpen[state.calcCat]=true;
-if(state.navCalcOpen===undefined) state.navCalcOpen=(state.view==='calc');
-if(state.navListOpen===undefined) state.navListOpen=(state.view==='lists'||!!state.activeBrand);
-if(!state.listSort) state.listSort={col:null,dir:1};
-if(!state.payView) state.payView={};
-if(!state.favorites) state.favorites={};
+function ensureDefaults(){
+  if(!state.packages) state.packages={};   // product-keyed package memory (saved once, reused)
+  if(!state.navBrandOpen) state.navBrandOpen={};
+  if(state.activeBrand) state.navBrandOpen[state.activeBrand]=true;
+  if(!state.navCatOpen) state.navCatOpen={};
+  if(state.calcCat) state.navCatOpen[state.calcCat]=true;
+  if(state.navCalcOpen===undefined) state.navCalcOpen=(state.view==='calc');
+  if(state.navListOpen===undefined) state.navListOpen=(state.view==='lists'||!!state.activeBrand);
+  if(!state.listSort) state.listSort={col:null,dir:1};
+  if(!state.payView) state.payView={};
+  if(!state.favorites) state.favorites={};
+  if(state.sidebarOpen===undefined) state.sidebarOpen=true;
+  if(!state.quotes) state.quotes=[];
+  if(state.crmView===undefined) state.crmView='quotes';
+  if(state.crmStatus===undefined) state.crmStatus='';
+  if(state.crmQuery===undefined) state.crmQuery='';
+  if(state.crmCust===undefined) state.crmCust='';
+}
+ensureDefaults();
 
 /* ---------------- calculation registry (Hesaplama) ---------------- */
 const CALC = {
@@ -1267,7 +1517,8 @@ const I = {
   caret:'<svg class="ni-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="9 6 15 12 9 18"/></svg>',
   plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
   box:'<svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>',
-  compare:'<svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18"/><path d="M5 8 2 13h6z"/><path d="M5 8v8"/><path d="M19 8l-3 5h6z"/><path d="M19 8v8"/><path d="M7 5h10"/></svg>'
+  compare:'<svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18"/><path d="M5 8 2 13h6z"/><path d="M5 8v8"/><path d="M19 8l-3 5h6z"/><path d="M19 8v8"/><path d="M7 5h10"/></svg>',
+  crm:'<svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'
 };
 
 /* ---------------- sidebar ---------------- */
@@ -1302,6 +1553,10 @@ function renderNav(){
     </button>
     <button class="nav-item ${state.view==='compare'?'active':''}" onclick="go('compare')">
       ${I.compare}<span class="ni-label">Fiyat Karşılaştırma</span>
+    </button>
+    <button class="nav-item ${state.view==='crm'?'active':''}" onclick="go('crm')">
+      ${I.crm}<span class="ni-label">Teklifler / CRM</span>
+      ${(state.quotes&&state.quotes.length)?`<span class="ni-badge">${state.quotes.length}</span>`:''}
     </button>
     <button class="nav-item ${state.view==='lists'&&!state.activeBrand?'active':''}" onclick="toggleLists()">
       ${I.list}<span class="ni-label">Fiyat Listeleri</span>
@@ -1377,6 +1632,7 @@ function renderActive(){
   if(state.view==='calc'){ return state.calcSys ? renderCalcSheet(c) : renderCalcLanding(c); }
   if(state.view==='packages') return renderPackages(c);
   if(state.view==='compare') return renderCompare(c);
+  if(state.view==='crm') return renderCRM(c);
   if(state.view==='lists') return renderLists(c);
 }
 
@@ -1667,6 +1923,25 @@ function selectPay(id,i){
   if(!state.payView) state.payView={};
   state.payView[id]=i; save(); renderActive();
 }
+function isMobileView(){ return !!(window.matchMedia && window.matchMedia('(max-width:880px)').matches); }
+function applySidebar(){
+  if(isMobileView()){
+    document.body.classList.remove('sb-collapsed');   // mobil: off-canvas; 'show' ile açılır
+  } else {
+    document.getElementById('sidebar').classList.remove('show');
+    document.body.classList.toggle('sb-collapsed', !state.sidebarOpen);
+  }
+}
+function toggleSidebar(){
+  if(isMobileView()){
+    document.getElementById('sidebar').classList.toggle('show');
+  } else {
+    state.sidebarOpen=!state.sidebarOpen;
+    document.body.classList.toggle('sb-collapsed', !state.sidebarOpen);
+    save();
+  }
+}
+window.addEventListener('resize', applySidebar);
 function setKar(id,val){
   const b=state.brands.find(x=>x.id===id); if(!b) return;
   b.kar = (val==='') ? 0 : (Number(val)||0);
@@ -2174,6 +2449,10 @@ function renderCalcSheet(c){
         <p class="page-sub">${s.sub} · her satırda marka, kategori ve ürün seçin; sarfiyat ve fiyatları düzenleyin</p>
       </div>
       <div class="brand-actions">
+        <button class="btn-save-quote" onclick="saveQuoteFromCalc('${key}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Teklifi Kaydet
+        </button>
         <button class="btn-outline" onclick="exportCalcPDF('${key}')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="12" y1="12" x2="12" y2="18"/></svg>
           PDF Aktar
@@ -2223,8 +2502,12 @@ function renderCalcSheet(c){
       <div class="disc-field"><label style="color:var(--green-2)">KÂR</label><div class="pct-input" style="border-color:#CFE0D6"><input type="number" value="${e.kar}" oninput="setCalcVal('${key}','kar',this.value)"><span class="suf">%</span></div></div>
       <div class="disc-field"><label>KDV</label><div class="pct-input"><input type="number" value="${e.kdv!=null?e.kdv:20}" oninput="setCalcVal('${key}','kdv',this.value)"><span class="suf">%</span></div></div>
     </div>
-    <div class="table-wrap">
-      <table>
+    <div class="table-wrap sheet-wrap">
+      <table class="sheet">
+        <colgroup>
+          <col style="width:13%"><col style="width:7%"><col style="width:11%"><col style="width:9%"><col style="width:9%"><col style="width:15%">
+          <col style="width:7%"><col style="width:7%"><col style="width:8%"><col style="width:6%"><col style="width:8%">
+        </colgroup>
         <thead><tr>
           <th>ÜRÜN</th><th>AÇIKLAMA</th><th>MARKA</th><th>FABRİKA</th><th>KATEGORİ</th><th>ÜRÜN</th>
           <th class="num">1 m² SARF.</th><th class="num">TOPLAM</th>
@@ -2306,59 +2589,70 @@ function clearCalc(key){
   state.calc[key]={ area:(s?s.defaultArea:100), prices:{}, pers:{}, pkgs:{}, rows:{}, info:{}, isk1:0,isk2:0,isk3:0,kar:0,kdv:20 };
   save(); renderActive(); toast('Hesaplama temizlendi');
 }
-function exportCalcPDF(key){
-  const [cat,sys]=key.split(':'); const s=(CALC[cat]||{}).systems?.find(x=>x.key===sys); if(!s) return;
+function buildQuoteSnapshot(key){
+  const [cat,sys]=key.split(':'); const s=(CALC[cat]||{}).systems?.find(x=>x.key===sys); if(!s) return null;
   const e=getCalcEntry(key); const area=Number(e.area)||0; const r=computeCalc(s,e);
   const variant=sysVariant(s,e);
   const factor=(1-(Number(e.isk1)||0)/100)*(1-(Number(e.isk2)||0)/100)*(1-(Number(e.isk3)||0)/100)*(1+(Number(e.kar)||0)/100);
-  let rowsHtml='';
+  const groups=[];
   s.groups.forEach((g,gi)=>{
-    let gRows='';
+    const rows=[];
     g.items.forEach((it,ii)=>{
       const id=gi+'_'+ii; const bp=sysPer(it,variant); if(bp===0) return; if(e.removed&&e.removed[id]) return;
       const per=effPer(e,id,bp); const pkg=effPkg(e,id);
-      const price=(Number(e.prices[id])||0)*factor; const amt=per*area*price/pkg;   // disc+profit baked in
+      const price=(Number(e.prices[id])||0)*factor; const amt=per*area*price/pkg;
       const rw=(e.rows&&e.rows[id])||{};
-      const adi = rw.prod ? esc(rw.prod.split('|').join(' · ')) : esc(it.name);
-      gRows+=`<tr>
-        <td>${adi}</td>
-        <td class="r">${calcQty(per)}</td><td class="r">${calcQty(per*area)} ${esc(it.unit||'')}</td>
-        <td class="r">${fmtNum(price)}</td><td class="r">${calcQty(pkg)}</td><td class="r b">${fmtNum(amt)} ₺</td>
-      </tr>`;
+      const adi = rw.prod ? rw.prod.split('|').join(' · ') : it.name;
+      rows.push({adi, per, total:per*area, unit:it.unit||'', price, pkg, amt});
     });
     Object.keys(e.extra||{}).forEach(id=>{ const x=e.extra[id]; if(!x||x.gi!==gi) return;
       const per=effPer(e,id,0); const pkg=effPkg(e,id);
       const price=(Number(e.prices[id])||0)*factor; const amt=per*area*price/pkg;
       const rw=(e.rows&&e.rows[id])||{};
-      const adi = rw.prod ? esc(rw.prod.split('|').join(' · ')) : esc(x.name||'—');
-      gRows+=`<tr>
-        <td>${adi}</td>
-        <td class="r">${calcQty(per)}</td><td class="r">${calcQty(per*area)}</td>
-        <td class="r">${fmtNum(price)}</td><td class="r">${calcQty(pkg)}</td><td class="r b">${fmtNum(amt)} ₺</td>
-      </tr>`;
+      const adi = rw.prod ? rw.prod.split('|').join(' · ') : (x.name||'—');
+      rows.push({adi, per, total:per*area, unit:'', price, pkg, amt});
     });
-    if(gRows) rowsHtml+=`<tr class="g"><td colspan="6">${esc(g.name)}</td></tr>`+gRows;
+    if(rows.length) groups.push({name:g.name, rows});
   });
   (e.cgroups||[]).forEach(cg=>{
-    let gRows='';
+    const rows=[];
     Object.keys(e.extra||{}).forEach(id=>{ const x=e.extra[id]; if(!x||x.gi!==cg.gid) return;
       const per=effPer(e,id,0); const pkg=effPkg(e,id);
       const price=(Number(e.prices[id])||0)*factor; const amt=per*area*price/pkg;
       const rw=(e.rows&&e.rows[id])||{};
-      const adi = rw.prod ? esc(rw.prod.split('|').join(' · ')) : esc(x.name||'—');
-      gRows+=`<tr><td>${adi}</td><td class="r">${calcQty(per)}</td><td class="r">${calcQty(per*area)}</td><td class="r">${fmtNum(price)}</td><td class="r">${calcQty(pkg)}</td><td class="r b">${fmtNum(amt)} ₺</td></tr>`;
+      const adi = rw.prod ? rw.prod.split('|').join(' · ') : (x.name||'—');
+      rows.push({adi, per, total:per*area, unit:'', price, pkg, amt});
     });
-    if(gRows) rowsHtml+=`<tr class="g"><td colspan="6">${esc(cg.name||'Grup')}</td></tr>`+gRows;
+    if(rows.length) groups.push({name:cg.name||'Grup', rows});
   });
-  const today=new Date().toLocaleDateString('tr-TR');
   const inf=e.info||{};
+  return {
+    sysName:s.name, sysSub:s.sub, area, srcKey:key,
+    info:{cari:inf.cari||'',is:inf.is||'',ilgili:inf.ilgili||'',adres:inf.adres||'',tel:inf.tel||'',mail:inf.mail||'',not:inf.not||''},
+    groups,
+    totals:{sub:r.sub,afterDisc:r.afterDisc,net:r.net,kdvRate:r.kdvRate,kdv:r.kdv,withVat:r.withVat},
+    logo:state.logo||''
+  };
+}
+function quotePDF(q){
+  const today = q.dateStr || new Date().toLocaleDateString('tr-TR');
+  let rowsHtml='';
+  (q.groups||[]).forEach(g=>{
+    const gRows=g.rows.map(it=>`<tr>
+      <td>${esc(it.adi)}</td>
+      <td class="r">${calcQty(it.per)}</td><td class="r">${calcQty(it.total)} ${esc(it.unit||'')}</td>
+      <td class="r">${fmtNum(it.price)}</td><td class="r">${calcQty(it.pkg)}</td><td class="r b">${fmtNum(it.amt)} ₺</td>
+    </tr>`).join('');
+    rowsHtml+=`<tr class="g"><td colspan="6">${esc(g.name)}</td></tr>`+gRows;
+  });
+  const inf=q.info||{}; const t=q.totals||{};
   const infoRows=[
     ['Cari Ad',inf.cari],['İşin Adı',inf.is],['İlgili Kişi',inf.ilgili],
     ['Adres',inf.adres],['Telefon',inf.tel],['Mail',inf.mail]
   ].filter(x=>x[1]&&x[1].toString().trim());
   const infoHtml = infoRows.length ? `<div class="cust">${infoRows.map(x=>`<div><span>${esc(x[0])}</span><b>${esc(x[1])}</b></div>`).join('')}</div>` : '';
   const notHtml = `<div class="notes"><div class="nt">Notlar</div><div class="nb">${esc(inf.not||'').replace(/\n/g,'<br>')}</div></div>`;
-  const doc=`<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8"><title>${esc(inf.is||s.name)} — Teklif</title>
+  const doc=`<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8"><title>${esc(inf.is||q.sysName)} — Teklif</title>
   <style>
     *{box-sizing:border-box}
     body{font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#222;margin:32px;font-size:12px}
@@ -2375,7 +2669,6 @@ function exportCalcPDF(key){
     th.r,td.r{text-align:right}
     td{padding:6px 8px;border-bottom:1px solid #eee}
     td.b{font-weight:700}
-    td.m{color:#555}
     tr.g td{background:#f3f1ea;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#3a5}
     .sum{margin-left:auto;width:340px;margin-bottom:22px}
     .sum .l{display:flex;justify-content:space-between;padding:6px 0;font-size:13px}
@@ -2387,10 +2680,10 @@ function exportCalcPDF(key){
   </style></head><body>
     <div class="hdr">
       <div>
-        <h1>${esc(s.name)}</h1>
-        <p class="sub">${esc(s.sub)} &nbsp;·&nbsp; Metraj: <b>${calcQty(area)} m²</b> &nbsp;·&nbsp; Tarih: ${today}</p>
+        <h1>${esc(q.sysName)}</h1>
+        <p class="sub">${esc(q.sysSub||'')} &nbsp;·&nbsp; Metraj: <b>${calcQty(q.area||0)} m²</b> &nbsp;·&nbsp; Tarih: ${today}${q.no?` &nbsp;·&nbsp; Teklif No: <b>#${q.no}</b>`:''}</p>
       </div>
-      ${state.logo?`<img class="logo" src="${state.logo}" alt="logo">`:''}
+      ${q.logo?`<img class="logo" src="${q.logo}" alt="logo">`:''}
     </div>
     ${infoHtml}
     <table>
@@ -2401,9 +2694,9 @@ function exportCalcPDF(key){
       <tbody>${rowsHtml}</tbody>
     </table>
     <div class="sum">
-      <div class="l"><span>Ara Toplam</span><b>${fmtNum(r.net)} ₺</b></div>
-      <div class="l"><span>KDV (%${calcQty(r.kdvRate)})</span><b>${fmtNum(r.kdv)} ₺</b></div>
-      <div class="l t"><span>KDV Dâhil Toplam</span><span>${fmtNum(r.withVat)} ₺</span></div>
+      <div class="l"><span>Ara Toplam</span><b>${fmtNum(t.net)} ₺</b></div>
+      <div class="l"><span>KDV (%${calcQty(t.kdvRate)})</span><b>${fmtNum(t.kdv)} ₺</b></div>
+      <div class="l t"><span>KDV Dâhil Toplam</span><span>${fmtNum(t.withVat)} ₺</span></div>
     </div>
     ${notHtml}
   </body></html>`;
@@ -2412,6 +2705,168 @@ function exportCalcPDF(key){
   win.document.open(); win.document.write(doc); win.document.close(); win.focus();
   setTimeout(()=>{ try{ win.print(); }catch(e){} }, 350);
 }
+function exportCalcPDF(key){ const q=buildQuoteSnapshot(key); if(!q) return; quotePDF(q); }
+function exportQuotePDF(id){ const q=(state.quotes||[]).find(x=>x.id===id); if(q) quotePDF(q); }
+function saveQuoteFromCalc(key){
+  const q=buildQuoteSnapshot(key); if(!q) return;
+  if(!q.groups.some(g=>g.rows.length)){ toast('Kaydedilecek satır yok'); return; }
+  if(!state.quotes) state.quotes=[];
+  state.quoteSeq=(state.quoteSeq||0)+1;
+  const now=new Date();
+  state.quotes.unshift(Object.assign({
+    id:uid(), no:state.quoteSeq, dateISO:now.toISOString(), dateStr:now.toLocaleDateString('tr-TR'),
+    status:'Gönderildi'
+  }, q));
+  save(); renderNav();
+  toast(`Teklif CRM'e kaydedildi · #${state.quoteSeq}`);
+}
+
+/* ---------------- CRM ---------------- */
+const QSTAT=[
+  {k:'Taslak',c:'#9A8E76'},
+  {k:'Gönderildi',c:'#C56A1E'},
+  {k:'Görüşülüyor',c:'#2D7DD2'},
+  {k:'Kazanıldı',c:'#2E7D32'},
+  {k:'Kaybedildi',c:'#B23A3A'}
+];
+function renderCRM(c){
+  const quotes=state.quotes||[];
+  const total=quotes.length;
+  const pending=quotes.filter(q=>q.status==='Gönderildi'||q.status==='Görüşülüyor').length;
+  const wonVal=quotes.filter(q=>q.status==='Kazanıldı').reduce((s,q)=>s+((q.totals&&q.totals.withVat)||0),0);
+  const totalVal=quotes.reduce((s,q)=>s+((q.totals&&q.totals.withVat)||0),0);
+  const view=state.crmView||'quotes';
+  c.innerHTML=`
+    <div class="breadcrumb">Teklifler / CRM</div>
+    <h1 class="page-title">Teklifler &amp; Müşteriler</h1>
+    <p class="page-sub">Hesaplamadan kaydettiğiniz teklifleri ve müşterilerinizi buradan takip edin.</p>
+    <div class="crm-stats">
+      <div class="cstat"><span>Toplam Teklif</span><b>${total}</b></div>
+      <div class="cstat"><span>Bekleyen</span><b>${pending}</b></div>
+      <div class="cstat"><span>Kazanılan Tutar</span><b style="color:var(--green)">${fmtNum(wonVal)} ₺</b></div>
+      <div class="cstat"><span>Toplam Teklif Tutarı</span><b>${fmtNum(totalVal)} ₺</b></div>
+    </div>
+    <div class="crm-tabs">
+      <button class="crm-tab ${view==='quotes'?'on':''}" onclick="setCrmView('quotes')">Teklifler</button>
+      <button class="crm-tab ${view==='customers'?'on':''}" onclick="setCrmView('customers')">Müşteriler</button>
+    </div>
+    ${view==='quotes'?crmQuotesHTML():crmCustomersHTML()}`;
+}
+function crmFilteredQuotes(){
+  let qs=(state.quotes||[]).slice();
+  if(state.crmStatus) qs=qs.filter(q=>q.status===state.crmStatus);
+  if(state.crmCust) qs=qs.filter(q=>((q.info&&q.info.cari)||'').trim()===state.crmCust);
+  const fq=fold(state.crmQuery||'').trim();
+  if(fq) qs=qs.filter(q=> fold(((q.info&&q.info.cari)||'')+' '+((q.info&&q.info.is)||'')+' '+(q.sysName||'')).indexOf(fq)>=0);
+  return qs;
+}
+function crmQTableHTML(){
+  const qs=crmFilteredQuotes();
+  const statusOpts = s => QSTAT.map(o=>`<option value="${o.k}" ${s===o.k?'selected':''}>${o.k}</option>`).join('');
+  const rows = qs.map(q=>{
+    const st=QSTAT.find(o=>o.k===q.status)||QSTAT[1];
+    return `<tr>
+      <td class="b">#${q.no}</td>
+      <td style="white-space:nowrap">${esc(q.dateStr||'')}</td>
+      <td>${esc((q.info&&q.info.cari)||'—')}</td>
+      <td>${esc((q.info&&q.info.is)||'—')}</td>
+      <td>${esc(q.sysName||'')}</td>
+      <td class="num b">${fmtNum((q.totals&&q.totals.withVat)||0)} ₺</td>
+      <td><select class="qstatus" style="--sc:${st.c}" onchange="setQuoteStatus('${q.id}',this.value)">${statusOpts(q.status)}</select></td>
+      <td style="text-align:right;white-space:nowrap">
+        <button class="mini" onclick="openQuoteDetail('${q.id}')">Detay</button>
+        <button class="mini" onclick="exportQuotePDF('${q.id}')">PDF</button>
+        <button class="mini danger" title="Sil" onclick="delQuote('${q.id}')">×</button>
+      </td>
+    </tr>`;
+  }).join('');
+  return `<table class="crm-table">
+      <thead><tr><th>NO</th><th>TARİH</th><th>CARİ</th><th>İŞ</th><th>SİSTEM</th><th class="num">TUTAR ₺</th><th>DURUM</th><th></th></tr></thead>
+      <tbody>${rows || `<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:40px">Kayıtlı teklif yok. Hesaplama ekranındaki “Teklifi Kaydet” ile teklif ekleyin.</td></tr>`}</tbody>
+    </table>`;
+}
+function crmQuotesHTML(){
+  return `
+    <div class="crm-filters">
+      <div class="crm-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input placeholder="Cari, iş veya sistem ara…" value="${esc(state.crmQuery||'')}" oninput="onCrmQuery(this.value)">
+      </div>
+      <select class="crm-fstatus" onchange="setCrmStatus(this.value)">
+        <option value="">Tüm durumlar</option>
+        ${QSTAT.map(o=>`<option value="${o.k}" ${state.crmStatus===o.k?'selected':''}>${o.k}</option>`).join('')}
+      </select>
+      ${state.crmCust?`<button class="crm-clearcust" onclick="setCrmCust('')">Müşteri: ${esc(state.crmCust)} ✕</button>`:''}
+    </div>
+    <div class="table-wrap"><div id="crm-qtable">${crmQTableHTML()}</div></div>`;
+}
+function crmCustomersHTML(){
+  const quotes=state.quotes||[];
+  const map={};
+  quotes.forEach(q=>{ const name=(((q.info&&q.info.cari)||'').trim())||'—'; (map[name]=map[name]||[]).push(q); });
+  const names=Object.keys(map).sort(byTr);
+  if(!names.length) return `<div class="cmp-empty">Henüz müşteri yok. Teklif kaydettiğinizde müşteriler burada listelenir.</div>`;
+  const cards=names.map(name=>{
+    const qs=map[name];
+    const tel=((qs.find(q=>q.info&&q.info.tel)||{}).info||{}).tel||'';
+    const mail=((qs.find(q=>q.info&&q.info.mail)||{}).info||{}).mail||'';
+    const total=qs.reduce((s,q)=>s+((q.totals&&q.totals.withVat)||0),0);
+    const won=qs.filter(q=>q.status==='Kazanıldı').reduce((s,q)=>s+((q.totals&&q.totals.withVat)||0),0);
+    const last=qs.map(q=>q.dateStr).filter(Boolean)[0]||'';
+    return `<div class="cust-card" data-cust="${esc(name)}" onclick="setCrmCustByCard(this)">
+      <div class="cust-card-h"><b>${esc(name)}</b><span class="cust-badge">${qs.length} teklif</span></div>
+      <div class="cust-meta">${tel?`<span>☎ ${esc(tel)}</span>`:''}${mail?`<span>✉ ${esc(mail)}</span>`:''}${(!tel&&!mail)?'<span class="muted">İletişim bilgisi yok</span>':''}</div>
+      <div class="cust-tot">
+        <div><span>Toplam</span><b>${fmtNum(total)} ₺</b></div>
+        <div><span>Kazanılan</span><b style="color:var(--green)">${fmtNum(won)} ₺</b></div>
+        <div><span>Son Teklif</span><b>${esc(last)}</b></div>
+      </div>
+    </div>`;
+  }).join('');
+  return `<div class="cust-grid">${cards}</div>`;
+}
+function refreshCrmTable(){ const el=document.getElementById('crm-qtable'); if(el) el.innerHTML=crmQTableHTML(); }
+function setCrmView(v){ state.crmView=v; save(); renderActive(); }
+function onCrmQuery(v){ state.crmQuery=v; save(); refreshCrmTable(); }
+function setCrmStatus(v){ state.crmStatus=v; save(); refreshCrmTable(); }
+function setCrmCust(v){ state.crmCust=v; state.crmView='quotes'; save(); renderActive(); }
+function setCrmCustByCard(el){ setCrmCust(el.getAttribute('data-cust')||''); }
+function setQuoteStatus(id,s){ const q=(state.quotes||[]).find(x=>x.id===id); if(q){ q.status=s; save(); refreshCrmTable(); } }
+function delQuote(id){ if(!confirm('Bu teklif kaydı silinsin mi?')) return; state.quotes=(state.quotes||[]).filter(x=>x.id!==id); save(); renderActive(); renderNav(); }
+function openQuoteDetail(id){
+  const q=(state.quotes||[]).find(x=>x.id===id); if(!q) return;
+  const st=QSTAT.find(o=>o.k===q.status)||QSTAT[1];
+  const inf=q.info||{}; const t=q.totals||{};
+  const infoRows=[['Cari',inf.cari],['İş',inf.is],['İlgili',inf.ilgili],['Telefon',inf.tel],['Mail',inf.mail],['Adres',inf.adres]].filter(x=>x[1]&&x[1].toString().trim());
+  let body='';
+  (q.groups||[]).forEach(g=>{
+    body+=`<tr class="g"><td colspan="4">${esc(g.name)}</td></tr>`;
+    body+=g.rows.map(it=>`<tr><td>${esc(it.adi)}</td><td class="r">${calcQty(it.total)} ${esc(it.unit||'')}</td><td class="r">${fmtNum(it.price)} ₺</td><td class="r b">${fmtNum(it.amt)} ₺</td></tr>`).join('');
+  });
+  document.getElementById('quote-modal').innerHTML=`
+    <div class="modal-head">
+      <div><h2>Teklif #${q.no}</h2><p>${esc(q.sysName||'')} · ${esc(q.dateStr||'')} · <span class="qbadge" style="--sc:${st.c}">${q.status}</span></p></div>
+      <button class="modal-x" onclick="closeQuoteDetail()">×</button>
+    </div>
+    <div class="modal-body">
+      ${infoRows.length?`<div class="qd-info">${infoRows.map(x=>`<div><span>${esc(x[0])}</span><b>${esc(x[1])}</b></div>`).join('')}</div>`:''}
+      <div class="table-wrap" style="margin-top:4px">
+        <table class="qd-table"><thead><tr><th>ÜRÜN</th><th class="r">TOPLAM</th><th class="r">BİRİM ₺</th><th class="r">TUTAR ₺</th></tr></thead><tbody>${body||'<tr><td colspan="4" style="padding:20px;text-align:center;color:var(--muted)">Satır yok</td></tr>'}</tbody></table>
+      </div>
+      <div class="qd-sum">
+        <div class="l"><span>Ara Toplam</span><b>${fmtNum(t.net)} ₺</b></div>
+        <div class="l"><span>KDV (%${calcQty(t.kdvRate)})</span><b>${fmtNum(t.kdv)} ₺</b></div>
+        <div class="l tt"><span>KDV Dâhil Toplam</span><span>${fmtNum(t.withVat)} ₺</span></div>
+      </div>
+      ${inf.not?`<div class="qd-note"><span>Notlar</span><p>${esc(inf.not).replace(/\n/g,'<br>')}</p></div>`:''}
+    </div>
+    <div class="modal-foot">
+      <button class="btn-ghost" onclick="closeQuoteDetail()">Kapat</button>
+      <button class="btn-primary" onclick="exportQuotePDF('${q.id}')">PDF Aktar</button>
+    </div>`;
+  document.getElementById('quote-overlay').classList.add('open');
+}
+function closeQuoteDetail(){ document.getElementById('quote-overlay').classList.remove('open'); }
 function setCalcRowBrand(key,id,val){ const e=getCalcEntry(key); if(!e.rows)e.rows={}; e.rows[id]={brand:val,tab:'',prod:'',fac:0}; save(); renderActive(); }
 function setCalcRowTab(key,id,val){ const e=getCalcEntry(key); if(!e.rows[id])e.rows[id]={brand:'',tab:'',prod:'',fac:0}; e.rows[id].tab=val; e.rows[id].prod=''; save(); renderActive(); }
 function setCalcRowFac(key,id,val){
@@ -2905,6 +3360,8 @@ document.getElementById('content').addEventListener('change', function(e){
 if(state.eur) document.getElementById('eur').value=state.eur;
 if(state.usd) document.getElementById('usd').value=state.usd;
 renderRatesAt();
+applySidebar();
+initFirebase();
 render();
 </script>
 </body>
