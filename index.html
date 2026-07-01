@@ -359,6 +359,21 @@
   .qd-note p{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-top:5px;font-size:13px;line-height:1.5}
   .btn-primary{padding:12px 18px;border-radius:11px;font-weight:700;background:var(--green);color:#fff}
   .btn-primary:hover{filter:brightness(1.05)}
+  /* ---- Ayarlar ---- */
+  .set-card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:20px 22px;margin:16px 0;max-width:680px}
+  .set-head{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:15px;font-weight:800;color:var(--ink);margin-bottom:8px}
+  .set-badge{font-size:11px;font-weight:700;border-radius:20px;padding:3px 11px}
+  .set-badge.ok{color:var(--green);background:var(--green-soft)}
+  .set-badge.off{color:var(--muted);background:#EFEBE1}
+  .set-desc{font-size:13px;color:var(--muted);line-height:1.55;margin-bottom:14px}
+  .set-row{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}
+  .set-field{display:flex;flex-direction:column;gap:6px;flex:1;min-width:200px}
+  .set-field label{font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--muted);text-transform:uppercase}
+  .set-code{border:1px solid var(--line-strong);border-radius:9px;padding:10px 12px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13.5px;background:#FBF8F1;color:var(--ink)}
+  .set-actions{display:flex;gap:10px;flex-wrap:wrap}
+  .set-warn{margin-top:12px;font-size:12.5px;color:#B23A3A;background:#F8ECE9;border:1px solid #EAD3CD;border-radius:9px;padding:9px 12px}
+  .set-meta{color:var(--muted);font-size:12.5px;margin:10px 2px 30px}
+  .set-meta b{color:var(--ink)}
   tbody tr.grp:hover td{background:var(--green-soft)}
   .calc-notes{margin-top:16px;color:var(--muted);font-size:12.5px;line-height:1.7;font-weight:500}
   .calc-notes p{margin:0}
@@ -556,18 +571,6 @@
     <p>Knauf bayi fiyat listesi</p>
   </div>
   <nav class="nav" id="nav"></nav>
-  <div class="sidebar-foot">
-    <button class="foot-btn" onclick="backupData()" title="Tüm verileri JSON olarak indir">Yedek Al</button>
-    <button class="foot-btn" onclick="document.getElementById('restore-file').click()" title="Yedek dosyasından geri yükle">Yedeği Yükle</button>
-    <input type="file" id="restore-file" accept="application/json,.json" style="display:none" onchange="restoreData(this)">
-  </div>
-  <div class="sidebar-foot" style="border-top:none;padding-top:0">
-    <button class="foot-btn" onclick="changeSyncCode()" title="Bulut senkron kodu (tüm cihazlarda aynı)">Senkron Kodu</button>
-  </div>
-  <div class="sidebar-foot" style="border-top:none;padding-top:0">
-    <button class="foot-btn" onclick="exportActive()">Tümünü Dışa Aktar</button>
-    <button class="foot-btn" onclick="resetDiscounts()">İskontoları Sıfırla</button>
-  </div>
 </aside>
 
 <main class="main">
@@ -726,6 +729,7 @@
 </div>
 
 <div class="overlay" id="quote-overlay"><div class="modal qmodal" id="quote-modal"></div></div>
+<input type="file" id="restore-file" accept="application/json,.json" style="display:none" onchange="restoreData(this)">
 <div class="prod-picker" id="prod-picker" style="display:none"></div>
 <div class="toast" id="toast"></div>
 
@@ -1518,7 +1522,8 @@ const I = {
   plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
   box:'<svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>',
   compare:'<svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18"/><path d="M5 8 2 13h6z"/><path d="M5 8v8"/><path d="M19 8l-3 5h6z"/><path d="M19 8v8"/><path d="M7 5h10"/></svg>',
-  crm:'<svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'
+  crm:'<svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  gear:'<svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>'
 };
 
 /* ---------------- sidebar ---------------- */
@@ -1557,6 +1562,9 @@ function renderNav(){
     <button class="nav-item ${state.view==='crm'?'active':''}" onclick="go('crm')">
       ${I.crm}<span class="ni-label">Teklifler / CRM</span>
       ${(state.quotes&&state.quotes.length)?`<span class="ni-badge">${state.quotes.length}</span>`:''}
+    </button>
+    <button class="nav-item ${state.view==='settings'?'active':''}" onclick="go('settings')">
+      ${I.gear}<span class="ni-label">Ayarlar</span>
     </button>
     <button class="nav-item ${state.view==='lists'&&!state.activeBrand?'active':''}" onclick="toggleLists()">
       ${I.list}<span class="ni-label">Fiyat Listeleri</span>
@@ -1633,6 +1641,7 @@ function renderActive(){
   if(state.view==='packages') return renderPackages(c);
   if(state.view==='compare') return renderCompare(c);
   if(state.view==='crm') return renderCRM(c);
+  if(state.view==='settings') return renderSettings(c);
   if(state.view==='lists') return renderLists(c);
 }
 
@@ -2729,6 +2738,48 @@ const QSTAT=[
   {k:'Kazanıldı',c:'#2E7D32'},
   {k:'Kaybedildi',c:'#B23A3A'}
 ];
+/* ---------------- Settings (Ayarlar) ---------------- */
+function renderSettings(c){
+  const on = fbConfigured();
+  const codeShown = (localStorage.getItem('fy_sync_code')||SYNC_CODE);
+  const nBrands=(state.brands||[]).length, nQuotes=(state.quotes||[]).length;
+  c.innerHTML=`
+    <div class="breadcrumb">Ayarlar</div>
+    <h1 class="page-title">Ayarlar</h1>
+    <p class="page-sub">Bulut senkronu, yedekleme ve veri araçları.</p>
+
+    <div class="set-card">
+      <div class="set-head"><span>Bulut Senkronu</span><span id="set-sync-badge" class="set-badge ${on?'ok':'off'}">${on?'Etkin':'Kapalı'}</span></div>
+      <p class="set-desc">Verileriniz Firebase üzerinden tüm bilgisayarlarda otomatik aynı olur. Aynı <b>senkron kodunu</b> her cihazda kullanın.</p>
+      <div class="set-row">
+        <div class="set-field"><label>Senkron Kodu</label><div class="set-code">${esc(codeShown)}</div></div>
+        <button class="btn-outline" onclick="changeSyncCode()">Değiştir</button>
+      </div>
+      ${on?'':`<p class="set-warn">Firebase yapılandırması boş — uygulama şu an yalnızca bu cihazda çalışıyor.</p>`}
+    </div>
+
+    <div class="set-card">
+      <div class="set-head"><span>Yedekleme</span></div>
+      <p class="set-desc">Tüm verinizi (listeler, teklifler, favoriler, ayarlar) tek bir JSON dosyası olarak indirin veya geri yükleyin.</p>
+      <div class="set-actions">
+        <button class="btn-primary" onclick="backupData()">Yedek Al</button>
+        <button class="btn-outline" onclick="document.getElementById('restore-file').click()">Yedeği Yükle</button>
+      </div>
+    </div>
+
+    <div class="set-card">
+      <div class="set-head"><span>Veri Araçları</span></div>
+      <p class="set-desc">Aktif fiyat listesini Excel olarak dışa aktarın veya aktif listedeki iskonto/kâr alanlarını sıfırlayın.</p>
+      <div class="set-actions">
+        <button class="btn-outline" onclick="exportActive()">Tümünü Dışa Aktar (Excel)</button>
+        <button class="btn-outline" onclick="resetDiscounts()">İskontoları Sıfırla</button>
+      </div>
+    </div>
+
+    <div class="set-meta">Kayıtlı: <b>${nBrands}</b> liste · <b>${nQuotes}</b> teklif</div>`;
+}
+
+/* ---------------- CRM ---------------- */
 function renderCRM(c){
   const quotes=state.quotes||[];
   const total=quotes.length;
