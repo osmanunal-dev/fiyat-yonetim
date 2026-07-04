@@ -3073,6 +3073,17 @@ function removeReportPeriod(y,m){
   reportRows=(reportRows||[]).filter(r=> !(String(r.y)===String(y) && String(r.m)===String(m)) );
   saveReportLS(); renderActive();
 }
+function reportPeriodsData(){
+  const per={}; (reportRows||[]).forEach(r=>{ if(r.y){ const k=r.y+'-'+String(r.m).padStart(2,'0'); per[k]=(per[k]||0)+1; } });
+  const keys=Object.keys(per).sort();
+  const undated=(reportRows||[]).filter(r=>!r.y).length;
+  return {per, keys, undated, count:keys.length+(undated?1:0), rows:(reportRows||[]).length};
+}
+function reportPeriodChipsHTML(){
+  const d=reportPeriodsData();
+  if(!d.keys.length && !d.undated) return '';
+  return `<div class="rep-periods">${d.keys.map(k=>{const [y,m]=k.split('-');return `<span class="rep-chip">${REP_AYLAR[Number(m)-1]} ${y} <b>${d.per[k]}</b><span class="rep-chip-x" title="Bu dönemi sil" onclick="removeReportPeriod('${y}','${Number(m)}')">×</span></span>`;}).join('')}${d.undated?`<span class="rep-chip muted">Tarihsiz <b>${d.undated}</b></span>`:''}</div>`;
+}
 function fmtC(n){ n=Number(n)||0; const a=Math.abs(n);
   if(a>=1e6) return (n/1e6).toLocaleString('tr-TR',{maximumFractionDigits:1})+' M₺';
   if(a>=1e3) return (n/1e3).toLocaleString('tr-TR',{maximumFractionDigits:0})+' B₺';
@@ -3105,6 +3116,28 @@ function statTable(rows){
   return `<table class="stat-table">
     <thead><tr><th>Alan</th><th class="r">Toplam</th><th class="r">Ortalama</th><th class="r">En Düşük</th><th class="r">En Yüksek</th><th class="r">Medyan</th></tr></thead>
     <tbody>${body}</tbody></table>`;
+}
+function orderStatsHTML(list){
+  const n=list.length;
+  const tv=list.reduce((s,r)=>s+r.brut,0);
+  const tm=list.reduce((s,r)=>s+r.miktar,0);
+  const avg=n?tv/n:0;
+  const mx=n?Math.max(...list.map(r=>r.brut)):0;
+  const firms=new Set(list.map(r=>r.firma)).size;
+  const fc={}; list.forEach(r=>{fc[r.firma]=(fc[r.firma]||0)+1;});
+  const topFirm=Object.entries(fc).sort((a,b)=>b[1]-a[1])[0];
+  const sc={}; list.forEach(r=>{sc[r.sorumlu]=(sc[r.sorumlu]||0)+1;});
+  const topSor=Object.entries(sc).sort((a,b)=>b[1]-a[1])[0];
+  return `<div class="stat-mini">
+    <div><span>Sipariş Sayısı</span><b>${n.toLocaleString('tr-TR')}</b></div>
+    <div><span>Toplam Tutar</span><b>${fmtC(tv)}</b></div>
+    <div><span>Ortalama Tutar</span><b>${fmtC(avg)}</b></div>
+    <div><span>En Yüksek</span><b>${fmtC(mx)}</b></div>
+    <div><span>Farklı Firma</span><b>${firms}</b></div>
+    <div><span>Toplam Miktar</span><b>${tm.toLocaleString('tr-TR',{maximumFractionDigits:2})}</b></div>
+    <div><span>En Çok Sipariş Veren</span><b title="${topFirm?esc(topFirm[0]):''}">${topFirm?esc(repTrunc(topFirm[0],18))+' ('+topFirm[1]+')':'—'}</b></div>
+    <div><span>En Aktif Sorumlu</span><b>${topSor?esc(topSor[0])+' ('+topSor[1]+')':'—'}</b></div>
+  </div>`;
 }
 function orderTable(list){
   if(!list.length) return `<div class="rep-empty-sm">Bu dönemde kayıt yok</div>`;
@@ -3221,15 +3254,7 @@ function renderReports(c){
   const fromQuoteVal=fromQuote.reduce((s,r)=>s+r.brut,0);
   const directVal=direct.reduce((s,r)=>s+r.brut,0);
   const dt=reportMeta? new Date(reportMeta.at).toLocaleDateString('tr-TR'):'';
-  // yüklü dönemler (birikimli)
-  const perCount={};
-  allRows.forEach(r=>{ if(r.y){ const k=r.y+'-'+String(r.m).padStart(2,'0'); perCount[k]=(perCount[k]||0)+1; } });
-  const perKeys=Object.keys(perCount).sort();
-  const undated=allRows.filter(r=>!r.y).length;
-  const periodChips={ count: perKeys.length + (undated?1:0),
-    html: (perKeys.length||undated) ? `<div class="rep-periods"><span class="rep-plabel">Yüklü dönemler:</span>${
-      perKeys.map(k=>{ const [yy,mm]=k.split('-'); return `<span class="rep-chip">${REP_AYLAR[Number(mm)-1]} ${yy} <b>${perCount[k]}</b><span class="rep-chip-x" title="Bu dönemi sil" onclick="removeReportPeriod('${yy}','${Number(mm)}')">×</span></span>`; }).join('')
-    }${undated?`<span class="rep-chip muted">Tarihsiz <b>${undated}</b></span>`:''}</div>` : '' };
+  const periodChips={ count: reportPeriodsData().count, html: reportPeriodChipsHTML() };
 
   c.innerHTML=`
     <div class="calc-head-flex">
@@ -3240,7 +3265,6 @@ function renderReports(c){
       </div>
     </div>
     <p class="page-sub" style="margin-top:-6px">${allRows.length} satır · ${periodChips.count} dönem yüklü · son ekleme: ${dt}</p>
-    ${periodChips.html}
     ${filterBar}
 
     <div class="crm-stats rep-stats">
@@ -3299,6 +3323,9 @@ function renderReports(c){
     <div class="rep-card">
       <div class="rep-title">Direkt Alınan Siparişler</div>
       <div class="rep-sub">Teklif kapanmadan alınan/teslim edilen kayıtlar (DURUM = Açık, Tamamlanan &gt; 0) · ${direct.length} sipariş · ${fmtC(directVal)}</div>
+      ${orderStatsHTML(direct)}
+      ${direct.length?`<div class="rep-sub" style="margin-top:2px">Firma bazında direkt sipariş (ilk 8)</div>
+      ${reportBars(Object.entries(direct.reduce((a,r)=>{a[r.firma]=(a[r.firma]||0)+1;return a;},{})).map(([label,value])=>({label,value})).sort((a,b)=>b.value-a.value).slice(0,8),{color:'var(--orange)',fmt:v=>v.toLocaleString('tr-TR')+' sipariş'})}`:''}
       ${orderTable(direct)}
     </div>
 
@@ -3318,6 +3345,7 @@ function renderSettings(c){
   const on = fbConfigured();
   const codeShown = (localStorage.getItem('fy_sync_code')||SYNC_CODE);
   const nBrands=(state.brands||[]).length, nQuotes=(state.quotes||[]).length;
+  const rp=reportPeriodsData();
   c.innerHTML=`
     <div class="breadcrumb">Ayarlar</div>
     <h1 class="page-title">Ayarlar</h1>
@@ -3348,6 +3376,18 @@ function renderSettings(c){
       <div class="set-actions">
         <button class="btn-outline" onclick="exportActive()">Tümünü Dışa Aktar (Excel)</button>
         <button class="btn-outline" onclick="resetDiscounts()">İskontoları Sıfırla</button>
+      </div>
+    </div>
+
+    <div class="set-card">
+      <div class="set-head"><span>Rapor Dönemleri</span><span class="set-badge ${rp.count?'ok':'off'}">${rp.count?rp.count+' dönem':'Boş'}</span></div>
+      <p class="set-desc">Raporlar bölümüne yüklediğiniz aylık veriler. Ayrı ayrı Excel ekleyebilir, dönemleri tek tek kaldırabilirsiniz. (Bu veri cihaza özeldir, buluta senkronlanmaz.)</p>
+      ${rp.count? `${reportPeriodChipsHTML()}<div class="set-meta" style="margin:10px 0 0">Toplam <b>${rp.rows.toLocaleString('tr-TR')}</b> satır</div>`
+        : `<p class="set-warn" style="color:var(--muted);background:#F6F1E6;border-color:var(--line)">Henüz rapor verisi yüklenmedi.</p>`}
+      <div class="set-actions" style="margin-top:14px">
+        <label class="btn-primary rep-upload"><input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importReport(this)">Excel Ekle</label>
+        <button class="btn-outline" onclick="go('reports')">Raporları Aç</button>
+        ${rp.count?`<button class="btn-outline" onclick="clearReport()">Tümünü Temizle</button>`:''}
       </div>
     </div>
 
