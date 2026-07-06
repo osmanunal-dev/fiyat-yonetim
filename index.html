@@ -621,10 +621,55 @@
   .sync-status.err{color:#C0584B}
   @keyframes sspulse{0%,100%{opacity:1}50%{opacity:.35}}
   @media(max-width:880px){ .sync-status .ss-txt{display:none} .sync-status{padding:8px} }
+
+  /* ===== Mobil (telefon) ===== */
+  .sb-backdrop{display:none;position:fixed;inset:0;background:rgba(30,24,16,.42);z-index:45}
+  @media(max-width:880px){
+    .sidebar{width:min(84vw,300px)!important}
+    .sb-backdrop.show{display:block}
+    .topbar{padding:10px 12px;gap:8px;flex-wrap:wrap}
+    .search{flex:1 1 140px;max-width:none;padding:9px 12px;order:2}
+    .menu-toggle{order:1}
+    .sync-status{order:3;margin-left:auto}
+    .rate{order:4;padding:7px 10px}
+    .rate input{width:52px}
+    .btn-update{order:5;padding:9px 12px}
+    .rates-at{order:6;flex-basis:100%;margin-left:0;text-align:right}
+    .content{padding:16px 14px 60px}
+    .page-title,.brand-title{font-size:22px!important}
+    .breadcrumb{margin-bottom:6px}
+    .brand-head,.brand-actions,.calc-head-flex{flex-wrap:wrap}
+    .brand-actions{gap:8px}
+    .brand-actions button,.brand-actions .btn-save-quote,.brand-actions .btn-outline,.brand-actions label{flex:1 1 auto;justify-content:center}
+    .disc-card,.pay-card{padding:14px 14px;gap:14px}
+    .crm-stats,.rep-stats{grid-template-columns:1fr 1fr;gap:10px}
+    .cstat b{font-size:19px}
+    .crm-tabs{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .crm-filters{flex-direction:column;align-items:stretch}
+    .crm-search{max-width:none}
+    .cust-grid{grid-template-columns:1fr}
+    .rep-filter{gap:12px}
+    .modal{width:94vw!important;max-width:94vw!important;max-height:92vh;overflow-y:auto;border-radius:16px}
+    .modal-foot{flex-wrap:wrap}
+    .modal-foot button{flex:1 1 auto}
+    .prod-picker{max-width:94vw}
+    .set-card,.rep-card{padding:16px 14px}
+    .stat-mini{grid-template-columns:1fr 1fr}
+    h1.page-title{line-height:1.15}
+  }
+  @media(max-width:520px){
+    .crm-stats,.rep-stats,.stat-mini{grid-template-columns:1fr 1fr}
+    .rate-label{display:none}
+    .page-title,.brand-title{font-size:20px!important}
+    .content{padding:14px 11px 56px}
+    .rep-donut{justify-content:center}
+    .btn-update .bu-label{display:none}
+  }
 </style>
 </head>
 <body>
 
+<div class="sb-backdrop" id="sb-backdrop" onclick="closeSidebar()"></div>
 <aside class="sidebar" id="sidebar">
   <div class="brand">
     <h1>Fiyat Yönetimi</h1>
@@ -646,7 +691,7 @@
     <div class="rate"><span class="rate-label">USD</span><input id="usd" value="46,3652" oninput="onRateChange()"><span class="rate-cur">₺</span></div>
     <button class="btn-update" id="btn-update" onclick="fetchAndApplyRates()" title="Canlı kurları çek">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-      Güncelle
+      <span class="bu-label">Güncelle</span>
     </button>
     <span id="rates-at" class="rates-at"></span>
     <span id="sync-status" class="sync-status off" onclick="changeSyncCode()" title="Senkron kodu">
@@ -1669,7 +1714,7 @@ function renderNav(){
       ${I.box}<span class="ni-label">Paket Tanımları</span>
     </button>`;
 }
-function go(v){ state.view=v; state.activeBrand=null; state.activeTab=null; state.calcCat=null; state.calcSys=null; save(); render(); }
+function go(v){ state.view=v; state.activeBrand=null; state.activeTab=null; state.calcCat=null; state.calcSys=null; save(); render(); closeSidebar(); }
 function toggleCalc(){
   const onLanding = state.view==='calc' && !state.calcCat && !state.calcSys;
   state.navCalcOpen = onLanding ? !state.navCalcOpen : true;
@@ -1683,12 +1728,12 @@ function openCalcCat(cat){
     state.navCatOpen[cat]=true;
   }
   state.navCalcOpen=true;
-  state.view='calc'; state.activeBrand=null; state.activeTab=null; state.calcCat=cat; state.calcSys=null; save(); render(); document.getElementById('sidebar').classList.remove('show');
+  state.view='calc'; state.activeBrand=null; state.activeTab=null; state.calcCat=cat; state.calcSys=null; save(); render(); closeSidebar();
 }
 function openCalcSys(cat,sys){
   if(!state.navCatOpen) state.navCatOpen={};
   state.navCatOpen[cat]=true; state.navCalcOpen=true;
-  state.view='calc'; state.activeBrand=null; state.activeTab=null; state.calcCat=cat; state.calcSys=sys; save(); render(); document.getElementById('sidebar').classList.remove('show');
+  state.view='calc'; state.activeBrand=null; state.activeTab=null; state.calcCat=cat; state.calcSys=sys; save(); render(); closeSidebar();
 }
 function toggleLists(){
   const onLanding = state.view==='lists' && !state.activeBrand && !state.activeTab;
@@ -1703,12 +1748,12 @@ function openBrand(id){
     state.navBrandOpen[id]=true;                       // opening a brand expands it
   }
   state.navListOpen=true;
-  state.view='lists'; state.activeBrand=id; state.activeTab=null; state.calcCat=null; state.calcSys=null; save(); render(); document.getElementById('sidebar').classList.remove('show');
+  state.view='lists'; state.activeBrand=id; state.activeTab=null; state.calcCat=null; state.calcSys=null; save(); render(); closeSidebar();
 }
 function openTab(brandId,tabId){
   if(!state.navBrandOpen) state.navBrandOpen={};
   state.navBrandOpen[brandId]=true; state.navListOpen=true;
-  state.view='lists'; state.activeBrand=brandId; state.activeTab=tabId; state.calcCat=null; state.calcSys=null; save(); render(); document.getElementById('sidebar').classList.remove('show');
+  state.view='lists'; state.activeBrand=brandId; state.activeTab=tabId; state.calcCat=null; state.calcSys=null; save(); render(); closeSidebar();
 }
 
 /* ---------------- main render ---------------- */
@@ -2024,16 +2069,23 @@ function applySidebar(){
     document.body.classList.toggle('sb-collapsed', !state.sidebarOpen);
   }
 }
+function closeSidebar(){
+  const sb=document.getElementById('sidebar'); if(sb) sb.classList.remove('show');
+  const bd=document.getElementById('sb-backdrop'); if(bd) bd.classList.remove('show');
+}
 function toggleSidebar(){
   if(isMobileView()){
-    document.getElementById('sidebar').classList.toggle('show');
+    const sb=document.getElementById('sidebar'); const bd=document.getElementById('sb-backdrop');
+    const show=!sb.classList.contains('show');
+    sb.classList.toggle('show', show);
+    if(bd) bd.classList.toggle('show', show);
   } else {
     state.sidebarOpen=!state.sidebarOpen;
     document.body.classList.toggle('sb-collapsed', !state.sidebarOpen);
     save();
   }
 }
-window.addEventListener('resize', applySidebar);
+window.addEventListener('resize', function(){ closeSidebar(); applySidebar(); });
 function setKar(id,val){
   const b=state.brands.find(x=>x.id===id); if(!b) return;
   b.kar = (val==='') ? 0 : (Number(val)||0);
