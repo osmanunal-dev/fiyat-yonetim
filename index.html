@@ -2536,9 +2536,14 @@ function calcRowHTML(key,e,area,id,name,spec,basePer,isExtra){
   const nameCell = isExtra
     ? `<input class="cell-input nm" value="${esc(name||'')}" placeholder="Malzeme adı…" oninput="setCalcRowName('${key}','${id}',this.value)">`
     : `<span style="font-weight:600">${esc(name)}</span>`;
+  const isMant = String(key).indexOf('mantolama:')===0;
+  const specVal = isExtra ? ((e.extra&&e.extra[id]&&e.extra[id].spec)||'') : ((e.specs&&e.specs[id]!=null)?e.specs[id]:(spec||''));
+  const specCell = (isMant||isExtra)
+    ? `<input class="cell-input nm spec-in" value="${esc(specVal)}" placeholder="açıklama…" oninput="setCalcSpec('${key}','${id}',this.value)">`
+    : esc(spec||'');
   return `<tr>
     <td style="white-space:nowrap"><span class="row-x" title="Tekliften çıkar" onclick="removeCalcRow('${key}','${id}')">×</span>${nameCell}</td>
-    <td class="unit">${isExtra?'':esc(spec||'')}</td>
+    <td class="unit">${specCell}</td>
     <td><select class="cell-select rsel" data-cact="rbrand" data-key="${key}" data-id="${id}">${brandOpts}</select></td>
     <td><select class="cell-select rsel" data-cact="rfac" data-key="${key}" data-id="${id}" ${b?'':'disabled'}>${facOpts}</select></td>
     <td><select class="cell-select rsel" data-cact="rtab" data-key="${key}" data-id="${id}" ${b?'':'disabled'}>${tabOpts}</select></td>
@@ -2574,6 +2579,12 @@ function addCalcRow(key,gi){
   save(); renderActive();
 }
 function setCalcRowName(key,id,val){ const e=getCalcEntry(key); if(e.extra&&e.extra[id]){ e.extra[id].name=val; save(); } }
+function setCalcSpec(key,id,val){
+  const e=getCalcEntry(key);
+  if(e.extra && e.extra[id]){ e.extra[id].spec=val; }
+  else { if(!e.specs) e.specs={}; e.specs[id]=val; }
+  save();
+}
 
 /* ---- searchable product picker (favorites first) ---- */
 let __pp=null, __ppList=[];
@@ -2845,14 +2856,15 @@ function buildQuoteSnapshot(key){
       const per=effPer(e,id,bp); const pkg=effPkg(e,id);
       const price=(Number(e.prices[id])||0)*factor; const amt=per*area*price/pkg;
       const rw=(e.rows&&e.rows[id])||{};
-      const adi = rw.prod ? rw.prod.split('|').join(' · ') : it.name;
+      const effS=(e.specs&&e.specs[id]!=null)?e.specs[id]:it.spec;
+      const adi = rw.prod ? rw.prod.split('|').join(' · ') : (it.name + (effS&&String(effS).trim()?(' · '+String(effS).trim()):''));
       rows.push({adi, per, total:per*area, unit:it.unit||'', price, pkg, amt});
     });
     Object.keys(e.extra||{}).forEach(id=>{ const x=e.extra[id]; if(!x||x.gi!==gi) return;
       const per=effPer(e,id,0); const pkg=effPkg(e,id);
       const price=(Number(e.prices[id])||0)*factor; const amt=per*area*price/pkg;
       const rw=(e.rows&&e.rows[id])||{};
-      const adi = rw.prod ? rw.prod.split('|').join(' · ') : (x.name||'—');
+      const adi = rw.prod ? rw.prod.split('|').join(' · ') : ((x.name||'—') + (x.spec&&x.spec.trim()?(' · '+x.spec.trim()):''));
       rows.push({adi, per, total:per*area, unit:'', price, pkg, amt});
     });
     if(rows.length) groups.push({name:g.name, rows});
@@ -2863,7 +2875,7 @@ function buildQuoteSnapshot(key){
       const per=effPer(e,id,0); const pkg=effPkg(e,id);
       const price=(Number(e.prices[id])||0)*factor; const amt=per*area*price/pkg;
       const rw=(e.rows&&e.rows[id])||{};
-      const adi = rw.prod ? rw.prod.split('|').join(' · ') : (x.name||'—');
+      const adi = rw.prod ? rw.prod.split('|').join(' · ') : ((x.name||'—') + (x.spec&&x.spec.trim()?(' · '+x.spec.trim()):''));
       rows.push({adi, per, total:per*area, unit:'', price, pkg, amt});
     });
     if(rows.length) groups.push({name:cg.name||'Grup', rows});
