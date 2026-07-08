@@ -259,6 +259,22 @@
   .cmp-grp-name{flex:1;max-width:300px;border:1px solid var(--line-strong);border-radius:7px;padding:6px 10px;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--green);background:#fff;outline:none}
   .cmp-grp-name:focus{border-color:var(--green)}
   .cmp-grp-plain{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+  .cmp-cur{min-width:58px;text-align:center;font-weight:700}
+  .cmp-save{background:var(--green);color:#fff;border:1px solid var(--green);border-radius:9px;padding:8px 14px;font-size:12.5px;font-weight:800;cursor:pointer}
+  .cmp-save:hover{background:var(--green-2);border-color:var(--green-2)}
+  .cmp-saved{margin-top:20px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:16px 18px}
+  .cmp-saved-title{font-size:14px;font-weight:800;color:var(--ink);margin-bottom:10px}
+  .cmp-saved-list{display:flex;flex-direction:column;gap:8px}
+  .cmp-saved-item{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:#FBF7EF}
+  .cmp-saved-item.active{border-color:var(--green);background:var(--green-soft)}
+  .csi-main{cursor:pointer;flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+  .csi-main b{font-size:13.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .csi-main span{font-size:11.5px;color:var(--muted)}
+  .csi-actions{display:flex;gap:6px;flex-shrink:0}
+  .csi-actions button{border:1px solid var(--line-strong);background:#fff;border-radius:8px;padding:6px 11px;font-size:12px;font-weight:700;color:var(--ink);cursor:pointer}
+  .csi-actions button:hover{border-color:var(--green);color:var(--green)}
+  .csi-actions button.danger{color:#C0584B}
+  .csi-actions button.danger:hover{background:#C0584B;color:#fff;border-color:#C0584B}
   .cmp-grp-add{border:1px solid #CFE3C6;background:#fff;color:var(--green);border-radius:7px;padding:5px 11px;font-weight:700;font-size:11.5px;cursor:pointer}
   .cmp-grp-add:hover{background:var(--green);color:#fff;border-color:var(--green)}
   .cmp-grp-del{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:5px;background:#F7E9E5;color:#C0584B;font-weight:800;cursor:pointer}
@@ -2159,7 +2175,7 @@ function addCmpRow(gid){ pushCmpRow({gid: (gid!==undefined?gid:(state.cmpTarget|
 function pushCmpRow(pref){
   if(!state.cmpRows) state.cmpRows=[];
   const gid=(pref&&pref.gid!==undefined)?pref.gid:(state.cmpTarget||'');
-  state.cmpRows.push(Object.assign({id:uid(), gid:gid, urun:'', marka:'', birim:'', fiyat:'', kaynak:'', nakDahil:true, nakliye:'', odeme:'', not:'', secili:false}, pref||{}, {gid:gid}));
+  state.cmpRows.push(Object.assign({id:uid(), gid:gid, urun:'', marka:'', birim:'', fiyat:'', cur:'TL', isk:'', isk2:'', isk3:'', kaynak:'', nakDahil:true, nakliye:'', odeme:'', not:'', secili:false}, pref||{}, {gid:gid}));
   save(); refreshCmpWs();
 }
 function refreshCmpWs(){ const el=document.getElementById('cmp-ws'); if(el) el.innerHTML=cmpWorksheetHTML(); }
@@ -2183,14 +2199,25 @@ function delCmpGroup(gid){
   if(state.cmpTarget===gid) state.cmpTarget='';
   save(); refreshCmpTarget(); refreshCmpWs();
 }
-function cmpTotal(r){ return (Number(r.fiyat)||0) + (r.nakDahil?0:(Number(r.nakliye)||0)); }
+function cmpTotal(r){
+  const rate=(getRates()[r.cur||'TL'])||1;
+  const disc=(1-(Number(r.isk)||0)/100)*(1-(Number(r.isk2)||0)/100)*(1-(Number(r.isk3)||0)/100);
+  const net=(Number(r.fiyat)||0)*rate*disc;                       // kur + kademeli iskonto (3)
+  return net + (r.nakDahil?0:(Number(r.nakliye)||0));
+}
+function setCmpCur(id,v){ const r=(state.cmpRows||[]).find(x=>x.id===id); if(!r)return; r.cur=v; save(); recalcCmpTotals(); }
 function cmpRowTR(r,best){
+  const curOpts=['TL','USD','EUR'].map(x=>`<option value="${x}" ${(r.cur||'TL')===x?'selected':''}>${x}</option>`).join('');
   return `<tr data-cmp-id="${r.id}" class="${r.secili?'sel ':''}${best?'best':''}">
       <td style="text-align:center"><input type="radio" name="cmp-sel" ${r.secili?'checked':''} onclick="setCmpSelected('${r.id}')" title="Bu seçeneği seç"></td>
       <td><input class="cmp-in wide" value="${esc(r.urun||'')}" placeholder="Malzeme adı" oninput="setCmpField('${r.id}','urun',this.value)"></td>
       <td><input class="cmp-in" value="${esc(r.marka||'')}" placeholder="Marka" oninput="setCmpField('${r.id}','marka',this.value)"></td>
       <td><input class="cmp-in sm" value="${esc(r.birim||'')}" placeholder="br" oninput="setCmpField('${r.id}','birim',this.value)"></td>
       <td style="text-align:right"><input class="cmp-in num" type="number" step="0.01" value="${r.fiyat!==''&&r.fiyat!=null?r.fiyat:''}" placeholder="0" oninput="setCmpNum('${r.id}','fiyat',this.value)"></td>
+      <td><select class="cmp-in cmp-cur" onchange="setCmpCur('${r.id}',this.value)">${curOpts}</select></td>
+      <td style="text-align:right"><input class="cmp-in num sm" type="number" step="0.01" value="${r.isk!==''&&r.isk!=null?r.isk:''}" placeholder="0" oninput="setCmpNum('${r.id}','isk',this.value)"></td>
+      <td style="text-align:right"><input class="cmp-in num sm" type="number" step="0.01" value="${r.isk2!==''&&r.isk2!=null?r.isk2:''}" placeholder="0" oninput="setCmpNum('${r.id}','isk2',this.value)"></td>
+      <td style="text-align:right"><input class="cmp-in num sm" type="number" step="0.01" value="${r.isk3!==''&&r.isk3!=null?r.isk3:''}" placeholder="0" oninput="setCmpNum('${r.id}','isk3',this.value)"></td>
       <td><input class="cmp-in" value="${esc(r.kaynak||'')}" placeholder="Tedarikçi / yer" oninput="setCmpField('${r.id}','kaynak',this.value)"></td>
       <td><div class="cmp-nak"><button type="button" class="nak-tog ${r.nakDahil?'on':'off'}" onclick="toggleCmpNak('${r.id}')">${r.nakDahil?'Dâhil':'Hariç'}</button>${r.nakDahil?'':`<input class="cmp-in num sm" type="number" step="0.01" value="${r.nakliye!==''&&r.nakliye!=null?r.nakliye:''}" placeholder="₺" oninput="setCmpNum('${r.id}','nakliye',this.value)">`}</div></td>
       <td><input class="cmp-in" value="${esc(r.odeme||'')}" placeholder="Peşin / vadeli…" oninput="setCmpField('${r.id}','odeme',this.value)"></td>
@@ -2207,21 +2234,21 @@ function cmpSectionRows(secRows){
 function cmpWorksheetHTML(){
   const rows=state.cmpRows||[]; const groups=state.cmpGroups||[];
   if(!rows.length && !groups.length) return `<div class="cmp-empty">Henüz seçenek eklenmedi. Yukarıdan arayıp ekleyin, elle satır ekleyin ya da grup ekleyin.</div>`;
-  const head=`<thead><tr><th>SEÇ</th><th>ÜRÜN</th><th>MARKA</th><th>BİRİM</th><th class="num">BİRİM FİYAT ₺</th><th>NEREDEN GELECEK</th><th>NAKLİYE</th><th>ÖDEME</th><th>NOT</th><th class="num">TOPLAM ₺</th><th></th></tr></thead>`;
+  const head=`<thead><tr><th>SEÇ</th><th>ÜRÜN</th><th>MARKA</th><th>BİRİM</th><th class="num">BİRİM FİYAT</th><th>KUR</th><th class="num">İSK 1 %</th><th class="num">İSK 2 %</th><th class="num">İSK 3 %</th><th>NEREDEN GELECEK</th><th>NAKLİYE</th><th>ÖDEME</th><th>NOT</th><th class="num">TOPLAM ₺</th><th></th></tr></thead>`;
   let bodyRows='';
   const ungrouped=rows.filter(r=>!r.gid || !groups.some(g=>g.gid===r.gid));
   if(ungrouped.length){
-    if(groups.length) bodyRows += `<tr class="cmp-grp"><td colspan="11"><span class="cmp-grp-plain">Grupsuz</span></td></tr>`;
+    if(groups.length) bodyRows += `<tr class="cmp-grp"><td colspan="15"><span class="cmp-grp-plain">Grupsuz</span></td></tr>`;
     bodyRows += cmpSectionRows(ungrouped);
   }
   groups.forEach(g=>{
     const gr=rows.filter(r=>r.gid===g.gid);
-    bodyRows += `<tr class="cmp-grp"><td colspan="11"><div class="cmp-grp-head">
+    bodyRows += `<tr class="cmp-grp"><td colspan="15"><div class="cmp-grp-head">
         <input class="cmp-grp-name" value="${esc(g.name||'')}" placeholder="Grup adı…" oninput="renameCmpGroup('${g.gid}',this.value)">
         <button class="cmp-grp-add" onclick="addCmpRow('${g.gid}')">+ satır ekle</button>
         <span class="cmp-grp-del" title="Grubu sil" onclick="delCmpGroup('${g.gid}')">×</span>
       </div></td></tr>`;
-    bodyRows += gr.length ? cmpSectionRows(gr) : `<tr class="cmp-grp-empty"><td colspan="11">Bu gruba ürün ekleyin…</td></tr>`;
+    bodyRows += gr.length ? cmpSectionRows(gr) : `<tr class="cmp-grp-empty"><td colspan="15">Bu gruba ürün ekleyin…</td></tr>`;
   });
   return `<div class="cmp-ws-scroll"><table class="cmp-ws-table">${head}<tbody>${bodyRows}</tbody></table></div>
   <div class="cmp-note-foot">“Nakliye” hücresindeki <b>Dâhil/Hariç</b> düğmesiyle nakliyenin fiyata dâhil olup olmadığını işaretleyin; hariçse tutarı girin. Toplam = birim fiyat + (hariçse nakliye). Her grupta en düşük toplam <b>en ucuz</b> olarak işaretlenir.</div>`;
@@ -2245,6 +2272,62 @@ function recalcCmpTotals(){
     });
   });
 }
+function cmpSavedHTML(){
+  const list=state.cmpSaved||[];
+  if(!list.length) return '';
+  return `<div class="cmp-saved">
+    <div class="cmp-saved-title">Kayıtlı Karşılaştırmalar</div>
+    <div class="cmp-saved-list">${list.map(r=>`
+      <div class="cmp-saved-item ${state.cmpActiveId===r.id?'active':''}">
+        <div class="csi-main" onclick="loadComparison('${r.id}')" title="Aç / düzenle">
+          <b>${esc(r.name)}</b>
+          <span>${r.dateStr||''} · ${(r.rows||[]).length} satır${state.cmpActiveId===r.id?' · düzenleniyor':''}</span>
+        </div>
+        <div class="csi-actions">
+          <button onclick="loadComparison('${r.id}')">Aç</button>
+          <button onclick="exportComparison('${r.id}')" title="PDF / Çıktı">Çıktı</button>
+          <button onclick="renameComparison('${r.id}')" title="Yeniden adlandır">✎</button>
+          <button class="danger" onclick="deleteComparison('${r.id}')" title="Sil">×</button>
+        </div>
+      </div>`).join('')}</div>
+  </div>`;
+}
+function saveComparison(){
+  if(!(state.cmpRows||[]).length){ toast('Kaydedilecek satır yok'); return; }
+  if(!state.cmpSaved) state.cmpSaved=[];
+  const snap=()=>({rows:JSON.parse(JSON.stringify(state.cmpRows||[])), groups:JSON.parse(JSON.stringify(state.cmpGroups||[]))});
+  const now=new Date();
+  if(state.cmpActiveId){
+    const rec=state.cmpSaved.find(r=>r.id===state.cmpActiveId);
+    if(rec){ Object.assign(rec, snap(), {dateISO:now.toISOString(), dateStr:now.toLocaleDateString('tr-TR')}); save(); renderActive(); toast('Güncellendi · '+rec.name); return; }
+  }
+  const name=(prompt('Karşılaştırma adı:','')||'').trim(); if(!name) return;
+  const id=uid();
+  state.cmpSaved.unshift(Object.assign({id, name, dateISO:now.toISOString(), dateStr:now.toLocaleDateString('tr-TR')}, snap()));
+  state.cmpActiveId=id; save(); renderActive(); toast('Kaydedildi · '+name);
+}
+function loadComparison(id){
+  const rec=(state.cmpSaved||[]).find(r=>r.id===id); if(!rec) return;
+  state.cmpRows=JSON.parse(JSON.stringify(rec.rows||[]));
+  state.cmpGroups=JSON.parse(JSON.stringify(rec.groups||[]));
+  state.cmpActiveId=id; state.cmpTarget=''; save(); renderActive(); toast('Açıldı · '+rec.name);
+}
+function newComparison(){
+  if((state.cmpRows||[]).length && !confirm('Çalışma tablosu temizlensin mi? (Kayıtlı karşılaştırmalar silinmez)')) return;
+  state.cmpRows=[]; state.cmpGroups=[]; state.cmpActiveId=null; state.cmpTarget=''; save(); renderActive();
+}
+function renameComparison(id){
+  const rec=(state.cmpSaved||[]).find(r=>r.id===id); if(!rec) return;
+  const name=(prompt('Yeni ad:', rec.name)||'').trim(); if(!name) return;
+  rec.name=name; save(); renderActive();
+}
+function deleteComparison(id){
+  const rec=(state.cmpSaved||[]).find(r=>r.id===id); if(!rec) return;
+  if(!confirm(`“${rec.name}” kaydı silinsin mi?`)) return;
+  state.cmpSaved=(state.cmpSaved||[]).filter(r=>r.id!==id);
+  if(state.cmpActiveId===id) state.cmpActiveId=null;
+  save(); renderActive();
+}
 function renderCompare(c){
   if(!state.cmpRows) state.cmpRows=[];
   c.innerHTML = `
@@ -2261,14 +2344,18 @@ function renderCompare(c){
     </div>
     <div id="cmp-search-results">${cmpSearchHTML(state.cmpQuery||'')}</div>
     <div class="cmp-ws-head">
-      <span>Karşılaştırma Tablosu</span>
+      <span>Karşılaştırma Tablosu${state.cmpActiveId?` · <b style="color:var(--green)">${esc((state.cmpSaved||[]).find(r=>r.id===state.cmpActiveId)?.name||'')}</b> <i style="color:var(--muted);font-style:normal">(düzenleniyor)</i>`:''}</span>
       <div class="cmp-ws-actions">
         <label class="cmp-target-lbl">Hedef grup <select id="cmp-target" onchange="setCmpTarget(this.value)">${cmpTargetOptions()}</select></label>
         <button class="cmp-addrow" onclick="addCmpRow()">+ Elle satır ekle</button>
         <button class="cmp-addrow grp" onclick="addCmpGroup()">+ Grup ekle</button>
+        <button class="cmp-save" onclick="saveComparison()">${state.cmpActiveId?'Kaydet (güncelle)':'Kaydet'}</button>
+        <button class="cmp-addrow" onclick="exportCurrentComparison()">Çıktı / PDF</button>
+        <button class="cmp-addrow" onclick="newComparison()">Yeni</button>
       </div>
     </div>
-    <div id="cmp-ws">${cmpWorksheetHTML()}</div>`;
+    <div id="cmp-ws">${cmpWorksheetHTML()}</div>
+    ${cmpSavedHTML()}`;
   setTimeout(()=>{ const i=document.getElementById('cmp-q'); if(i){ i.focus(); i.setSelectionRange(i.value.length,i.value.length);} },0);
 }
 
@@ -2864,6 +2951,84 @@ function quotePDF(q){
 }
 function exportCalcPDF(key){ const q=buildQuoteSnapshot(key); if(!q) return; quotePDF(q); }
 function exportQuotePDF(id){ const q=(state.quotes||[]).find(x=>x.id===id); if(q) quotePDF(q); }
+function comparisonPDF(rec){
+  const rows=rec.rows||[]; const groups=rec.groups||[];
+  const today=rec.dateStr||new Date().toLocaleDateString('tr-TR');
+  const iskStr=r=>{ const a=[r.isk,r.isk2,r.isk3].map(x=>Number(x)||0).filter(x=>x>0); return a.length?a.map(x=>'%'+fmtNum(x).replace(',00','')).join(' + '):'—'; };
+  const nakStr=r=> r.nakDahil?'Dâhil':(Number(r.nakliye)?fmtNum(r.nakliye)+' ₺':'Hariç');
+  const rowTR=(r,best)=>`<tr class="${best?'best':''}">
+    <td>${r.secili?'✓ ':''}${esc(r.urun||'—')}</td>
+    <td>${esc(r.marka||'')}</td>
+    <td>${esc(r.birim||'')}</td>
+    <td class="r">${r.fiyat!==''&&r.fiyat!=null?fmtNum(r.fiyat):'—'}</td>
+    <td class="c">${esc(r.cur||'TL')}</td>
+    <td class="c">${iskStr(r)}</td>
+    <td>${esc(r.kaynak||'')}</td>
+    <td class="c">${nakStr(r)}</td>
+    <td>${esc(r.odeme||'')}</td>
+    <td class="r b">${fmtNum(cmpTotal(r))} ₺${best?' <span class="tag">en ucuz</span>':''}</td>
+  </tr>`;
+  const section=(secRows)=>{
+    const totals=secRows.map(cmpTotal).filter(t=>t>0);
+    const min=totals.length?Math.min(...totals):null;
+    return secRows.map(r=>rowTR(r, min!=null && cmpTotal(r)===min && cmpTotal(r)>0)).join('');
+  };
+  let body='';
+  const ungrouped=rows.filter(r=>!r.gid || !groups.some(g=>g.gid===r.gid));
+  if(ungrouped.length){ if(groups.length) body+=`<tr class="g"><td colspan="10">Grupsuz</td></tr>`; body+=section(ungrouped); }
+  groups.forEach(g=>{ const gr=rows.filter(r=>r.gid===g.gid); body+=`<tr class="g"><td colspan="10">${esc(g.name||'Grup')}</td></tr>`; body+= gr.length?section(gr):`<tr><td colspan="10" class="muted">Ürün yok</td></tr>`; });
+  const sel=rows.find(r=>r.secili);
+  const rt=getRates();
+  const selHtml = sel ? `<div class="sel">Seçilen: <b>${esc(sel.urun||'—')}${sel.marka?(' · '+esc(sel.marka)):''}</b> — <b>${fmtNum(cmpTotal(sel))} ₺</b>${sel.kaynak?(' · '+esc(sel.kaynak)):''}</div>` : '';
+  const doc=`<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8"><title>${esc(rec.name||'Fiyat Karşılaştırma')}</title>
+  <style>
+    @page{size:A4 landscape;margin:12mm}
+    *{box-sizing:border-box}
+    body{font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#222;margin:0;font-size:11px}
+    .hdr{display:flex;justify-content:space-between;align-items:center;gap:20px;min-height:60px;margin-bottom:6px}
+    h1{font-size:18px;margin:0 0 2px}
+    .sub{color:#666;font-size:11px;margin:0}
+    .hdr .logo{max-height:60px;max-width:300px;object-fit:contain}
+    .sel{border:1px solid #cfe0d6;background:#eef5ef;border-radius:8px;padding:8px 12px;margin:8px 0 12px;font-size:12px}
+    table{width:100%;border-collapse:collapse;margin-bottom:12px}
+    th{text-align:left;font-size:9px;letter-spacing:.03em;color:#777;border-bottom:1.5px solid #333;padding:6px 7px;text-transform:uppercase}
+    th.r,td.r{text-align:right}th.c,td.c{text-align:center}
+    td{padding:6px 7px;border-bottom:1px solid #eee}
+    td.b{font-weight:700;white-space:nowrap}
+    tr.g td{background:#f3f1ea;font-weight:700;font-size:9px;text-transform:uppercase;letter-spacing:.04em;color:#3a5}
+    tr.best td{background:#eef5ef}
+    .tag{display:inline-block;background:#2E7D32;color:#fff;font-size:8px;padding:1px 6px;border-radius:8px;margin-left:6px;vertical-align:middle}
+    .muted{color:#999;font-style:italic}
+    .foot{color:#888;font-size:10px;margin-top:8px}
+    @media print{body{margin:0}}
+  </style></head><body>
+    <div class="hdr">
+      <div>
+        <h1>${esc(rec.name||'Fiyat Karşılaştırma')}</h1>
+        <p class="sub">Fiyat Karşılaştırma &nbsp;·&nbsp; Tarih: ${today} &nbsp;·&nbsp; ${rows.length} seçenek</p>
+      </div>
+      ${state.logo?`<img class="logo" src="${state.logo}" alt="logo">`:''}
+    </div>
+    ${selHtml}
+    <table>
+      <thead><tr>
+        <th>ÜRÜN</th><th>MARKA</th><th>BİRİM</th><th class="r">BİRİM FİYAT</th><th class="c">KUR</th><th class="c">İSKONTO</th><th>NEREDEN</th><th class="c">NAKLİYE</th><th>ÖDEME</th><th class="r">TOPLAM ₺</th>
+      </tr></thead>
+      <tbody>${body||`<tr><td colspan="10" class="muted">Kayıt boş</td></tr>`}</tbody>
+    </table>
+    <div class="foot">Yabancı para birimleri güncel kurla TL'ye çevrilmiştir (USD: ${fmtNum(rt.USD)} ₺, EUR: ${fmtNum(rt.EUR)} ₺). Toplam = birim fiyat × kur × iskontolar + (hariçse nakliye). Her grupta en düşük toplam “en ucuz” işaretlenmiştir.</div>
+  </body></html>`;
+  const win=window.open('','_blank');
+  if(!win){ toast('Açılır pencere engellendi — izin verin'); return; }
+  win.document.open(); win.document.write(doc); win.document.close(); win.focus();
+  setTimeout(()=>{ try{ win.print(); }catch(e){} }, 350);
+}
+function exportComparison(id){ const rec=(state.cmpSaved||[]).find(r=>r.id===id); if(rec) comparisonPDF(rec); }
+function exportCurrentComparison(){
+  if(!(state.cmpRows||[]).length){ toast('Önce seçenek ekleyin'); return; }
+  const name=(state.cmpSaved||[]).find(r=>r.id===state.cmpActiveId)?.name || 'Fiyat Karşılaştırma';
+  comparisonPDF({name, dateStr:new Date().toLocaleDateString('tr-TR'), rows:state.cmpRows, groups:state.cmpGroups||[]});
+}
 function saveQuoteFromCalc(key){
   const q=buildQuoteSnapshot(key); if(!q) return;
   if(!q.groups.some(g=>g.rows.length)){ toast('Kaydedilecek satır yok'); return; }
