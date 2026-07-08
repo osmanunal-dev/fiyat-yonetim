@@ -260,6 +260,16 @@
   .cmp-grp-name:focus{border-color:var(--green)}
   .cmp-grp-plain{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
   .cmp-cur{min-width:58px;text-align:center;font-weight:700}
+  .notes-list{display:flex;flex-direction:column;gap:7px}
+  .note-line{display:flex;align-items:center;gap:8px}
+  .note-bullet{color:var(--orange);font-weight:800;font-size:16px;line-height:1}
+  .note-in{flex:1;border:1px solid var(--line-strong);border-radius:9px;padding:9px 12px;font-size:13.5px;font-family:inherit;color:var(--ink);background:#fff}
+  .note-in:focus{outline:none;border-color:var(--green)}
+  .note-ic{cursor:pointer;font-weight:800;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;border-radius:7px;flex-shrink:0;font-size:15px;border:1px solid var(--line-strong);background:#fff;line-height:1}
+  .note-ic.add{color:var(--green)}
+  .note-ic.add:hover{background:var(--green);color:#fff;border-color:var(--green)}
+  .note-ic.del{color:#C0584B}
+  .note-ic.del:hover{background:#C0584B;color:#fff;border-color:#C0584B}
   .cmp-save{background:var(--green);color:#fff;border:1px solid var(--green);border-radius:9px;padding:8px 14px;font-size:12.5px;font-weight:800;cursor:pointer}
   .cmp-save:hover{background:var(--green-2);border-color:var(--green-2)}
   .cmp-saved{margin-top:20px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:16px 18px}
@@ -2585,6 +2595,33 @@ function setCalcSpec(key,id,val){
   else { if(!e.specs) e.specs={}; e.specs[id]=val; }
   save();
 }
+/* ---- Satır satır notlar (depolama: info.not = filtrelenmiş newline birleşimi; PDF/CRM uyumlu) ---- */
+function _notesArr(info){
+  if(!Array.isArray(info.notesList)) info.notesList = (info.not&&info.not.trim()) ? info.not.split('\n') : [];
+  return info.notesList;
+}
+function _notesSync(info){ info.not = (info.notesList||[]).map(s=>(s||'').trim()).filter(Boolean).join('\n'); }
+function calcNotesSet(key,i,val){ const e=getCalcEntry(key); const a=_notesArr(e.info); a[i]=val; _notesSync(e.info); save(); }
+function calcNotesAdd(key,i){ const e=getCalcEntry(key); const a=_notesArr(e.info); if(i==null){a.push('');} else { while(a.length<=i) a.push(''); a.splice(i+1,0,''); } _notesSync(e.info); save(); renderActive(); }
+function calcNotesDel(key,i){ const e=getCalcEntry(key); _notesArr(e.info).splice(i,1); _notesSync(e.info); save(); renderActive(); }
+function qbNotesSet(i,val){ const q=getQB(); const a=_notesArr(q.info); a[i]=val; _notesSync(q.info); save(); }
+function qbNotesAdd(i){ const q=getQB(); const a=_notesArr(q.info); if(i==null){a.push('');} else { while(a.length<=i) a.push(''); a.splice(i+1,0,''); } _notesSync(q.info); save(); renderActive(); }
+function qbNotesDel(i){ const q=getQB(); _notesArr(q.info).splice(i,1); _notesSync(q.info); save(); renderActive(); }
+function notesEditorHTML(kind,key){
+  const info = kind==='calc' ? getCalcEntry(key).info : getQB().info;
+  const arr=_notesArr(info);
+  const lines = arr.length?arr:[''];
+  const setF = kind==='calc'?`calcNotesSet('${key}',`:`qbNotesSet(`;
+  const delF = kind==='calc'?`calcNotesDel('${key}',`:`qbNotesDel(`;
+  const addF = kind==='calc'?`calcNotesAdd('${key}',`:`qbNotesAdd(`;
+  return `<div class="notes-list">${lines.map((ln,i)=>`
+      <div class="note-line">
+        <span class="note-bullet">•</span>
+        <input class="note-in" value="${esc(ln||'')}" placeholder="Not satırı…" oninput="${setF}${i},this.value)">
+        <span class="note-ic add" title="Alt satır ekle" onclick="${addF}${i})">+</span>
+        <span class="note-ic del" title="Satırı sil" onclick="${delF}${i})">×</span>
+      </div>`).join('')}</div>`;
+}
 
 /* ---- searchable product picker (favorites first) ---- */
 let __pp=null, __ppList=[];
@@ -2737,7 +2774,7 @@ function renderCalcSheet(c){
         <div class="ig"><label>Telefon</label><input type="text" value="${esc(e.info.tel||'')}" oninput="setCalcInfo('${key}','tel',this.value)" placeholder="0___ ___ __ __"></div>
         <div class="ig"><label>Mail</label><input type="text" value="${esc(e.info.mail||'')}" oninput="setCalcInfo('${key}','mail',this.value)" placeholder="ornek@firma.com"></div>
         <div class="ig" style="grid-column:span 1"><label>Adres</label><input type="text" value="${esc(e.info.adres||'')}" oninput="setCalcInfo('${key}','adres',this.value)" placeholder="Adres"></div>
-        <div class="ig ig-full"><label>Notlar</label><textarea rows="2" oninput="setCalcInfo('${key}','not',this.value)" placeholder="Teklife eklenecek notlar (PDF'e yansır)">${esc(e.info.not||'')}</textarea></div>
+        <div class="ig ig-full"><label>Notlar</label>${notesEditorHTML('calc',key)}</div>
       </div>
     </div>
     <div class="disc-card">
@@ -3143,7 +3180,7 @@ function renderQuoteBuilder(c){
         <div class="ig"><label>Telefon</label><input type="text" value="${esc(inf.tel||'')}" oninput="qbSetInfo('tel',this.value)" placeholder="0___ ___ __ __"></div>
         <div class="ig"><label>Mail</label><input type="text" value="${esc(inf.mail||'')}" oninput="qbSetInfo('mail',this.value)" placeholder="ornek@firma.com"></div>
         <div class="ig"><label>Adres</label><input type="text" value="${esc(inf.adres||'')}" oninput="qbSetInfo('adres',this.value)" placeholder="Adres"></div>
-        <div class="ig ig-full"><label>Notlar</label><textarea rows="2" oninput="qbSetInfo('not',this.value)" placeholder="Teklife eklenecek notlar (PDF'e yansır)">${esc(inf.not||'')}</textarea></div>
+        <div class="ig ig-full"><label>Notlar</label>${notesEditorHTML('qb')}</div>
       </div>
     </div>
 
