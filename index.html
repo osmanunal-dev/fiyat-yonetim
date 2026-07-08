@@ -270,6 +270,27 @@
   .note-ic.add:hover{background:var(--green);color:#fff;border-color:var(--green)}
   .note-ic.del{color:#C0584B}
   .note-ic.del:hover{background:#C0584B;color:#fff;border-color:#C0584B}
+  /* Müşteriler */
+  .cust-pick{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;padding-bottom:14px;border-bottom:1px dashed var(--line-strong)}
+  .cust-pick-sel{flex:1;min-width:200px;border:1px solid var(--line-strong);border-radius:9px;padding:9px 12px;font-size:13px;font-weight:600;background:#fff;color:var(--ink)}
+  .cust-pick-save{background:#F6F1E6;border:1px solid var(--line);border-radius:9px;padding:9px 14px;color:var(--green);font-weight:800;font-size:12.5px;cursor:pointer;white-space:nowrap}
+  .cust-pick-save:hover{background:var(--green);color:#fff;border-color:var(--green)}
+  .cust-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+  .cust-card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+  .cc-head{display:flex;flex-direction:column;gap:2px}
+  .cc-head b{font-size:15px;color:var(--ink)}
+  .cc-ilgili{font-size:12.5px;color:var(--green-2);font-weight:600}
+  .cc-body{display:flex;flex-direction:column;gap:5px;font-size:12.5px;color:var(--muted)}
+  .cc-row{display:flex;gap:8px;align-items:flex-start}
+  .cc-row span{color:var(--ink)}
+  .cc-vno{font-size:11.5px}
+  .cc-note{background:#FBF7EF;border:1px solid var(--line);border-radius:8px;padding:7px 10px;color:var(--ink);font-size:12px;white-space:pre-wrap}
+  .cc-actions{display:flex;gap:6px;margin-top:2px;flex-wrap:wrap}
+  .cc-actions button{border:1px solid var(--line-strong);background:#fff;border-radius:8px;padding:6px 11px;font-size:12px;font-weight:700;color:var(--ink);cursor:pointer}
+  .cc-actions button:hover{border-color:var(--green);color:var(--green)}
+  .cc-actions button.danger{color:#C0584B}
+  .cc-actions button.danger:hover{background:#C0584B;color:#fff;border-color:#C0584B}
+  .cust-empty{color:var(--muted);font-size:14px;padding:40px 10px;text-align:center;grid-column:1/-1}
   .cmp-save{background:var(--green);color:#fff;border:1px solid var(--green);border-radius:9px;padding:8px 14px;font-size:12.5px;font-weight:800;cursor:pointer}
   .cmp-save:hover{background:var(--green-2);border-color:var(--green-2)}
   .cmp-saved{margin-top:20px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:16px 18px}
@@ -1193,6 +1214,7 @@ function ensureDefaults(){
   if(state.crmQuery===undefined) state.crmQuery='';
   if(state.crmCust===undefined) state.crmCust='';
   if(!state.qb) state.qb={ info:{}, rows:[], isk1:0, isk2:0, isk3:0, kar:0, kdv:20, seq:0 };
+  if(!state.customers) state.customers=[];
 }
 ensureDefaults();
 
@@ -1668,7 +1690,8 @@ const I = {
   crm:'<svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
   gear:'<svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
   doc:'<svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>',
-  chart:'<svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="20" x2="21" y2="20"/></svg>'
+  chart:'<svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="20" x2="21" y2="20"/></svg>',
+  users:'<svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'
 };
 
 /* ---------------- sidebar ---------------- */
@@ -1725,6 +1748,10 @@ function renderNav(){
     <button class="nav-item ${state.view==='crm'?'active':''}" onclick="go('crm')">
       ${I.crm}<span class="ni-label">Teklifler / CRM</span>
       ${(state.quotes&&state.quotes.length)?`<span class="ni-badge">${state.quotes.length}</span>`:''}
+    </button>
+    <button class="nav-item ${state.view==='customers'?'active':''}" onclick="go('customers')">
+      ${I.users}<span class="ni-label">Müşteriler</span>
+      ${(state.customers&&state.customers.length)?`<span class="ni-badge">${state.customers.length}</span>`:''}
     </button>
     <button class="nav-item ${state.view==='reports'?'active':''}" onclick="go('reports')">
       ${I.chart}<span class="ni-label">Raporlar</span>
@@ -1794,6 +1821,7 @@ function renderActive(){
   if(state.view==='crm') return renderCRM(c);
   if(state.view==='reports') return renderReports(c);
   if(state.view==='quote') return renderQuoteBuilder(c);
+  if(state.view==='customers') return renderCustomers(c);
   if(state.view==='settings') return renderSettings(c);
   if(state.view==='lists') return renderLists(c);
 }
@@ -2767,6 +2795,10 @@ function renderCalcSheet(c){
           <span class="hint">PDF tekliflerin üst köşesinde görünür. Tüm hesaplamalarda ortaktır.</span>
         </div>
       </div>
+      <div class="cust-pick">
+        <select class="cust-pick-sel" onchange="applyCustomerToCalc('${key}',this.value)">${customerOptions('')}</select>
+        <button type="button" class="cust-pick-save" onclick="saveInfoAsCustomer(getCalcEntry('${key}').info)">Müşteriyi kaydet</button>
+      </div>
       <div class="info-grid">
         <div class="ig"><label>Cari Ad</label><input type="text" value="${esc(e.info.cari||'')}" oninput="setCalcInfo('${key}','cari',this.value)" placeholder="Müşteri / firma adı"></div>
         <div class="ig"><label>İşin Adı</label><input type="text" value="${esc(e.info.is||'')}" oninput="setCalcInfo('${key}','is',this.value)" placeholder="Proje / iş tanımı"></div>
@@ -3173,6 +3205,10 @@ function renderQuoteBuilder(c){
     <p class="page-sub" style="margin-top:-6px">Serbest teklif hazırlayın: müşteri bilgilerini girin, fiyat listelerinden ürün seçin ya da olmayan malzemeleri elle yazın.</p>
 
     <div class="info-card">
+      <div class="cust-pick">
+        <select class="cust-pick-sel" onchange="applyCustomerToQB(this.value)">${customerOptions('')}</select>
+        <button type="button" class="cust-pick-save" onclick="saveInfoAsCustomer(getQB().info)">Müşteriyi kaydet</button>
+      </div>
       <div class="info-grid">
         <div class="ig"><label>Cari Ad</label><input type="text" value="${esc(inf.cari||'')}" oninput="qbSetInfo('cari',this.value)" placeholder="Müşteri / firma adı"></div>
         <div class="ig"><label>İşin Adı</label><input type="text" value="${esc(inf.is||'')}" oninput="qbSetInfo('is',this.value)" placeholder="Proje / iş tanımı"></div>
@@ -3241,6 +3277,111 @@ function qbClear(){
   if(!confirm('Teklif temizlensin mi? Girdiğiniz satırlar ve bilgiler silinir.')) return;
   state.qb={info:{},rows:[],isk1:0,isk2:0,isk3:0,kar:0,kdv:20,seq:0};
   save(); renderActive();
+}
+
+/* ---------------- Müşteriler (cari kayıtları) ---------------- */
+function getCustomers(){ if(!state.customers) state.customers=[]; return state.customers; }
+function custMatch(cu,q){ if(!q) return true; const s=fold(q); return [cu.cari,cu.ilgili,cu.tel,cu.mail,cu.adres,cu.vno].some(v=>fold(v||'').indexOf(s)>=0); }
+function renderCustomers(c){
+  const list=getCustomers().slice().sort((a,b)=>byTr(a.cari||'',b.cari||''));
+  const q=state.custQuery||'';
+  const shown=list.filter(cu=>custMatch(cu,q));
+  const cards = shown.length ? shown.map(custCardHTML).join('') : `<div class="cust-empty">${list.length?'Aramaya uyan müşteri yok.':'Henüz müşteri eklenmedi. “Yeni Müşteri” ile başlayın.'}</div>`;
+  c.innerHTML=`
+    <div class="calc-head-flex">
+      <div><div class="breadcrumb">Müşteriler</div><h1 class="brand-title">Müşteriler</h1></div>
+      <div class="brand-actions"><button class="btn-save-quote" onclick="openCustomerModal('new')">+ Yeni Müşteri</button></div>
+    </div>
+    <p class="page-sub" style="margin-top:-6px">${list.length} kayıtlı müşteri. Bilgileri saklayın; Hesaplama ve Teklif Ver'de tek tıkla seçin.</p>
+    <div class="cmp-searchbar" style="max-width:520px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="cust-q" placeholder="Müşteri ara (ad, ilgili, telefon, mail)…" value="${esc(q)}" oninput="onCustQuery(this.value)">
+    </div>
+    <div class="cust-grid" style="margin-top:14px">${cards}</div>
+    ${state.custEdit?custModalHTML():''}`;
+  setTimeout(()=>{ const i=document.getElementById('cust-q'); if(i && document.activeElement!==i && q){ i.focus(); i.setSelectionRange(i.value.length,i.value.length);} },0);
+}
+function onCustQuery(v){ state.custQuery=v; const g=document.querySelector('.cust-grid'); if(g){ const list=getCustomers().slice().sort((a,b)=>byTr(a.cari||'',b.cari||'')).filter(cu=>custMatch(cu,v)); g.innerHTML = list.length?list.map(custCardHTML).join(''):`<div class="cust-empty">Aramaya uyan müşteri yok.</div>`; } }
+function custCardHTML(cu){
+  const line=(ic,val)=> val?`<div class="cc-row">${ic}<span>${esc(val)}</span></div>`:'';
+  return `<div class="cust-card">
+    <div class="cc-head"><b>${esc(cu.cari||'—')}</b>${cu.ilgili?`<span class="cc-ilgili">${esc(cu.ilgili)}</span>`:''}</div>
+    <div class="cc-body">
+      ${line('☎',cu.tel)}${line('✉',cu.mail)}${line('⌂',cu.adres)}${cu.vno?`<div class="cc-row"><span class="cc-vno">VKN/TCKN: ${esc(cu.vno)}</span></div>`:''}
+      ${cu.not?`<div class="cc-note">${esc(cu.not)}</div>`:''}
+    </div>
+    <div class="cc-actions">
+      <button onclick="startQuoteForCustomer('${cu.id}')" title="Bu müşteriye teklif ver">Teklif Ver</button>
+      <button onclick="openCustomerModal('${cu.id}')">Düzenle</button>
+      <button class="danger" onclick="deleteCustomer('${cu.id}')">Sil</button>
+    </div>
+  </div>`;
+}
+function custModalHTML(){
+  const editing=state.custEdit!=='new';
+  const cu=editing?getCustomers().find(x=>x.id===state.custEdit)||{}:{};
+  const f=(id,lbl,val,ph,full)=>`<div class="ig ${full?'ig-full':''}"><label>${lbl}</label><input id="cust-${id}" value="${esc(val||'')}" placeholder="${ph||''}"></div>`;
+  return `<div class="overlay show" onclick="if(event.target===this)closeCustomerModal()">
+    <div class="modal" style="max-width:640px">
+      <div class="modal-head"><h2>${editing?'Müşteriyi Düzenle':'Yeni Müşteri'}</h2><span class="modal-x" onclick="closeCustomerModal()">×</span></div>
+      <div class="modal-body">
+        <div class="info-grid">
+          ${f('cari','Cari Ad *',cu.cari,'Müşteri / firma adı',true)}
+          ${f('ilgili','İlgili Kişi',cu.ilgili,'Yetkili')}
+          ${f('tel','Telefon',cu.tel,'0___ ___ __ __')}
+          ${f('mail','E-posta',cu.mail,'ornek@firma.com')}
+          ${f('vno','VKN / TCKN',cu.vno,'Vergi no')}
+          ${f('adres','Adres',cu.adres,'Adres',true)}
+          <div class="ig ig-full"><label>Not</label><textarea id="cust-not" rows="2" placeholder="Müşteriyle ilgili notlar">${esc(cu.not||'')}</textarea></div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-outline" onclick="closeCustomerModal()">Vazgeç</button>
+        <button class="btn-primary" onclick="saveCustomer()">Kaydet</button>
+      </div>
+    </div>
+  </div>`;
+}
+function openCustomerModal(id){ state.custEdit=id; renderActive(); }
+function closeCustomerModal(){ state.custEdit=null; renderActive(); }
+function saveCustomer(){
+  const g=id=>{ const el=document.getElementById('cust-'+id); return el?el.value.trim():''; };
+  const cari=g('cari'); if(!cari){ toast('Cari ad zorunlu'); const el=document.getElementById('cust-cari'); if(el) el.focus(); return; }
+  const data={cari, ilgili:g('ilgili'), tel:g('tel'), mail:g('mail'), vno:g('vno'), adres:g('adres'), not:g('not')};
+  if(!state.customers) state.customers=[];
+  if(state.custEdit && state.custEdit!=='new'){
+    const cu=state.customers.find(x=>x.id===state.custEdit); if(cu) Object.assign(cu,data);
+    toast('Müşteri güncellendi');
+  } else {
+    state.customers.unshift(Object.assign({id:uid()},data));
+    toast('Müşteri kaydedildi');
+  }
+  state.custEdit=null; save(); renderActive();
+}
+function deleteCustomer(id){
+  const cu=getCustomers().find(x=>x.id===id); if(!cu) return;
+  if(!confirm(`“${cu.cari}” silinsin mi?`)) return;
+  state.customers=getCustomers().filter(x=>x.id!==id); save(); renderActive();
+}
+function custToInfo(cu){ return {cari:cu.cari||'', is:'', ilgili:cu.ilgili||'', adres:cu.adres||'', tel:cu.tel||'', mail:cu.mail||''}; }
+function startQuoteForCustomer(id){
+  const cu=getCustomers().find(x=>x.id===id); if(!cu) return;
+  const q=getQB(); q.info=Object.assign({}, q.info, custToInfo(cu)); save(); go('quote');
+}
+function customerOptions(sel){
+  const list=getCustomers().slice().sort((a,b)=>byTr(a.cari||'',b.cari||''));
+  return `<option value="">— kayıtlı müşteri seç —</option>`+list.map(cu=>`<option value="${cu.id}" ${sel===cu.id?'selected':''}>${esc(cu.cari)}${cu.ilgili?(' · '+esc(cu.ilgili)):''}</option>`).join('');
+}
+function applyCustomerToCalc(key,id){ if(!id) return; const cu=getCustomers().find(x=>x.id===id); if(!cu) return; const e=getCalcEntry(key); e.info=Object.assign({}, e.info, custToInfo(cu)); save(); renderActive(); }
+function applyCustomerToQB(id){ if(!id) return; const cu=getCustomers().find(x=>x.id===id); if(!cu) return; const q=getQB(); q.info=Object.assign({}, q.info, custToInfo(cu)); save(); renderActive(); }
+function saveInfoAsCustomer(inf){
+  if(!inf || !(inf.cari&&inf.cari.trim())){ toast('Önce Cari Ad girin'); return; }
+  if(!state.customers) state.customers=[];
+  const existing=state.customers.find(x=>fold(x.cari)===fold(inf.cari));
+  const data={cari:inf.cari.trim(), ilgili:inf.ilgili||'', tel:inf.tel||'', mail:inf.mail||'', adres:inf.adres||''};
+  if(existing){ Object.assign(existing, data); toast('Müşteri güncellendi'); }
+  else { state.customers.unshift(Object.assign({id:uid(),vno:'',not:''},data)); toast('Müşteri kaydedildi'); }
+  save(); renderNav();
 }
 
 /* ---------------- Raporlar (Excel içe aktarma + grafikler) ---------------- */
