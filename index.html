@@ -325,6 +325,14 @@
   .mv-det[open] summary::before{transform:rotate(90deg)}
   .mv-det summary:hover{color:var(--green-2)}
   .mv-det[open] summary{margin-bottom:4px}
+  .pdfcur{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:var(--muted)}
+  .pdfcur select{border:1px solid var(--line-strong);border-radius:9px;padding:8px 10px;font-size:13px;font-weight:700;font-family:inherit;background:var(--bg);color:var(--ink);cursor:pointer}
+  .pdfcur select:focus{outline:none;border-color:var(--green-2)}
+  .qb-cur.cell-select,.cell-select.qb-cur{min-width:0;width:66px;max-width:66px;padding:8px 6px;text-align:center;font-weight:700}
+  .qb-cur-block{border:1px dashed var(--line-strong);border-radius:10px;padding:8px 12px;margin-bottom:10px;background:#FBF7EF}
+  .qb-cur-h{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+  .qb-grand{border-top:2px solid var(--green);margin-top:10px;padding-top:12px;color:var(--green)}
+  .qb-grand span{color:var(--green);font-weight:800}
   .mv-it{display:flex;justify-content:space-between;gap:10px;font-size:11.5px;color:var(--muted)}
   .mv-it-nm{color:var(--ink);font-weight:600;flex:1;min-width:0}
   .mv-it-q{white-space:nowrap}
@@ -2894,6 +2902,7 @@ function renderCalcSheet(c){
         <p class="page-sub">${s.sub} · her satırda marka, kategori ve ürün seçin; sarfiyat ve fiyatları düzenleyin</p>
       </div>
       <div class="brand-actions">
+        ${pdfCurSelect()}
         <button class="btn-save-quote" onclick="saveQuoteFromCalc('${key}')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
           Teklifi Kaydet
@@ -3084,21 +3093,23 @@ function buildQuoteSnapshot(key){
     logo:state.logo||''
   };
 }
-function quotePDF(q){
+function quotePDF(q, cur){
+  cur = cur || q.cur || 'TL';
+  const rate=(getRates()[cur]||1); const sym=CUR_SYM[cur]||'₺'; const conv=v=>(Number(v)||0)/rate;
   const today = q.dateStr || new Date().toLocaleDateString('tr-TR');
   const qb = q.kind==='qb';
   const colspan = qb?5:6;
   let rowsHtml='';
   (q.groups||[]).forEach(g=>{
     const gRows=g.rows.map(it=> qb
-      ? `<tr><td>${esc(it.adi)}</td><td class="r">${calcQty(it.total)}</td><td class="r">${esc(it.unit||'')}</td><td class="r">${fmtNum(it.price)}</td><td class="r b">${fmtNum(it.amt)} ₺</td></tr>`
-      : `<tr><td>${esc(it.adi)}</td><td class="r">${calcQty(it.per)}</td><td class="r">${calcQty(it.total)} ${esc(it.unit||'')}</td><td class="r">${fmtNum(it.price)}</td><td class="r">${calcQty(it.pkg)}</td><td class="r b">${fmtNum(it.amt)} ₺</td></tr>`
+      ? `<tr><td>${esc(it.adi)}</td><td class="r">${calcQty(it.total)}</td><td class="r">${esc(it.unit||'')}</td><td class="r">${fmtNum(conv(it.price))}</td><td class="r b">${fmtNum(conv(it.amt))} ${sym}</td></tr>`
+      : `<tr><td>${esc(it.adi)}</td><td class="r">${calcQty(it.per)}</td><td class="r">${calcQty(it.total)} ${esc(it.unit||'')}</td><td class="r">${fmtNum(conv(it.price))}</td><td class="r">${calcQty(it.pkg)}</td><td class="r b">${fmtNum(conv(it.amt))} ${sym}</td></tr>`
     ).join('');
     rowsHtml+=`<tr class="g"><td colspan="${colspan}">${esc(g.name)}</td></tr>`+gRows;
   });
   const theadCols = qb
-    ? `<th>ÜRÜN</th><th class="r">MİKTAR</th><th class="r">BİRİM</th><th class="r">BİRİM FİYAT ₺</th><th class="r">TUTAR ₺</th>`
-    : `<th>ÜRÜN</th><th class="r">1 m² SARF.</th><th class="r">TOPLAM</th><th class="r">BİRİM FİYAT ₺</th><th class="r">PAKET</th><th class="r">TUTAR ₺</th>`;
+    ? `<th>ÜRÜN</th><th class="r">MİKTAR</th><th class="r">BİRİM</th><th class="r">BİRİM FİYAT ${sym}</th><th class="r">TUTAR ${sym}</th>`
+    : `<th>ÜRÜN</th><th class="r">1 m² SARF.</th><th class="r">TOPLAM</th><th class="r">BİRİM FİYAT ${sym}</th><th class="r">PAKET</th><th class="r">TUTAR ${sym}</th>`;
   const inf=q.info||{}; const t=q.totals||{};
   const infoRows=[
     ['Cari Ad',inf.cari],['İşin Adı',inf.is],['İlgili Kişi',inf.ilgili],
@@ -3145,10 +3156,11 @@ function quotePDF(q){
       <tbody>${rowsHtml}</tbody>
     </table>
     <div class="sum">
-      <div class="l"><span>Ara Toplam</span><b>${fmtNum(t.net)} ₺</b></div>
-      <div class="l"><span>KDV (%${calcQty(t.kdvRate)})</span><b>${fmtNum(t.kdv)} ₺</b></div>
-      <div class="l t"><span>KDV Dâhil Toplam</span><span>${fmtNum(t.withVat)} ₺</span></div>
+      <div class="l"><span>Ara Toplam</span><b>${fmtNum(conv(t.net))} ${sym}</b></div>
+      <div class="l"><span>KDV (%${calcQty(t.kdvRate)})</span><b>${fmtNum(conv(t.kdv))} ${sym}</b></div>
+      <div class="l t"><span>KDV Dâhil Toplam</span><span>${fmtNum(conv(t.withVat))} ${sym}</span></div>
     </div>
+    ${cur!=='TL'?`<p class="sub" style="text-align:right;margin:-14px 0 14px">Fiyatlar ${cur} cinsindendir · 1 ${cur} = ${fmtNum(rate)} ₺</p>`:''}
     ${notHtml}
   </body></html>`;
   const win=window.open('','_blank');
@@ -3156,8 +3168,10 @@ function quotePDF(q){
   win.document.open(); win.document.write(doc); win.document.close(); win.focus();
   setTimeout(()=>{ try{ win.print(); }catch(e){} }, 350);
 }
-function exportCalcPDF(key){ const q=buildQuoteSnapshot(key); if(!q) return; quotePDF(q); }
-function exportQuotePDF(id){ const q=(state.quotes||[]).find(x=>x.id===id); if(q) quotePDF(q); }
+function exportCalcPDF(key,cur){ const q=buildQuoteSnapshot(key); if(!q) return; quotePDF(q, cur||state.pdfCur||'TL'); }
+function exportQuotePDF(id,cur){ const q=(state.quotes||[]).find(x=>x.id===id); if(q) quotePDF(q, cur||state.pdfCur||'TL'); }
+function setPdfCur(v){ state.pdfCur=v; }
+function pdfCurSelect(){ const c=state.pdfCur||'TL'; return `<label class="pdfcur">Çıktı para birimi <select onchange="setPdfCur(this.value)">${['TL','USD','EUR'].map(x=>`<option value="${x}" ${c===x?'selected':''}>${x}</option>`).join('')}</select></label>`; }
 function comparisonPDF(rec){
   const rows=rec.rows||[]; const groups=rec.groups||[];
   const today=rec.dateStr||new Date().toLocaleDateString('tr-TR');
@@ -3253,7 +3267,7 @@ function saveQuoteFromCalc(key){
 /* ---------------- Teklif Ver (serbest teklif) ---------------- */
 function getQB(){ if(!state.qb) state.qb={info:{},rows:[],isk1:0,isk2:0,isk3:0,kar:0,kdv:20,seq:0}; return state.qb; }
 function qbRow(id){ return (getQB().rows||[]).find(r=>r.id===id); }
-function qbAddRow(){ const q=getQB(); q.seq=(q.seq||0)+1; q.rows.push({id:'r'+q.seq,name:'',spec:'',brand:'',fac:0,tab:'',prod:'',qty:1,unit:'',price:''}); save(); renderActive(); }
+function qbAddRow(){ const q=getQB(); q.seq=(q.seq||0)+1; q.rows.push({id:'r'+q.seq,name:'',spec:'',brand:'',fac:0,tab:'',prod:'',qty:1,unit:'',price:'',cur:'TL'}); save(); renderActive(); }
 function qbDelRow(id){ const q=getQB(); q.rows=q.rows.filter(r=>r.id!==id); save(); renderActive(); }
 function qbSetInfo(f,v){ const q=getQB(); if(!q.info)q.info={}; q.info[f]=v; save(); }
 function qbSetField(id,f,v){ const r=qbRow(id); if(r){ r[f]=v; save(); } }
@@ -3272,7 +3286,8 @@ function qbApplyProd(r){
   r.unit = p.birim||r.unit;
   r.price = +Number(productTL(b,p,r.fac||0)).toFixed(2);
 }
-function qbRowAmt(r){ return (Number(r.qty)||0)*(Number(r.price)||0); }
+function qbRowAmt(r){ const rate=(getRates()[r.cur||'TL'])||1; return (Number(r.qty)||0)*(Number(r.price)||0)*rate; }
+function qbSetCur(id,v){ const r=qbRow(id); if(!r)return; r.cur=v; save(); qbRefreshRowAmt(id); qbRefreshTotals(); }
 function qbCompute(){
   const q=getQB();
   const sub=(q.rows||[]).reduce((s,r)=>s+qbRowAmt(r),0);
@@ -3283,14 +3298,36 @@ function qbCompute(){
 }
 function qbRefreshRowAmt(id){ const r=qbRow(id); if(!r)return; const cell=document.querySelector(`[data-qb-amt="${id}"]`); if(cell) cell.textContent=fmtNum(qbRowAmt(r)); }
 function qbRefreshTotals(){ const el=document.getElementById('qb-sum'); if(el) el.innerHTML=qbSumHTML(); }
+function qbCurTotals(){ const q=getQB(); const m={}; (q.rows||[]).forEach(r=>{ const c=r.cur||'TL'; m[c]=(m[c]||0)+(Number(r.qty)||0)*(Number(r.price)||0); }); return m; }
 function qbSumHTML(){
-  const t=qbCompute();
-  return `
-    <div class="line"><span>Liste Tutarı</span><b>${fmtNum(t.sub)} ₺</b></div>
-    <div class="line"><span>İskonto Sonrası</span><b>${fmtNum(t.afterDisc)} ₺</b></div>
-    <div class="line"><span>Ara Toplam</span><b>${fmtNum(t.net)} ₺</b></div>
-    <div class="line"><span>KDV (%${calcQty(t.kdvRate)})</span><b>${fmtNum(t.kdv)} ₺</b></div>
-    <div class="line total"><span>KDV Dâhil Toplam</span><span>${fmtNum(t.withVat)} ₺</span></div>`;
+  const q=getQB();
+  const iskF=(1-(Number(q.isk1)||0)/100)*(1-(Number(q.isk2)||0)/100)*(1-(Number(q.isk3)||0)/100);
+  const karF=(1+(Number(q.kar)||0)/100);
+  const kdvRate=Number(q.kdv)||0;
+  const cur=qbCurTotals();
+  const order={TL:0,USD:1,EUR:2};
+  const used=Object.entries(cur).filter(([,v])=>Math.abs(v)>0.005).sort((a,b)=>(order[a[0]]??9)-(order[b[0]]??9));
+  const perCur=used.map(([c,sub])=>{ const net=sub*iskF*karF; const kdv=net*kdvRate/100; return {c,sym:CUR_SYM[c]||'₺',sub,disc:sub*iskF,net,kdv,withVat:net+kdv}; });
+  const multi = perCur.length>1 || (perCur.length===1 && perCur[0].c!=='TL');
+  if(!multi){
+    const p=perCur[0]||{sub:0,disc:0,net:0,kdv:0,withVat:0};
+    return `
+      <div class="line"><span>Liste Tutarı</span><b>${fmtNum(p.sub)} ₺</b></div>
+      <div class="line"><span>İskonto Sonrası</span><b>${fmtNum(p.disc)} ₺</b></div>
+      <div class="line"><span>Ara Toplam</span><b>${fmtNum(p.net)} ₺</b></div>
+      <div class="line"><span>KDV (%${calcQty(kdvRate)})</span><b>${fmtNum(p.kdv)} ₺</b></div>
+      <div class="line total"><span>KDV Dâhil Toplam</span><span>${fmtNum(p.withVat)} ₺</span></div>`;
+  }
+  const blocks=perCur.map(p=>`
+    <div class="qb-cur-block">
+      <div class="qb-cur-h">${p.c} bazlı</div>
+      <div class="line"><span>Ara Toplam</span><b>${fmtNum(p.net)} ${p.sym}</b></div>
+      <div class="line"><span>KDV (%${calcQty(kdvRate)})</span><b>${fmtNum(p.kdv)} ${p.sym}</b></div>
+      <div class="line total"><span>KDV Dâhil Toplam</span><span>${fmtNum(p.withVat)} ${p.sym}</span></div>
+    </div>`).join('');
+  const grandTL=perCur.reduce((s,p)=>s+p.withVat*((getRates()[p.c]||1)),0);
+  return `${blocks}
+    <div class="line total qb-grand"><span>TL Karşılığı Genel Toplam</span><span>${fmtNum(grandTL)} ₺</span></div>`;
 }
 function qbRowHTML(row){
   const b=state.brands.find(x=>x.id===row.brand);
@@ -3310,6 +3347,7 @@ function qbRowHTML(row){
     <td style="text-align:right"><input class="cell-input sm" type="number" min="0" step="0.01" value="${row.qty!=null&&row.qty!==''?row.qty:''}" oninput="qbSetNum('${row.id}','qty',this.value)"></td>
     <td><input class="cell-input sm" value="${esc(row.unit||'')}" placeholder="br" oninput="qbSetField('${row.id}','unit',this.value)"></td>
     <td style="text-align:right"><input class="cell-input" type="number" min="0" step="0.01" placeholder="0" value="${row.price!=null&&row.price!==''?row.price:''}" oninput="qbSetNum('${row.id}','price',this.value)"></td>
+    <td><select class="cell-select qb-cur" onchange="qbSetCur('${row.id}',this.value)">${['TL','USD','EUR'].map(x=>`<option ${(row.cur||'TL')===x?'selected':''}>${x}</option>`).join('')}</select></td>
     <td class="net" data-qb-amt="${row.id}">${fmtNum(qbRowAmt(row))}</td>
   </tr>`;
 }
@@ -3320,6 +3358,7 @@ function renderQuoteBuilder(c){
     <div class="calc-head-flex">
       <div><div class="breadcrumb">Teklif Ver</div><h1 class="brand-title">Teklif Ver</h1></div>
       <div class="brand-actions">
+        ${pdfCurSelect()}
         <button class="btn-save-quote" onclick="saveQBQuote()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
           Teklifi Kaydet
@@ -3358,14 +3397,14 @@ function renderQuoteBuilder(c){
     <div class="table-wrap sheet-wrap">
       <table class="sheet">
         <colgroup>
-          <col style="width:3%"><col style="width:15%"><col style="width:10%"><col style="width:11%"><col style="width:9%"><col style="width:9%"><col style="width:15%">
-          <col style="width:7%"><col style="width:6%"><col style="width:8%"><col style="width:7%">
+          <col style="width:3%"><col style="width:14%"><col style="width:9%"><col style="width:11%"><col style="width:8%"><col style="width:9%"><col style="width:14%">
+          <col style="width:6%"><col style="width:6%"><col style="width:8%"><col style="width:5%"><col style="width:7%">
         </colgroup>
         <thead><tr>
           <th></th><th>ÜRÜN</th><th>AÇIKLAMA</th><th>MARKA</th><th>FABRİKA</th><th>KATEGORİ</th><th>ÜRÜN</th>
-          <th class="num">MİKTAR</th><th>BİRİM</th><th class="num">BİRİM FİYAT ₺</th><th class="num">TUTAR ₺</th>
+          <th class="num">MİKTAR</th><th>BİRİM</th><th class="num">BİRİM FİYAT</th><th>KUR</th><th class="num">TUTAR ₺</th>
         </tr></thead>
-        <tbody>${rows || `<tr><td colspan="11" style="text-align:center;color:var(--muted);padding:30px">Henüz satır yok. Aşağıdan “Satır ekle” ile başlayın.</td></tr>`}</tbody>
+        <tbody>${rows || `<tr><td colspan="12" style="text-align:center;color:var(--muted);padding:30px">Henüz satır yok. Aşağıdan “Satır ekle” ile başlayın.</td></tr>`}</tbody>
       </table>
     </div>
     <div class="qb-addbar"><button class="addrow-plus" onclick="qbAddRow()">+ Satır ekle</button></div>
@@ -3376,7 +3415,8 @@ function buildQBSnapshot(){
   const q=getQB(); const t=qbCompute();
   const factor=(1-(Number(q.isk1)||0)/100)*(1-(Number(q.isk2)||0)/100)*(1-(Number(q.isk3)||0)/100)*(1+(Number(q.kar)||0)/100);
   const rows=(q.rows||[]).filter(r=>(r.name&&r.name.trim())||(Number(r.qty)&&Number(r.price))).map(r=>{
-    const unitPrice=(Number(r.price)||0)*factor;   // isk+kâr birim fiyata gömülü (müşteri görünümü)
+    const rate=(getRates()[r.cur||'TL'])||1;
+    const unitPrice=(Number(r.price)||0)*rate*factor;   // kur + isk + kâr birim fiyata gömülü (TL)
     return { adi:(r.name||'—')+(r.spec?(' · '+r.spec):''), total:Number(r.qty)||0, unit:r.unit||'', price:unitPrice, amt:(Number(r.qty)||0)*unitPrice, per:0, pkg:1 };
   });
   const inf=q.info||{};
@@ -3388,7 +3428,7 @@ function buildQBSnapshot(){
     logo:state.logo||''
   };
 }
-function exportQBPDF(){ const q=buildQBSnapshot(); if(!q.groups[0].rows.length){ toast('Önce satır ekleyin'); return; } quotePDF(q); }
+function exportQBPDF(){ const q=buildQBSnapshot(); if(!q.groups[0].rows.length){ toast('Önce satır ekleyin'); return; } quotePDF(q, state.pdfCur||'TL'); }
 function saveQBQuote(){
   const q=buildQBSnapshot();
   if(!q.groups[0].rows.length){ toast('Kaydedilecek satır yok'); return; }
@@ -4462,6 +4502,7 @@ function openQuoteDetail(id){
     </div>
     <div class="modal-foot">
       <button class="btn-ghost" onclick="closeQuoteDetail()">Kapat</button>
+      ${pdfCurSelect()}
       <button class="btn-primary" onclick="exportQuotePDF('${q.id}')">PDF Aktar</button>
     </div>`;
   document.getElementById('quote-overlay').classList.add('open');
