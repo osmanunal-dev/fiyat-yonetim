@@ -907,7 +907,11 @@
     </div>
     <div class="modal-foot">
       <button class="btn-ghost" onclick="closeModal()">Vazgeç</button>
-      <button class="btn-primary" onclick="downloadTemplate()">
+      <button class="btn-primary" id="btn-save-brand" style="display:none" onclick="saveBrandInfo()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Değişiklikleri Kaydet
+      </button>
+      <button class="btn-outline" onclick="downloadTemplate()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         <span id="dl-btn-text">Excel Şablonu İndir</span>
       </button>
@@ -4546,6 +4550,7 @@ function openModal(brandId){
     document.getElementById('modal-title').textContent='Fiyat Listesini Güncelle';
     document.getElementById('modal-sub').textContent='Bilgileri düzenleyin ve güncel şablonu indirin. Mevcut ürünler dolu gelir; değişen fiyatları düzenleyip geri yükleyin.';
     document.getElementById('dl-btn-text').textContent='Güncel Şablonu İndir';
+    document.getElementById('btn-save-brand').style.display='';
   } else {
     form = { mode:'discount', discounts:['İSK. 1','İSK. 2','İSK. 3','Kâr'], payments:['Peşin','Vadeli'], factories:['Liste Fiyatı'] };
     document.getElementById('f-name').value='';
@@ -4554,6 +4559,7 @@ function openModal(brandId){
     document.getElementById('modal-title').textContent='Yeni Fiyat Listesi';
     document.getElementById('modal-sub').textContent='Bilgileri doldurun, hazır Excel şablonunu indirin. Ürünleri girip geri yükleyin.';
     document.getElementById('dl-btn-text').textContent='Excel Şablonu İndir';
+    document.getElementById('btn-save-brand').style.display='none';
   }
 
   setMode(form.mode); renderDiscList(); renderPayList(); renderFacList();
@@ -4712,6 +4718,25 @@ function removeFac(i){ form.factories.splice(i,1); renderFacList(); }
 function addFac(){ form.factories.push('Fabrika '+(form.factories.length+1)); renderFacList(); }
 
 /* ---------------- Excel template ---------------- */
+function saveBrandInfo(){
+  if(!editingId){ toast('Önce bir liste açın'); return; }
+  const b=state.brands.find(x=>x.id===editingId); if(!b){ toast('Liste bulunamadı'); return; }
+  const name=document.getElementById('f-name').value.trim();
+  if(!name){ toast('Liste adı girin'); return; }
+  const validity=document.getElementById('f-validity').value;
+  const publish=document.getElementById('f-publish').value;
+  const mode=form.mode;
+  let factories=form.factories.map(x=>x.trim()).filter(Boolean); if(!factories.length) factories=['Liste Fiyatı'];
+  let discounts=form.discounts.filter(x=>x.trim()).map(l=>({label:l,value:0}));
+  let payments=form.payments.filter(x=>x.trim()).filter(x=>!/^k[âa]r$/i.test(x.trim())).map(l=>({label:l,adj:0}));
+  // mevcut iskonto/ödeme değerlerini etikete göre koru
+  discounts.forEach(d=>{ const m=(b.discounts||[]).find(o=>o.label===d.label); if(m) d.value=m.value; });
+  payments.forEach(p=>{ const m=(b.payments||[]).find(o=>o.label===p.label); if(m) p.adj=m.adj; });
+  const facsChanged = JSON.stringify(factories)!==JSON.stringify(b.factories||['Liste Fiyatı']);
+  Object.assign(b, {name, validity, publish, mode, discounts, payments, factories});
+  state.view='lists'; state.activeBrand=b.id; save(); closeModal(); render();
+  toast(facsChanged ? `${b.name} güncellendi (fabrika değişti; fiyatları kontrol edin)` : `${b.name} güncellendi`);
+}
 function downloadTemplate(){
   const name=document.getElementById('f-name').value.trim();
   if(!name) return toast('Lütfen liste adı girin');
