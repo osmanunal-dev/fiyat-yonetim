@@ -2637,6 +2637,7 @@ function getCalcEntry(key){
   return e;
 }
 function effPer(e,id,def){ return (e.pers&&e.pers[id]!=null&&e.pers[id]!=='') ? Number(e.pers[id]) : def; }
+function effKar(e,id){ return (e.kars&&e.kars[id]!=null&&e.kars[id]!=='') ? (Number(e.kars[id])||0) : (Number(e.kar)||0); }
 function sysVariant(s,e){ return (e&&e.variant) || (s&&s.variants&&s.variants.length?s.variants[0].key:null); }
 function sysPer(it,variant){
   const p=it.per;
@@ -2677,19 +2678,19 @@ function rowSrc(e,id){
   return srcProducts(r.brand, r.tab);
 }
 function computeCalc(s,e){
-  let sub=0; const variant=sysVariant(s,e);
+  let sub=0, netRaw=0; const variant=sysVariant(s,e);
+  const add=(id,la)=>{ sub+=la; netRaw += la*(1+effKar(e,id)/100); };   // satır bazlı kâr
   s.groups.forEach((g,gi)=>g.items.forEach((it,ii)=>{
     const bp=sysPer(it,variant); if(bp===0) return;   // o varyantta kullanılmayan kalem
     const id=gi+'_'+ii; if(e.removed&&e.removed[id]) return;   // tekliften çıkarılmış
-    sub += effPer(e,id,bp)*(Number(e.area)||0)*(Number(e.prices[id])||0)/effPkg(e,id);
+    add(id, effPer(e,id,bp)*(Number(e.area)||0)*(Number(e.prices[id])||0)/effPkg(e,id));
   }));
   Object.keys(e.extra||{}).forEach(id=>{   // eklenen özel satırlar
-    sub += effPer(e,id,0)*(Number(e.area)||0)*(Number(e.prices[id])||0)/effPkg(e,id);
+    add(id, effPer(e,id,0)*(Number(e.area)||0)*(Number(e.prices[id])||0)/effPkg(e,id));
   });
-  let net=sub;
-  [e.isk1,e.isk2,e.isk3].forEach(v=> net*=(1-(Number(v)||0)/100));
-  const afterDisc=net;
-  net*=(1+(Number(e.kar)||0)/100);            // toplam fiyat
+  let iskF=1; [e.isk1,e.isk2,e.isk3].forEach(v=> iskF*=(1-(Number(v)||0)/100));
+  const afterDisc=sub*iskF;
+  const net=netRaw*iskF;                      // kâr (satır bazlı) + iskonto uygulanmış
   const kdvRate=(e.kdv!=null?Number(e.kdv):20)||0;
   const kdv=net*kdvRate/100;
   return {sub,afterDisc,net,kdvRate,kdv,withVat:net+kdv};
@@ -2728,6 +2729,7 @@ function calcRowHTML(key,e,area,id,name,spec,basePer,isExtra){
     <td class="num qty-total" data-per="${basePer}" data-mat="${id}">${calcQty(per*area)}</td>
     <td style="text-align:right"><input class="cell-input" type="number" min="0" step="0.01" placeholder="0" value="${up!=null&&up!==''?up:''}" oninput="setCalcPrice('${key}','${id}',this.value)"></td>
     <td style="text-align:right"><input class="cell-input sm" type="number" min="1" step="1" value="${pkg}" oninput="setCalcPkg('${key}','${id}',this.value)"></td>
+    <td style="text-align:right"><input class="cell-input sm kar-in" type="number" step="0.01" value="${(e.kars&&e.kars[id]!=null&&e.kars[id]!=='')?e.kars[id]:''}" placeholder="${calcQty(Number(e.kar)||0)}" title="Boşsa varsayılan kâr (%${calcQty(Number(e.kar)||0)}) uygulanır" oninput="setCalcKar('${key}','${id}',this.value)"></td>
     <td class="net line-amt" data-per="${basePer}" data-mat="${id}">${fmtNum(amt)}</td>
   </tr>`;
 }
@@ -2868,7 +2870,7 @@ function renderCalcSheet(c){
   const variant=sysVariant(s,e);
   s.groups.forEach((g,gi)=>{
     const gClosed=!!(e.gClosed && e.gClosed[gi]);
-    body += `<tr class="grp${gClosed?' closed':''}" onclick="toggleCalcGroup('${key}',${gi})"><td colspan="11"><span class="grp-caret">${gClosed?'▸':'▾'}</span>${g.name}</td></tr>`;
+    body += `<tr class="grp${gClosed?' closed':''}" onclick="toggleCalcGroup('${key}',${gi})"><td colspan="12"><span class="grp-caret">${gClosed?'▸':'▾'}</span>${g.name}</td></tr>`;
     if(gClosed) return;
     let removedCount=0;
     g.items.forEach((it,ii)=>{
@@ -2880,21 +2882,21 @@ function renderCalcSheet(c){
     });
     Object.keys(e.extra||{}).forEach(xid=>{ const x=e.extra[xid]; if(!x||x.gi!==gi) return; body += calcRowHTML(key,e,area,xid,x.name,x.spec,0,true); });
     const restore = removedCount ? `<a class="addrow-restore" onclick="restoreCalcGroup('${key}',${gi})">kaldırılanları geri ekle (${removedCount})</a>` : '';
-    body += `<tr class="addrow"><td colspan="11"><span class="addrow-plus" onclick="addCalcRow('${key}',${gi})">+ satır ekle</span>${restore}</td></tr>`;
+    body += `<tr class="addrow"><td colspan="12"><span class="addrow-plus" onclick="addCalcRow('${key}',${gi})">+ satır ekle</span>${restore}</td></tr>`;
   });
   (e.cgroups||[]).forEach(cg=>{
     const gid=cg.gid;
     const gClosed=!!(e.gClosed && e.gClosed[gid]);
-    body += `<tr class="grp cgrp${gClosed?' closed':''}"><td colspan="11"><span class="grp-head">
+    body += `<tr class="grp cgrp${gClosed?' closed':''}"><td colspan="12"><span class="grp-head">
         <span class="grp-left" onclick="toggleCalcGroup('${key}','${gid}')"><span class="grp-caret">${gClosed?'▸':'▾'}</span></span>
         <input class="cgrp-name" value="${esc(cg.name||'')}" placeholder="Grup adı…" onclick="event.stopPropagation()" oninput="renameCalcGroup('${key}','${gid}',this.value)">
         <span class="cgrp-del" title="Grubu sil" onclick="delCalcGroup('${key}','${gid}')">×</span>
       </span></td></tr>`;
     if(gClosed) return;
     Object.keys(e.extra||{}).forEach(xid=>{ const x=e.extra[xid]; if(!x||x.gi!==gid) return; body += calcRowHTML(key,e,area,xid,x.name,x.spec,0,true); });
-    body += `<tr class="addrow"><td colspan="11"><span class="addrow-plus" onclick="addCalcRow('${key}','${gid}')">+ satır ekle</span></td></tr>`;
+    body += `<tr class="addrow"><td colspan="12"><span class="addrow-plus" onclick="addCalcRow('${key}','${gid}')">+ satır ekle</span></td></tr>`;
   });
-  body += `<tr class="addgrp"><td colspan="11"><span class="addgrp-btn" onclick="addCalcGroup('${key}')">+ Grup ekle</span></td></tr>`;
+  body += `<tr class="addgrp"><td colspan="12"><span class="addgrp-btn" onclick="addCalcGroup('${key}')">+ Grup ekle</span></td></tr>`;
 
   const r0=computeCalc(s,e);
 
@@ -2961,19 +2963,19 @@ function renderCalcSheet(c){
       <div class="disc-field"><label>İSK. 2</label><div class="pct-input"><input type="number" value="${e.isk2}" oninput="setCalcVal('${key}','isk2',this.value)"><span class="suf">%</span></div></div>
       <div class="disc-field"><label>İSK. 3</label><div class="pct-input"><input type="number" value="${e.isk3}" oninput="setCalcVal('${key}','isk3',this.value)"><span class="suf">%</span></div></div>
       <div class="kar-divider"></div>
-      <div class="disc-field"><label style="color:var(--green-2)">KÂR</label><div class="pct-input" style="border-color:#CFE0D6"><input type="number" value="${e.kar}" oninput="setCalcVal('${key}','kar',this.value)"><span class="suf">%</span></div></div>
+      <div class="disc-field"><label style="color:var(--green-2)">KÂR (varsayılan)</label><div class="pct-input" style="border-color:#CFE0D6"><input type="number" value="${e.kar}" oninput="setCalcVal('${key}','kar',this.value)"><span class="suf">%</span></div></div>
       <div class="disc-field"><label>KDV</label><div class="pct-input"><input type="number" value="${e.kdv!=null?e.kdv:20}" oninput="setCalcVal('${key}','kdv',this.value)"><span class="suf">%</span></div></div>
     </div>
     <div class="table-wrap sheet-wrap">
       <table class="sheet">
         <colgroup>
-          <col style="width:13%"><col style="width:7%"><col style="width:11%"><col style="width:9%"><col style="width:9%"><col style="width:15%">
-          <col style="width:7%"><col style="width:7%"><col style="width:8%"><col style="width:6%"><col style="width:8%">
+          <col style="width:12%"><col style="width:7%"><col style="width:10%"><col style="width:9%"><col style="width:9%"><col style="width:12%">
+          <col style="width:7%"><col style="width:7%"><col style="width:8%"><col style="width:6%"><col style="width:6%"><col style="width:7%">
         </colgroup>
         <thead><tr>
           <th>ÜRÜN</th><th>AÇIKLAMA</th><th>MARKA</th><th>FABRİKA</th><th>KATEGORİ</th><th>ÜRÜN</th>
           <th class="num">1 m² SARF.</th><th class="num">TOPLAM</th>
-          <th class="num">BİRİM FİYAT ₺</th><th class="num">PAKET</th><th class="num">TUTAR ₺</th>
+          <th class="num">BİRİM FİYAT ₺</th><th class="num">PAKET</th><th class="num">KÂR %</th><th class="num">TUTAR ₺</th>
         </tr></thead>
         <tbody>${body}</tbody>
       </table>
@@ -3020,6 +3022,7 @@ function setCalcPkg(key,id,val){
   if(pk){ if(!state.packages)state.packages={}; if(val!=='' && Number(val)>0) state.packages[pk]=Number(val); }
   save(); recalcCalc(key);
 }
+function setCalcKar(key,id,val){ const e=getCalcEntry(key); if(!e.kars) e.kars={}; e.kars[id]=(val===''?'':(Number(val)||0)); save(); recalcCalc(key); }
 function setCalcVal(key,which,val){ getCalcEntry(key)[which]=(val===''?0:(Number(val)||0)); save(); recalcCalc(key); }
 function setCalcInfo(key,field,val){ const e=getCalcEntry(key); if(!e.info)e.info={}; e.info[field]=val; save(); }
 function handleLogoUpload(input){
@@ -3055,14 +3058,14 @@ function buildQuoteSnapshot(key){
   const [cat,sys]=key.split(':'); const s=(CALC[cat]||{}).systems?.find(x=>x.key===sys); if(!s) return null;
   const e=getCalcEntry(key); const area=Number(e.area)||0; const r=computeCalc(s,e);
   const variant=sysVariant(s,e);
-  const factor=(1-(Number(e.isk1)||0)/100)*(1-(Number(e.isk2)||0)/100)*(1-(Number(e.isk3)||0)/100)*(1+(Number(e.kar)||0)/100);
+  const iskFactor=(1-(Number(e.isk1)||0)/100)*(1-(Number(e.isk2)||0)/100)*(1-(Number(e.isk3)||0)/100);
   const groups=[];
   s.groups.forEach((g,gi)=>{
     const rows=[];
     g.items.forEach((it,ii)=>{
       const id=gi+'_'+ii; const bp=sysPer(it,variant); if(bp===0) return; if(e.removed&&e.removed[id]) return;
       const per=effPer(e,id,bp); const pkg=effPkg(e,id);
-      const price=(Number(e.prices[id])||0)*factor; const amt=per*area*price/pkg;
+      const price=(Number(e.prices[id])||0)*iskFactor*(1+effKar(e,id)/100); const amt=per*area*price/pkg;
       const rw=(e.rows&&e.rows[id])||{};
       const effS=(e.specs&&e.specs[id]!=null)?e.specs[id]:it.spec;
       const adi = rw.prod ? rw.prod.split('|').join(' · ') : (it.name + (effS&&String(effS).trim()?(' · '+String(effS).trim()):''));
@@ -3070,7 +3073,7 @@ function buildQuoteSnapshot(key){
     });
     Object.keys(e.extra||{}).forEach(id=>{ const x=e.extra[id]; if(!x||x.gi!==gi) return;
       const per=effPer(e,id,0); const pkg=effPkg(e,id);
-      const price=(Number(e.prices[id])||0)*factor; const amt=per*area*price/pkg;
+      const price=(Number(e.prices[id])||0)*iskFactor*(1+effKar(e,id)/100); const amt=per*area*price/pkg;
       const rw=(e.rows&&e.rows[id])||{};
       const adi = rw.prod ? rw.prod.split('|').join(' · ') : ((x.name||'—') + (x.spec&&x.spec.trim()?(' · '+x.spec.trim()):''));
       rows.push({adi, per, total:per*area, unit:'', price, pkg, amt});
@@ -3081,7 +3084,7 @@ function buildQuoteSnapshot(key){
     const rows=[];
     Object.keys(e.extra||{}).forEach(id=>{ const x=e.extra[id]; if(!x||x.gi!==cg.gid) return;
       const per=effPer(e,id,0); const pkg=effPkg(e,id);
-      const price=(Number(e.prices[id])||0)*factor; const amt=per*area*price/pkg;
+      const price=(Number(e.prices[id])||0)*iskFactor*(1+effKar(e,id)/100); const amt=per*area*price/pkg;
       const rw=(e.rows&&e.rows[id])||{};
       const adi = rw.prod ? rw.prod.split('|').join(' · ') : ((x.name||'—') + (x.spec&&x.spec.trim()?(' · '+x.spec.trim()):''));
       rows.push({adi, per, total:per*area, unit:'', price, pkg, amt});
