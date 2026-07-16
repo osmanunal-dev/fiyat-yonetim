@@ -333,6 +333,28 @@
   .qb-cur-h{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
   .qb-grand{border-top:2px solid var(--green);margin-top:10px;padding-top:12px;color:var(--green)}
   .qb-grand span{color:var(--green);font-weight:800}
+  .tot-edit{display:inline-flex;align-items:center;gap:5px}
+  .tot-edit input{width:120px;text-align:right;border:1px solid var(--line-strong);border-radius:8px;padding:6px 9px;font-size:14px;font-weight:800;font-family:inherit;color:var(--ink);background:var(--bg)}
+  .tot-edit input:focus{outline:none;border-color:var(--green-2);background:var(--card)}
+  .tot-edit .suf{font-weight:800;color:var(--ink)}
+  .tot-edit .ov-x{cursor:pointer;color:#C0584B;font-weight:800;padding:0 4px}
+  .ov-tag{font-style:normal;font-size:10px;font-weight:800;background:var(--orange-soft);color:var(--orange);border-radius:10px;padding:1px 7px;margin-left:6px}
+  .qe-in{width:100%;border:1px solid var(--line-strong);border-radius:7px;padding:6px 8px;font-size:13px;font-family:inherit;background:var(--bg);color:var(--ink)}
+  .qe-in:focus{outline:none;border-color:var(--green-2);background:var(--card)}
+  .qe-in.num{text-align:right}
+  .qe-in.sm{max-width:70px}
+  .qe-gname{width:100%;max-width:280px;border:1px solid var(--line-strong);border-radius:7px;padding:5px 8px;font-size:12px;font-weight:800;font-family:inherit;background:var(--card);color:var(--ink)}
+  .qe-table td{padding:6px 8px}
+  .qe-table{table-layout:fixed}
+  .qe-table th:nth-child(1),.qe-table td:nth-child(1){width:auto}
+  .qe-table th:nth-child(2),.qe-table td:nth-child(2){width:90px}
+  .qe-table th:nth-child(3),.qe-table td:nth-child(3){width:90px}
+  .qe-table th:nth-child(4),.qe-table td:nth-child(4){width:120px}
+  .qe-table th:nth-child(5),.qe-table td:nth-child(5){width:120px}
+  .qe-table th:nth-child(6),.qe-table td:nth-child(6){width:34px}
+  .qe-in.sm{max-width:none;width:100%}
+  .qe-table td.b{white-space:nowrap}
+  .qe-table tr.g td{padding:6px 8px}
   .mv-it{display:flex;justify-content:space-between;gap:10px;font-size:11.5px;color:var(--muted)}
   .mv-it-nm{color:var(--ink);font-weight:600;flex:1;min-width:0}
   .mv-it-q{white-space:nowrap}
@@ -456,14 +478,14 @@
   .cust-tot span{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
   .cust-tot b{font-size:13.5px;font-weight:800}
   /* quote detail modal */
-  .qmodal{max-width:760px;width:94vw}
+  .modal.qmodal{max-width:1000px;width:96vw}
   .qmodal .modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:20px 24px 12px}
   .qmodal .modal-head h2{font-size:19px;font-weight:800}
   .qmodal .modal-head p{font-size:13px;color:var(--muted);margin-top:3px}
   .qbadge,.qd-info+.qd-info{}
   .qbadge{display:inline-block;color:#fff;background:var(--sc,#888);border-radius:20px;padding:2px 10px;font-size:11.5px;font-weight:700}
   .qmodal .modal-x{font-size:24px;color:var(--muted);line-height:1;background:none}
-  .qmodal .modal-body{padding:6px 24px 18px;max-height:64vh;overflow-y:auto}
+  .qmodal .modal-body{padding:6px 24px 18px;max-height:70vh;overflow-y:auto}
   .qd-info{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px 18px;background:var(--green-soft);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:14px}
   .qd-info div{display:flex;flex-direction:column;gap:2px}
   .qd-info span{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
@@ -2690,10 +2712,13 @@ function computeCalc(s,e){
   });
   let iskF=1; [e.isk1,e.isk2,e.isk3].forEach(v=> iskF*=(1-(Number(v)||0)/100));
   const afterDisc=sub*iskF;
-  const net=netRaw*iskF;                      // kâr (satır bazlı) + iskonto uygulanmış
+  const netCalc=netRaw*iskF;                  // kâr (satır bazlı) + iskonto uygulanmış
+  const ov=(e.netOv!=null && e.netOv!=='' && Number(e.netOv)>0) ? Number(e.netOv) : null;
+  const net = ov!=null ? ov : netCalc;        // elle girilen toplam varsa o geçerli
+  const ovScale = (ov!=null && netCalc>0) ? (ov/netCalc) : 1;
   const kdvRate=(e.kdv!=null?Number(e.kdv):20)||0;
   const kdv=net*kdvRate/100;
-  return {sub,afterDisc,net,kdvRate,kdv,withVat:net+kdv};
+  return {sub,afterDisc,netCalc,net,ov,ovScale,kdvRate,kdv,withVat:net+kdv};
 }
 
 function calcRowHTML(key,e,area,id,name,spec,basePer,isExtra){
@@ -2983,7 +3008,13 @@ function renderCalcSheet(c){
     <div class="calc-out" style="max-width:420px;margin-top:18px">
       <div class="line"><span>Liste Tutarı</span><b id="calc-sub">${fmtNum(r0.sub)} ₺</b></div>
       <div class="line"><span>İskonto Sonrası</span><b id="calc-afterdisc">${fmtNum(r0.afterDisc)} ₺</b></div>
-      <div class="line"><span>Toplam Fiyat</span><b id="calc-net">${fmtNum(r0.net)} ₺</b></div>
+      <div class="line"><span>Toplam Fiyat ${r0.ov!=null?'<em class="ov-tag">elle</em>':''}</span>
+        <span class="tot-edit">
+          <input type="number" step="0.01" min="0" id="calc-netov" value="${r0.ov!=null?r0.ov:''}" placeholder="${fmtNum(r0.netCalc)}" title="Elle toplam girin (boş = otomatik)" oninput="setCalcNetOv('${key}',this.value)">
+          <span class="suf">₺</span>
+          ${r0.ov!=null?`<span class="ov-x" title="Otomatik hesaba dön" onclick="setCalcNetOv('${key}','');renderActive()">×</span>`:''}
+        </span>
+      </div>
       <div class="line"><span id="calc-kdv-label">KDV (%${calcQty(r0.kdvRate)})</span><b id="calc-kdv">${fmtNum(r0.kdv)} ₺</b></div>
       <div class="line total"><span>KDV Dâhil Toplam</span><span id="calc-withvat">${fmtNum(r0.withVat)} ₺</span></div>
     </div>
@@ -3008,6 +3039,7 @@ function recalcCalc(key){
   const set=(idv,v)=>{const el=document.getElementById(idv); if(el) el.textContent=fmtNum(v)+' ₺';};
   set('calc-sub',r.sub); set('calc-afterdisc',r.afterDisc); set('calc-net',r.net);
   set('calc-kdv',r.kdv); set('calc-withvat',r.withVat);
+  const ovEl=document.getElementById('calc-netov'); if(ovEl) ovEl.placeholder=fmtNum(r.netCalc);
   const lbl=document.getElementById('calc-kdv-label'); if(lbl) lbl.textContent=`KDV (%${calcQty(r.kdvRate)})`;
 }
 function setCalcArea(key,val){ getCalcEntry(key).area=(val===''?0:(Number(val)||0)); save(); recalcCalc(key); }
@@ -3023,6 +3055,7 @@ function setCalcPkg(key,id,val){
   save(); recalcCalc(key);
 }
 function setCalcKar(key,id,val){ const e=getCalcEntry(key); if(!e.kars) e.kars={}; e.kars[id]=(val===''?'':(Number(val)||0)); save(); recalcCalc(key); }
+function setCalcNetOv(key,val){ const e=getCalcEntry(key); e.netOv=(val===''?'':(Number(val)||0)); save(); recalcCalc(key); }
 function setCalcVal(key,which,val){ getCalcEntry(key)[which]=(val===''?0:(Number(val)||0)); save(); recalcCalc(key); }
 function setCalcInfo(key,field,val){ const e=getCalcEntry(key); if(!e.info)e.info={}; e.info[field]=val; save(); }
 function handleLogoUpload(input){
@@ -3058,7 +3091,7 @@ function buildQuoteSnapshot(key){
   const [cat,sys]=key.split(':'); const s=(CALC[cat]||{}).systems?.find(x=>x.key===sys); if(!s) return null;
   const e=getCalcEntry(key); const area=Number(e.area)||0; const r=computeCalc(s,e);
   const variant=sysVariant(s,e);
-  const iskFactor=(1-(Number(e.isk1)||0)/100)*(1-(Number(e.isk2)||0)/100)*(1-(Number(e.isk3)||0)/100);
+  const iskFactor=(1-(Number(e.isk1)||0)/100)*(1-(Number(e.isk2)||0)/100)*(1-(Number(e.isk3)||0)/100)*(r.ovScale||1);
   const groups=[];
   s.groups.forEach((g,gi)=>{
     const rows=[];
@@ -3443,8 +3476,10 @@ function saveQBQuote(){
   state.quoteSeq=(state.quoteSeq||0)+1;
   const now=new Date();
   state.quotes.unshift(Object.assign({ id:uid(), no:state.quoteSeq, dateISO:now.toISOString(), dateStr:now.toLocaleDateString('tr-TR'), status:'Gönderildi' }, q));
-  save(); renderNav();
-  toast(`Teklif CRM'e kaydedildi · #${state.quoteSeq}`);
+  const no=state.quoteSeq;
+  state.qb={info:{},rows:[],isk1:0,isk2:0,isk3:0,kar:0,kdv:20,seq:0};   // kaydettikten sonra sayfayı temizle
+  save(); renderNav(); renderActive();
+  toast(`Teklif CRM'e kaydedildi · #${no} · sayfa temizlendi`);
 }
 function qbClear(){
   if(!confirm('Teklif temizlensin mi? Girdiğiniz satırlar ve bilgiler silinir.')) return;
@@ -4422,6 +4457,7 @@ function crmQTableHTML(){
       <td><select class="qstatus" style="--sc:${st.c}" onchange="setQuoteStatus('${q.id}',this.value)">${statusOpts(q.status)}</select></td>
       <td style="text-align:right;white-space:nowrap">
         <button class="mini" onclick="openQuoteDetail('${q.id}')">Detay</button>
+        <button class="mini" onclick="openQuoteEdit('${q.id}')">Düzenle</button>
         <button class="mini" onclick="exportQuotePDF('${q.id}')">PDF</button>
         <button class="mini danger" title="Sil" onclick="delQuote('${q.id}')">×</button>
       </td>
@@ -4482,6 +4518,7 @@ function setQuoteStatus(id,s){ const q=(state.quotes||[]).find(x=>x.id===id); if
 function delQuote(id){ if(!confirm('Bu teklif kaydı silinsin mi?')) return; state.quotes=(state.quotes||[]).filter(x=>x.id!==id); save(); renderActive(); renderNav(); }
 function openQuoteDetail(id){
   const q=(state.quotes||[]).find(x=>x.id===id); if(!q) return;
+  if(state.qEdit===id) return openQuoteEdit(id);
   const st=QSTAT.find(o=>o.k===q.status)||QSTAT[1];
   const inf=q.info||{}; const t=q.totals||{};
   const infoRows=[['Cari',inf.cari],['İş',inf.is],['İlgili',inf.ilgili],['Telefon',inf.tel],['Mail',inf.mail],['Adres',inf.adres]].filter(x=>x[1]&&x[1].toString().trim());
@@ -4509,11 +4546,115 @@ function openQuoteDetail(id){
     </div>
     <div class="modal-foot">
       <button class="btn-ghost" onclick="closeQuoteDetail()">Kapat</button>
+      <button class="btn-outline" onclick="openQuoteEdit('${q.id}')">Düzenle</button>
       ${pdfCurSelect()}
       <button class="btn-primary" onclick="exportQuotePDF('${q.id}')">PDF Aktar</button>
     </div>`;
   document.getElementById('quote-overlay').classList.add('open');
 }
+/* ---- Kayıtlı teklifi düzenle ---- */
+function openQuoteEdit(id){
+  const q=(state.quotes||[]).find(x=>x.id===id); if(!q) return;
+  state.qEdit=id;
+  state.qDraft=JSON.parse(JSON.stringify({info:q.info||{}, groups:q.groups||[], status:q.status, kdvRate:(q.totals&&q.totals.kdvRate!=null)?q.totals.kdvRate:20, sysName:q.sysName||''}));
+  renderQuoteEdit();
+  document.getElementById('quote-overlay').classList.add('open');
+}
+function qeTotals(){
+  const d=state.qDraft; let net=0;
+  (d.groups||[]).forEach(g=>g.rows.forEach(r=>{ net += (Number(r.total)||0)*(Number(r.price)||0); }));
+  const kdvRate=Number(d.kdvRate)||0; const kdv=net*kdvRate/100;
+  return {net,kdvRate,kdv,withVat:net+kdv};
+}
+function renderQuoteEdit(){
+  const q=(state.quotes||[]).find(x=>x.id===state.qEdit); if(!q) return;
+  const d=state.qDraft; const t=qeTotals();
+  const inf=d.info||{};
+  const f=(k,lbl,ph)=>`<div class="ig"><label>${lbl}</label><input value="${esc(inf[k]||'')}" placeholder="${ph||''}" oninput="qeInfo('${k}',this.value)"></div>`;
+  let body='';
+  (d.groups||[]).forEach((g,gi)=>{
+    body+=`<tr class="g"><td colspan="5"><input class="qe-gname" value="${esc(g.name||'')}" placeholder="Grup adı" oninput="qeGroupName(${gi},this.value)"></td></tr>`;
+    body+=g.rows.map((r,ri)=>`<tr>
+      <td><input class="qe-in" value="${esc(r.adi||'')}" placeholder="Ürün" oninput="qeRow(${gi},${ri},'adi',this.value)"></td>
+      <td><input class="qe-in num" type="number" step="0.01" value="${r.total!=null?r.total:''}" oninput="qeRow(${gi},${ri},'total',this.value)"></td>
+      <td><input class="qe-in sm" value="${esc(r.unit||'')}" placeholder="br" oninput="qeRow(${gi},${ri},'unit',this.value)"></td>
+      <td><input class="qe-in num" type="number" step="0.01" value="${r.price!=null?r.price:''}" oninput="qeRow(${gi},${ri},'price',this.value)"></td>
+      <td class="r b" data-qe-amt="${gi}_${ri}">${fmtNum((Number(r.total)||0)*(Number(r.price)||0))} ₺</td>
+      <td style="text-align:center"><span class="row-x" title="Satırı sil" onclick="qeDelRow(${gi},${ri})">×</span></td>
+    </tr>`).join('');
+    body+=`<tr><td colspan="6"><span class="addrow-plus" onclick="qeAddRow(${gi})">+ satır ekle</span></td></tr>`;
+  });
+  const statOpts=QSTAT.map(o=>`<option value="${o.k}" ${d.status===o.k?'selected':''}>${o.k}</option>`).join('');
+  document.getElementById('quote-modal').innerHTML=`
+    <div class="modal-head">
+      <div><h2>Teklif #${q.no} — Düzenle</h2><p>${esc(q.dateStr||'')}</p></div>
+      <button class="modal-x" onclick="closeQuoteEdit()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="info-grid">
+        ${f('cari','Cari Ad','Müşteri / firma')}${f('is','İşin Adı','Proje')}${f('ilgili','İlgili Kişi','Yetkili')}
+        ${f('tel','Telefon','')}${f('mail','Mail','')}
+        <div class="ig"><label>Durum</label><select onchange="qeSet('status',this.value)">${statOpts}</select></div>
+        <div class="ig ig-full"><label>Adres</label><input value="${esc(inf.adres||'')}" oninput="qeInfo('adres',this.value)"></div>
+        <div class="ig ig-full"><label>Notlar</label>${qeNotesHTML()}</div>
+      </div>
+      <div class="table-wrap" style="margin-top:12px">
+        <table class="qd-table qe-table"><thead><tr><th>ÜRÜN</th><th class="r">MİKTAR</th><th>BİRİM</th><th class="r">BİRİM FİYAT ₺</th><th class="r">TUTAR ₺</th><th></th></tr></thead>
+        <tbody>${body||'<tr><td colspan="6" style="padding:16px;text-align:center;color:var(--muted)">Satır yok</td></tr>'}</tbody></table>
+      </div>
+      <div class="qd-sum" id="qe-sum">
+        <div class="l"><span>Ara Toplam</span><b>${fmtNum(t.net)} ₺</b></div>
+        <div class="l"><span>KDV</span><span class="tot-edit"><input type="number" step="0.01" style="width:70px" value="${d.kdvRate}" oninput="qeSet('kdvRate',this.value)"><span class="suf">%</span></span><b>${fmtNum(t.kdv)} ₺</b></div>
+        <div class="l tt"><span>KDV Dâhil Toplam</span><span>${fmtNum(t.withVat)} ₺</span></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-ghost" onclick="closeQuoteEdit()">Vazgeç</button>
+      <button class="btn-primary" onclick="saveQuoteEdit()">Değişiklikleri Kaydet</button>
+    </div>`;
+}
+function qeNotesHTML(){
+  const info=state.qDraft.info||(state.qDraft.info={});
+  const arr=_notesArr(info);
+  const lines=arr.length?arr:[''];
+  return `<div class="notes-list">${lines.map((ln,i)=>`
+      <div class="note-line">
+        <span class="note-bullet">•</span>
+        <input class="note-in" value="${esc(ln||'')}" placeholder="Not satırı…" oninput="qeNotesSet(${i},this.value)">
+        <span class="note-ic add" title="Alt satır ekle" onclick="qeNotesAdd(${i})">+</span>
+        <span class="note-ic del" title="Satırı sil" onclick="qeNotesDel(${i})">×</span>
+      </div>`).join('')}</div>`;
+}
+function qeNotesSet(i,val){ const info=state.qDraft.info; const a=_notesArr(info); a[i]=val; _notesSync(info); }
+function qeNotesAdd(i){ const info=state.qDraft.info; const a=_notesArr(info); if(i==null){a.push('');} else { while(a.length<=i) a.push(''); a.splice(i+1,0,''); } _notesSync(info); renderQuoteEdit(); }
+function qeNotesDel(i){ const info=state.qDraft.info; _notesArr(info).splice(i,1); _notesSync(info); renderQuoteEdit(); }
+function qeInfo(k,v){ if(!state.qDraft.info) state.qDraft.info={}; state.qDraft.info[k]=v; }
+function qeSet(k,v){ state.qDraft[k]=(k==='kdvRate')?(Number(v)||0):v; if(k==='kdvRate') qeRefresh(); }
+function qeGroupName(gi,v){ state.qDraft.groups[gi].name=v; }
+function qeRow(gi,ri,f,v){ const r=state.qDraft.groups[gi].rows[ri]; r[f]=(f==='total'||f==='price')?(v===''?'':(Number(v)||0)):v; qeRefresh(gi,ri); }
+function qeRefresh(gi,ri){
+  const d=state.qDraft;
+  if(gi!=null&&ri!=null){ const r=d.groups[gi].rows[ri]; const el=document.querySelector(`[data-qe-amt="${gi}_${ri}"]`); if(el) el.textContent=fmtNum((Number(r.total)||0)*(Number(r.price)||0))+' ₺'; }
+  const t=qeTotals(); const s=document.getElementById('qe-sum');
+  if(s) s.innerHTML=`
+    <div class="l"><span>Ara Toplam</span><b>${fmtNum(t.net)} ₺</b></div>
+    <div class="l"><span>KDV</span><span class="tot-edit"><input type="number" step="0.01" style="width:70px" value="${d.kdvRate}" oninput="qeSet('kdvRate',this.value)"><span class="suf">%</span></span><b>${fmtNum(t.kdv)} ₺</b></div>
+    <div class="l tt"><span>KDV Dâhil Toplam</span><span>${fmtNum(t.withVat)} ₺</span></div>`;
+}
+function qeAddRow(gi){ state.qDraft.groups[gi].rows.push({adi:'',total:1,unit:'',price:'',per:0,pkg:1,amt:0}); renderQuoteEdit(); }
+function qeDelRow(gi,ri){ state.qDraft.groups[gi].rows.splice(ri,1); renderQuoteEdit(); }
+function saveQuoteEdit(){
+  const q=(state.quotes||[]).find(x=>x.id===state.qEdit); if(!q) return;
+  const d=state.qDraft; const t=qeTotals();
+  const groups=(d.groups||[]).map(g=>({name:g.name, rows:g.rows.filter(r=>(r.adi&&r.adi.trim())||Number(r.price)).map(r=>Object.assign({},r,{amt:(Number(r.total)||0)*(Number(r.price)||0)}))})).filter(g=>g.rows.length);
+  if(!groups.length){ toast('En az bir satır girin'); return; }
+  q.info=d.info||{}; q.status=d.status; q.groups=groups;
+  q.totals=Object.assign({}, q.totals||{}, {net:t.net, afterDisc:t.net, kdvRate:t.kdvRate, kdv:t.kdv, withVat:t.withVat});
+  state.qEdit=null; state.qDraft=null;
+  save(); closeQuoteDetail(); renderActive();
+  toast(`Teklif #${q.no} güncellendi`);
+}
+function closeQuoteEdit(){ state.qEdit=null; state.qDraft=null; closeQuoteDetail(); }
 function closeQuoteDetail(){ document.getElementById('quote-overlay').classList.remove('open'); }
 function setCalcRowBrand(key,id,val){ const e=getCalcEntry(key); if(!e.rows)e.rows={}; e.rows[id]={brand:val,tab:'',prod:'',fac:0}; save(); renderActive(); }
 function setCalcRowTab(key,id,val){ const e=getCalcEntry(key); if(!e.rows[id])e.rows[id]={brand:'',tab:'',prod:'',fac:0}; e.rows[id].tab=val; e.rows[id].prod=''; save(); renderActive(); }
